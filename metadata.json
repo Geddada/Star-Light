@@ -1,0 +1,8 @@
+{
+  "name": "StarLight",
+  "description": "A fully functional AI-powered platform for dynamic content generation, search results, and simulated comments.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
