@@ -52,12 +52,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [isCanvaConnected, setIsCanvaConnected] = useState(false);
-
-  useEffect(() => {
-    const canvaStatus = localStorage.getItem('starlight_canva_connected');
-    setIsCanvaConnected(canvaStatus === 'true');
-  }, []);
 
   useEffect(() => {
     const communitiesJson = localStorage.getItem('starlight_communities');
@@ -150,7 +144,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         setVideoPreviewUrl(objectUrl);
         setUploadStep('video-preview');
     } else {
-        setTitle(videoFile.name.replace(/\.[^/.]+$/, ""));
+        setTitle(objectUrl.split('/').pop()?.replace(/\.[^/.]+$/, "") || "Untitled Short"); // Use a temporary name for generated short
         setUploadStep('details');
         setDetailsSubStep(1);
     }
@@ -187,18 +181,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       const url = URL.createObjectURL(file);
       setThumbnailUrl(url);
     }
-  };
-
-  const handleDesignWithCanva = () => {
-    alert("Opening Canva... In a real app, this would open the Canva editor SDK.");
-    setTimeout(() => {
-        setIsGeneratingThumbnail(true);
-        setTimeout(() => {
-            const randomSeed = `canva-${Date.now()}`;
-            setThumbnailUrl(`https://picsum.photos/seed/${randomSeed}/640/360`);
-            setIsGeneratingThumbnail(false);
-        }, 2000);
-    }, 500);
   };
 
   const handleUpload = async () => {
@@ -276,10 +258,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           <p className="text-sm text-slate-400 -mt-2">An eye-catching thumbnail is key to attracting viewers.</p>
                           <div className="flex flex-col sm:flex-row gap-4">
                               <div className="relative w-full sm:w-64 aspect-video bg-[var(--background-primary)] rounded-lg border border-[var(--border-primary)] border-dashed flex items-center justify-center overflow-hidden group flex-shrink-0">
-                                  {thumbnailUrl ? <><img src={thumbnailUrl} alt="Thumbnail Preview" className="w-full h-full object-cover"/><button onClick={() => setThumbnailUrl(null)} className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 opacity-0 group-hover:opacity-100"><X className="w-4 h-4"/></button></> : <div className="flex flex-col items-center text-[var(--text-tertiary)]"><ImageIcon className="w-8 h-8 mb-2 opacity-50"/><span className="text-xs">Thumbnail Preview</span></div>}
+                                  {thumbnailUrl ? <><img src={thumbnailUrl} alt="Thumbnail Preview" className="w-full h-full object-cover"/><button onClick={() => setThumbnailUrl(null)} className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 opacity-0 group-hover:opacity-100"><X className="w-4 h-4"/></button></> : <div className="flex flex-col items-center text-[var(--text-tertiary)]"><ImageIcon className="w-8 h-8 mb-2 opacity-50"/><span className="text-xs">Thumbnail Preview</span></div>)}
                               </div>
                               <div className="flex-1 space-y-3">
-                                  <button onClick={handleDesignWithCanva} disabled={isGeneratingThumbnail} className="w-full p-3 text-sm font-semibold rounded-lg flex items-center justify-center gap-2 bg-[#00C4CC]/10 text-[#00C4CC] border border-[#00C4CC]/20 hover:bg-[#00C4CC]/20 transition-colors"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 fill-current"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.21 4.56c1.17 0 2.233.385 3.12 1.042l-2.09 2.09a2.43 2.43 0 00-1.03-1.031zm-1.041 1.03v2.09L9.04 9.77a2.44 2.44 0 00-1.03-1.03zm-1.04 1.042L5.43 8.76a7.485 7.485 0 011.042-3.12l2.09 2.09c-.36.326-.642.72-.82 1.15zM4.56 11.81h2.09l2.09-2.09c.43.178.823.46 1.15.82L7.79 12.63l-2.09 2.09H4.56zm1.03 3.12l2.09-2.09 2.09 2.09H6.67c-.326-.36-.563-.765-.78-1.19zM8.76 18.57l3.12-3.12 3.12 3.12a7.485 7.485 0 01-6.24 0zm3.12-4.16l-2.09 2.09V14.41l2.09-2.09zm0-1.041L9.77 15.46l-2.09-2.09V11.28l2.09 2.09zm1.041 1.041l2.09-2.09v2.09l-2.09 2.09zm1.03-1.041l2.09 2.09v-2.09l-2.09-2.09zm4.68-3.12a2.43 2.43 0 00-1.03 1.031l2.09 2.09V11.81zM18.57 8.76l-3.12 3.12-3.12-3.12a7.485 7.485 0 016.24 0z"/></svg> Design with Canva</button>
                                   <button onClick={handleGenerateThumbnail} disabled={isGeneratingThumbnail} className="w-full p-3 bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-[hsl(var(--accent-color))]/20 disabled:opacity-50"><Sparkles className="w-4 h-4"/> Generate with AI</button>
                                   <button onClick={() => fileInputRef.current?.click()} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-[var(--background-tertiary)]"><Upload className="w-4 h-4"/>Upload Image</button>
                                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload}/>

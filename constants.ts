@@ -234,6 +234,7 @@ export const COUNTRY_CODES = [
   { name: 'Thailand', code: '+66', iso: 'TH' },
   { name: 'Togo', code: '+228', iso: 'TG' },
   { name: 'Tonga', code: '+676', iso: 'TO' },
+  { name: 'Trinidad and Tobago', code: '+1868', iso: 'TT' },
   { name: 'Tunisia', code: '+216', iso: 'TN' },
   { name: 'Turkey', code: '+90', iso: 'TR' },
   { name: 'Turkmenistan', code: '+993', iso: 'TM' },
@@ -444,7 +445,7 @@ export const COUNTRY_LANGUAGES: Record<string, string[]> = {
   'Timor-Leste': ['English', 'Portuguese', 'Tetum'],
   'Togo': ['English', 'French'],
   'Tonga': ['English', 'Tongan'],
-  'Trinidad and Tobago': ['English'],
+  "Trinidad and Tobago": ["English"],
   'Tunisia': ['Arabic', 'English'],
   'Turkey': ['English', 'Turkish'],
   'Turkmenistan': ['English', 'Turkmen'],
@@ -494,3 +495,6 @@ export const ANDHRA_PRADESH_CONSTITUENCIES = [
   { id: 'muddegama', name: 'Muddegama', isReservedSC: false },
   { id: 'tadepalligudem', name: 'Tadepalligudem', isReservedSC: false },
 ];
+
+// FIX: Exported SUBSCRIPTION_KEY to resolve errors in other files.
+export const SUBSCRIPTION_KEY = 'starlight_subscriptions';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift, Users } from 'lucide-react';
-import { Video as VideoType, Report, Playlist as PlaylistType, ProfileDetails, AdCampaign, UnskippableAdCampaign, Community } from '../types';
+import { Video as VideoType, Report, Playlist as PlaylistType, ProfileDetails, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { UploadModal } from '../components/UploadModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,7 +43,8 @@ export const Profile: React.FC = () => {
   const { currentUser, isPremium, isAdmin, logout } = useAuth();
   const [uploadedVideos, setUploadedVideos] = useState<VideoType[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
-  const [promotions, setPromotions] = useState<(AdCampaign | UnskippableAdCampaign)[]>([]);
+  // FIX: Updated ad type in state to include ShortsAdCampaign.
+  const [promotions, setPromotions] = useState<(AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[]>([]);
   const [adCredits, setAdCredits] = useState<{ skippable: number, unskippable: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -85,7 +86,8 @@ export const Profile: React.FC = () => {
       // Load promotions and ad credits for premium/admin users
       if (isPremium || isAdmin) {
         const promotionsJson = localStorage.getItem('starlight_user_ads');
-        const allPromotions: (AdCampaign | UnskippableAdCampaign)[] = promotionsJson ? JSON.parse(promotionsJson) : [];
+        // FIX: Updated ad type in state to include ShortsAdCampaign.
+        const allPromotions: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = promotionsJson ? JSON.parse(promotionsJson) : [];
         const userPromotions = allPromotions.filter(p => p.communityName === currentUser.name);
         setPromotions(userPromotions);
 
@@ -192,7 +194,8 @@ export const Profile: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this ad promotion?")) {
         const userAdsJson = localStorage.getItem('starlight_user_ads');
         if (userAdsJson) {
-            let userAds: (AdCampaign | UnskippableAdCampaign)[] = JSON.parse(userAdsJson);
+            // FIX: Updated ad type in state to include ShortsAdCampaign.
+            let userAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = JSON.parse(userAdsJson);
             userAds = userAds.filter(ad => ad.id !== campaignId);
             localStorage.setItem('starlight_user_ads', JSON.stringify(userAds));
             loadData(); // Refresh the list
@@ -358,7 +361,7 @@ export const Profile: React.FC = () => {
 
 
                     {activeTab === 'about' && (
-                        <div className="bg-[var(--background-secondary)] p-6 rounded-xl border border-[var(--border-primary)] max-w-lg animate-in fade-in">
+                        <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] max-w-lg animate-in fade-in">
                             <h3 className="font-bold text-lg mb-4">About</h3>
                             <div className="space-y-3 text-sm">
                                 <p><span className="font-semibold w-24 inline-block text-[var(--text-secondary)]">Name:</span> {currentUser.name}</p>

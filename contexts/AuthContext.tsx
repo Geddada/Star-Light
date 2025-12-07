@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User as CurrentUser, Video, AdCampaign, UnskippableAdCampaign, Report } from '../types';
+import { User as CurrentUser, Video, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Report } from '../types';
 
 const ADMIN_EMAIL = 'admin@starlight.app';
 const ADMIN_BLOCKED_USERS_KEY = 'starlight_admin_blocked_users';
@@ -114,13 +114,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
-        login(user, false); // Don't navigate on initial load
+        loginRef.current(user, false); // Don't navigate on initial load
       } catch (e) {
         console.error("Failed to parse user from localStorage", e);
         localStorage.removeItem('currentUser');
       }
     }
-  }, [login]);
+  }, []);
 
   const logout = () => {
     // Revoke Google session only if GSI is initialized
@@ -184,7 +184,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const userAdsJSON = localStorage.getItem('starlight_user_ads');
     if (userAdsJSON) {
-        const allUserAds: (AdCampaign | UnskippableAdCampaign)[] = JSON.parse(userAdsJSON);
+        // FIX: Updated ad type in deleteAccount function to include ShortsAdCampaign.
+        const allUserAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = JSON.parse(userAdsJSON);
         // PromoteVideoModal uses communityName to store the uploader's name
         const otherUsersAds = allUserAds.filter(ad => ad.communityName !== userName);
         localStorage.setItem('starlight_user_ads', JSON.stringify(otherUsersAds));

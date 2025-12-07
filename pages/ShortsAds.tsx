@@ -140,6 +140,14 @@ export const ShortsAds: React.FC = () => {
                   setShowChooseAdModal(false);
                   setShowShortsAdModal(true);
               }}
+              onSelectAIAssistant={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/ai-ad-assistant');
+              }}
+              onSelectCinematicAd={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/cinematic-ad-creator');
+              }}
           />
       )}
 

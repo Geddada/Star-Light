@@ -50,6 +50,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
           setIsPlaying(false);
       }
   }, [isHovered, video, compact]);
+  
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (video) {
+        navigate(`/edit/${video.id}`, { state: { video } });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -110,7 +117,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
           <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
             {onEdit && (
               <button
-                onClick={(e) => { e.stopPropagation(); onEdit(video); }}
+                onClick={handleEditClick}
                 className="p-2 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
                 aria-label="Edit video"
                 title="Edit video"

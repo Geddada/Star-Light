@@ -1,9 +1,9 @@
 import React from 'react';
-import { AdCampaign, UnskippableAdCampaign } from '../types';
+import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 import { Megaphone } from 'lucide-react';
 
 interface InFeedAdCardProps {
-  campaign: AdCampaign | UnskippableAdCampaign;
+  campaign: AdCampaign | UnskippableAdCampaign | ShortsAdCampaign;
 }
 
 export const InFeedAdCard: React.FC<InFeedAdCardProps> = ({ campaign }) => {

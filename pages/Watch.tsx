@@ -1,10 +1,11 @@
 
+
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 // FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { Video, Comment, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
 import { fetchComments, fetchVideos, generateBetterTitle, fetchAiComments, fetchTickerText, getAdForSlot } from '../services/gemini';
-import { ThumbsUp, ThumbsDown, Share2, Sparkles, Maximize, Minimize, Loader2, X, PictureInPicture, Play, Pause, SkipForward, Rewind, FastForward, Volume1, Volume2, VolumeX, Settings, ExternalLink, Star, Clock, Check, Flag, Captions, Users, MoreVertical, Tv } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Sparkles, Maximize, Minimize, Loader2, X, PictureInPicture, Play, Pause, SkipForward, Rewind, FastForward, Volume1, Volume2, VolumeX, Settings, ExternalLink, Star, Flag, Captions, Users, MoreVertical, Tv, Save } from 'lucide-react';
 import { ShareModal } from '../components/ShareModal';
 import { ReportModal } from '../components/ReportModal';
 import { VideoCard } from '../components/VideoCard';
@@ -12,6 +13,7 @@ import { PREVIEW_VIDEOS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { SidebarAd } from '../components/SidebarAd';
 import { UploadModal } from '../components/UploadModal';
+import { SaveToPlaylistModal } from '../components/SaveToPlaylistModal';
 
 interface AdPlayerOverlayProps {
   ad: AdCampaign;
@@ -110,8 +112,8 @@ export const Watch: React.FC = () => {
   
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [tickerText, setTickerText] = useState('');
-  const [isInWatchLater, setIsInWatchLater] = useState(false);
 
   const [ad, setAd] = useState<AdCampaign | null>(null);
   // FIX: Updated ad state type to include ShortsAdCampaign.
@@ -150,18 +152,6 @@ export const Watch: React.FC = () => {
         setTickerText(` ${baseText.toUpperCase()}  +++  `.repeat(10));
     };
     if(video) setupTicker();
-  }, [video]);
-
-  useEffect(() => {
-    if (video) {
-        const watchLaterJson = localStorage.getItem('watch_later_videos');
-        if (watchLaterJson) {
-            const watchLaterVideos: Video[] = JSON.parse(watchLaterJson);
-            setIsInWatchLater(watchLaterVideos.some(v => v.id === video.id));
-        } else {
-            setIsInWatchLater(false);
-        }
-    }
   }, [video]);
 
   useEffect(() => {
@@ -287,18 +277,6 @@ export const Watch: React.FC = () => {
     setGeneratingTitle(false);
   };
   
-  const handleToggleWatchLater = () => {
-    const watchLaterJson = localStorage.getItem('watch_later_videos');
-    let watchLaterVideos: Video[] = watchLaterJson ? JSON.parse(watchLaterJson) : [];
-    if (isInWatchLater) {
-      watchLaterVideos = watchLaterVideos.filter(v => v.id !== video!.id);
-    } else {
-      watchLaterVideos.push(video!);
-    }
-    localStorage.setItem('watch_later_videos', JSON.stringify(watchLaterVideos));
-    setIsInWatchLater(!isInWatchLater);
-  };
-
   const handleBlockUser = (username: string) => {
     if (window.confirm(`Are you sure you want to block ${username}? You won't see their comments anymore.`)) {
         const updatedBlockedUsers = [...blockedUsers, username];
@@ -540,6 +518,7 @@ export const Watch: React.FC = () => {
     <div className="w-full h-full flex flex-col lg:flex-row bg-[var(--background-primary)] text-[var(--text-primary)]">
       {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoUrl={window.location.href} videoTitle={video.title} currentTime={currentTime} />}
       {showReportModal && <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} video={video} />}
+      {showSaveModal && <SaveToPlaylistModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} video={video} />}
       {showUploadModal && (
         <UploadModal
           onClose={handleCloseModal}
@@ -736,9 +715,9 @@ export const Watch: React.FC = () => {
                       <Share2 className="w-5 h-5" />
                       <span className="text-sm font-semibold">Share</span>
                   </button>
-                   <button onClick={handleToggleWatchLater} className="px-4 py-2 flex items-center gap-2 rounded-full bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]">
-                      {isInWatchLater ? <Check className="w-5 h-5 text-green-500"/> : <Clock className="w-5 h-5" />}
-                      <span className="text-sm font-semibold">{isInWatchLater ? 'Saved' : 'Watch Later'}</span>
+                   <button onClick={() => setShowSaveModal(true)} className="px-4 py-2 flex items-center gap-2 rounded-full bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]">
+                      <Save className="w-5 h-5" />
+                      <span className="text-sm font-semibold">Save</span>
                   </button>
                    <button onClick={() => setShowReportModal(true)} className="p-2.5 rounded-full bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]">
                       <Flag className="w-5 h-5" />

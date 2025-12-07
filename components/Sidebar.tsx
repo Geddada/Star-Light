@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Clock, ThumbsUp, Film, Settings, Megaphone, Beaker, Shield, CircleDollarSign, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, Wand2, RadioTower, ChevronDown, Activity, User, Lock, KeyRound, UserX, Puzzle, Smartphone, Video } from 'lucide-react';
+import { Home, Clock, ThumbsUp, Film, Settings, Beaker, Shield, CircleDollarSign, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Keyboard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Playlist, Community } from '../types';
 import { TvConnectModal } from '../components/TvConnectModal';
+// FIX: Import SUBSCRIPTION_KEY to resolve the missing member error.
+import { SUBSCRIPTION_KEY } from '../constants';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -90,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       const allCommunities: Community[] = communitiesJson ? JSON.parse(communitiesJson) : [];
 
       // Load subscriptions
-      const subscriptions: string[] = JSON.parse(localStorage.getItem('starlight_subscriptions') || '[]');
+      const subscriptions: string[] = JSON.parse(localStorage.getItem(SUBSCRIPTION_KEY) || '[]');
       const userSubscriptions = allCommunities.filter((community) => subscriptions.includes(community.name));
       setSubscribedCommunities(userSubscriptions.sort((a, b) => a.name.localeCompare(b.name)));
     } else {
@@ -162,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                               <SidebarItem 
                                   key={community.id} 
                                   // FIX: The 'Community' type does not have an 'avatar' property. Generate the avatar URL from the community name.
-                                  icon={(props) => <CommunityAvatarIcon {...props} src={`https://picsum.photos/seed/${encodeURIComponent(community.name)}/64/64`} name={community.name} />}
+                                  icon={(props) => <CommunityAvatarIcon {...props} src={community.avatar || `https://picsum.photos/seed/${encodeURIComponent(community.name)}/64/64`} name={community.name} />}
                                   label={community.name} 
                                   isActive={false}
                                   isOpen={isOpen} 
@@ -178,40 +180,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                               />
                           )}
                       </>
-                  )}
-
-                  <div className="my-4 border-t border-[var(--border-primary)]/50 mx-2" />
-                  <h3 className="px-4 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Creator Studio</h3>
-                  <SidebarItem icon={CircleDollarSign} label="Earn with Starlight" isActive={location.pathname === '/monetization'} isOpen={isOpen} onClick={() => navigate('/monetization')} />
-                  <SidebarItem icon={BarChart2} label="Analytics" isActive={location.pathname === '/analytics'} isOpen={isOpen} onClick={() => navigate('/analytics')} />
-                  <SidebarItem icon={ShieldAlert} label="Copyright Strikes" isActive={location.pathname === '/copyright-strikes'} isOpen={isOpen} onClick={() => navigate('/copyright-strikes')} />
-                  
-                  <div className="my-4 border-t border-[var(--border-primary)]/50 mx-2" />
-                  <h3 className="px-4 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Advertising</h3>
-                  {(isPremium || isAdmin) && (
-                    <SidebarItem icon={Megaphone} label="Skippable Ads" isActive={location.pathname === '/skippable-ads'} isOpen={isOpen} onClick={() => navigate('/skippable-ads')} />
-                  )}
-                   {(isPremium || isAdmin) && (
-                    <SidebarItem icon={RadioTower} label="Unskippable Ads" isActive={location.pathname === '/unskippable-ads'} isOpen={isOpen} onClick={() => navigate('/unskippable-ads')} />
-                  )}
-                  {(isPremium || isAdmin) && (
-                    <SidebarItem icon={Smartphone} label="Shorts Ads" isActive={location.pathname === '/shorts-ads'} isOpen={isOpen} onClick={() => navigate('/shorts-ads')} />
-                  )}
-                  {(isPremium || isAdmin) && (
-                    <SidebarItem icon={Wand2} label="AI Ad Assistant" isActive={location.pathname === '/ai-ad-assistant'} isOpen={isOpen} onClick={() => navigate('/ai-ad-assistant')} />
-                  )}
-                  {isAdmin && (
-                    <SidebarItem icon={Settings} label="Ad Placements" isActive={location.pathname === '/admin/ad-settings'} isOpen={isOpen} onClick={() => navigate('/admin/ad-settings')} />
-                  )}
-
-                  {playlists.length > 0 && (
-                     <>
-                        <div className="my-4 border-t border-[var(--border-primary)]/50 mx-2" />
-                        <h3 className="px-4 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Playlists</h3>
-                        {playlists.map(pl => (
-                            <SidebarItem key={pl.id} icon={ListVideo} label={pl.name} isActive={location.pathname === `/playlist/${pl.id}`} isOpen={isOpen} onClick={() => navigate(`/playlist/${pl.id}`)} />
-                        ))}
-                     </>
                   )}
 
                   <div className="my-4 border-t border-[var(--border-primary)]/50 mx-2" />
@@ -235,9 +203,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                     <div className="pl-6 space-y-1 mt-1 animate-in fade-in">
                         <SidebarSubItem label="Account" href="/settings#account" icon={User} />
                         <SidebarSubItem label="Login & Security" href="/settings#security" icon={Lock} />
-                        <SidebarSubItem label="Integrations" href="/settings#integrations" icon={Puzzle} />
                         <SidebarSubItem label="Blocked Users" href="/settings#blocked-users" icon={UserX} />
                         <SidebarSubItem label="API Keys" href="/settings#api" icon={KeyRound} />
+                        <SidebarSubItem label="Typing Tools" href="/settings#typing-tools" icon={Keyboard} />
                     </div>
                   )}
                 </div>

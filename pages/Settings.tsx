@@ -3,20 +3,19 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     User, Mail, Phone, CheckCircle2, Globe, MapPin, Settings as SettingsIcon, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2,
-    Puzzle, PlusCircle
+    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
 import { ProfileDetails, Community } from '../types';
 
-type SettingsTab = 'account' | 'security' | 'integrations' | 'api';
+type SettingsTab = 'account' | 'security' | 'api' | 'typing-tools';
 
 const NAV_ITEMS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
     { id: 'account', label: 'Account', icon: User },
     { id: 'security', label: 'Login & Security', icon: Lock },
-    { id: 'integrations', label: 'Integrations', icon: Puzzle },
     { id: 'api', label: 'API Keys', icon: KeyRound },
+    { id: 'typing-tools', label: 'Typing Tools', icon: Keyboard },
 ];
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -24,6 +23,7 @@ const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.39 1.88 6.161l-1.334 4.869 4.893-1.309zM9.356 8.014c-.13-.306-.279-.32-1.042-.324-.712-.004-1.393-.243-1.393-.243s-.542.13-.542.13c-.144.06-.144.06-.144.06-.516.216-1.033.972-1.033 2.064 0 1.062.279 2.1.279 2.1s.18.216.516.576c.336.36.456.456 1.448 1.968 1.488 2.209 2.133 2.58 3.129 2.928.612.216 1.296.12 1.776-.18.396-.24.516-.54.516-.54s.06-.12.06-.12c0-.06 0-.624-.036-.66-.036-.036-.216-.096-.456-.216-.24-.12-.48-.12-1.116-.36-.456-.156-.812-.12-.812-.12s-.216.06-.396.24c-.18.18-.36.36-.54.36-.18.012-.336-.024-.336-.024s-.276-.12-.516-.24c-.24-.12-.54-.24-.816-.54-.6-.66-1.068-1.344-1.068-1.344s-.06-.096 0-.192c.06-.096.12-.12.18-.18.06.012.276-.24.396-.396.12-.156.18-.24.24-.36.06-.12.12-.24.06-.36-.06-.12-.516-1.2-.516-1.2z"/>
     </svg>
 );
+
 
 const AccountSettings: React.FC<{
     currentUser: any;
@@ -338,7 +338,7 @@ const SecuritySettings: React.FC<{ currentUser: any }> = ({ currentUser }) => {
                 // User will be logged out and redirected by deleteAccount function
             }, 1500);
         } else {
-            setDeleteError('Invalid OTP code. Please try again.');
+            setDeleteError('Invalid OTP. Please try again. (Hint: use 123456)');
         }
     };
 
@@ -416,69 +416,6 @@ const SecuritySettings: React.FC<{ currentUser: any }> = ({ currentUser }) => {
     );
 };
 
-const IntegrationsSettings: React.FC = () => {
-    const [isCanvaConnected, setIsCanvaConnected] = useState(false);
-    const [isConnecting, setIsConnecting] = useState(false);
-    
-    useEffect(() => {
-        const canvaStatus = localStorage.getItem('starlight_canva_connected');
-        setIsCanvaConnected(canvaStatus === 'true');
-    }, []);
-    
-    const handleConnect = () => {
-        setIsConnecting(true);
-        setTimeout(() => {
-            localStorage.setItem('starlight_canva_connected', 'true');
-            setIsCanvaConnected(true);
-            setIsConnecting(false);
-        }, 1500);
-    };
-
-    const handleDisconnect = () => {
-        localStorage.removeItem('starlight_canva_connected');
-        setIsCanvaConnected(false);
-    };
-    
-    return (
-        <div className="space-y-8">
-            <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
-                <h3 className="text-lg font-bold mb-3">Connected Apps</h3>
-                <p className="text-[var(--text-secondary)] text-sm mb-6">Connect your Starlight account to other services to streamline your workflow.</p>
-
-                <div className="bg-[var(--background-primary)] rounded-lg p-6 border border-[var(--border-primary)] flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-[#00C4CC]/10 flex items-center justify-center flex-shrink-0">
-                        <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 fill-[#00C4CC]">
-                            <title>Canva</title>
-                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.21 4.56c1.17 0 2.233.385 3.12 1.042l-2.09 2.09a2.43 2.43 0 00-1.03-1.031zm-1.041 1.03v2.09L9.04 9.77a2.44 2.44 0 00-1.03-1.03zm-1.04 1.042L5.43 8.76a7.485 7.485 0 011.042-3.12l2.09 2.09c-.36.326-.642.72-.82 1.15zM4.56 11.81h2.09l2.09-2.09c.43.178.823.46 1.15.82L7.79 12.63l-2.09 2.09H4.56zm1.03 3.12l2.09-2.09 2.09 2.09H6.67c-.326-.36-.563-.765-.78-1.19zM8.76 18.57l3.12-3.12 3.12 3.12a7.485 7.485 0 01-6.24 0zm3.12-4.16l-2.09 2.09V14.41l2.09-2.09zm0-1.041L9.77 15.46l-2.09-2.09V11.28l2.09 2.09zm1.041 1.041l2.09-2.09v2.09l-2.09 2.09zm1.03-1.041l2.09 2.09v-2.09l-2.09-2.09zm4.68-3.12a2.43 2.43 0 00-1.03 1.031l2.09 2.09V11.81zM18.57 8.76l-3.12 3.12-3.12-3.12a7.485 7.485 0 016.24 0z"/>
-                        </svg>
-                    </div>
-                    <div className="flex-1 text-center sm:text-left">
-                        <p className="text-[var(--text-primary)] font-bold text-lg">Canva</p>
-                        <p className="text-[var(--text-secondary)] text-sm mt-1">Design beautiful thumbnails for your videos directly with Canva <span className="font-semibold text-[var(--text-primary)]">in the upload modal</span>.</p>
-                    </div>
-                    
-                    {isCanvaConnected ? (
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm font-semibold text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4" /> Connected
-                            </span>
-                            <button onClick={handleDisconnect} className="px-5 py-2 bg-[var(--background-primary)] text-red-500 border border-[var(--border-primary)] hover:bg-red-500/10 hover:border-red-500/20 rounded-lg font-semibold text-sm transition-colors whitespace-nowrap">
-                                Disconnect
-                            </button>
-                        </div>
-                    ) : (
-                        <button onClick={handleConnect} disabled={isConnecting} className="px-6 py-2.5 bg-[#00C4CC] hover:brightness-90 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors shadow-md whitespace-nowrap flex items-center gap-2">
-                            {isConnecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-                            {isConnecting ? 'Connecting...' : 'Connect'}
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
 const ApiSettings: React.FC = () => {
     const [isVeoKeySelected, setIsVeoKeySelected] = useState(false);
     const [keyCheckLoading, setKeyCheckLoading] = useState(true);
@@ -530,6 +467,32 @@ const ApiSettings: React.FC = () => {
     );
 };
 
+const TypingToolsSettings: React.FC = () => {
+    return (
+        <div id="typing-tools" className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] text-center">
+            <h3 className="text-lg font-bold mb-4 flex items-center justify-center gap-2">
+                <Keyboard className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Typing Tools
+            </h3>
+            <p className="text-[var(--text-secondary)] max-w-xl mx-auto mb-6">
+                Google Input Tools makes it easy to type in the language you choose, whether you have the right keyboard or not. This free tool helps you communicate more effectively with your global audience.
+            </p>
+            <a
+                href="https://www.google.co.in/inputtools/try/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
+            >
+                Try Google Input Tools
+                <ExternalLink className="w-4 h-4" />
+            </a>
+            <div className="mt-8 text-sm text-[var(--text-tertiary)]">
+                <p>Please note: Starlight is providing a link to this third-party tool for your convenience.</p>
+                <p>We are not affiliated with Google Input Tools.</p>
+            </div>
+        </div>
+    );
+};
+
 export const Settings: React.FC = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -538,10 +501,10 @@ export const Settings: React.FC = () => {
     
     const activeTab: SettingsTab = useMemo(() => {
         const hash = location.hash.substring(1);
-        if (hash === 'blocked-users' || hash === 'delete-account') {
+        if (['blocked-users', 'delete-account'].includes(hash)) {
             return 'security';
         }
-        if (['account', 'security', 'api', 'integrations'].includes(hash)) {
+        if (['account', 'security', 'api', 'typing-tools'].includes(hash)) {
             return hash as SettingsTab;
         }
         return 'account';
@@ -590,10 +553,10 @@ export const Settings: React.FC = () => {
                             return <AccountSettings currentUser={currentUser} profileDetails={profileDetails} setProfileDetails={setProfileDetails} />;
                         case 'security':
                             return <SecuritySettings currentUser={currentUser} />;
-                        case 'integrations':
-                            return <IntegrationsSettings />;
                         case 'api':
                             return <ApiSettings />;
+                        case 'typing-tools':
+                            return <TypingToolsSettings />;
                         default:
                             return null;
                     }

@@ -1,15 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, ImageIcon } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Tv2, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
 import { SendToMobileModal } from './SendToMobileModal';
-import { ChooseAdTypeModal } from './ChooseAdTypeModal';
-import { CreateAdModal } from './CreateAdModal';
-import { CreateUnskippableAdModal } from './CreateUnskippableAdModal';
-import { CreateShortsAdModal } from './CreateShortsAdModal';
-import { AdCampaign, ShortsAdCampaign, UnskippableAdCampaign } from '../types';
 
 
 interface CurrentUser {
@@ -98,12 +93,6 @@ export const Header: React.FC<HeaderProps> = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalConfig, setUploadModalConfig] = useState({ initialStep: 'initial' as 'initial' | 'recording' | 'details', isShorts: false });
   const [showSendToMobileModal, setShowSendToMobileModal] = useState(false);
-
-  // Ad creation modals
-  const [showChooseAdModal, setShowChooseAdModal] = useState(false);
-  const [showSkippableModal, setShowSkippableModal] = useState(false);
-  const [showUnskippableModal, setShowUnskippableModal] = useState(false);
-  const [showShortsAdModal, setShowShortsAdModal] = useState(false);
 
   const [isSaved, setIsSaved] = useState(false);
   
@@ -200,35 +189,14 @@ export const Header: React.FC<HeaderProps> = () => {
     document.body.removeChild(link);
   };
 
-  // Handlers for Ad Creation Modals
-  const USER_ADS_KEY = 'starlight_user_ads';
-  const saveUserAd = (newCampaign: AdCampaign | UnskippableAdCampaign | ShortsAdCampaign) => {
-      const userAdsJson = localStorage.getItem(USER_ADS_KEY);
-      const allUserAds = userAdsJson ? JSON.parse(userAdsJson) : [];
-      allUserAds.unshift(newCampaign);
-      localStorage.setItem(USER_ADS_KEY, JSON.stringify(allUserAds));
-  };
-
-  const handleCreateSkippableSuccess = (newCampaign: AdCampaign) => {
-      saveUserAd(newCampaign);
-      setShowSkippableModal(false);
-      navigate('/skippable-ads');
-  };
-  
-  const handleCreateUnskippableSuccess = (newCampaign: UnskippableAdCampaign) => {
-      saveUserAd(newCampaign);
-      setShowUnskippableModal(false);
-      navigate('/unskippable-ads');
-  };
-
-  const handleCreateShortsSuccess = (newCampaign: ShortsAdCampaign) => {
-      saveUserAd(newCampaign);
-      setShowShortsAdModal(false);
-      navigate('/shorts-ads');
-  };
-  
   const unreadCount = notifications.filter(n => !n.read).length;
   
+  const micButtonClasses = `p-2.5 rounded-full flex-shrink-0 transition-all duration-300 bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] ${isListening ? 'text-red-500 border-red-500 animate-pulse' : 'text-[var(--text-primary)]'}`;
+  const downloadAppClasses = 'p-2.5 rounded-full transition-all ' + 
+                           (currentUser
+                            ? 'bg-[hsl(var(--accent-color))] text-white hover:brightness-90 shadow-md hover:shadow-lg'
+                            : 'bg-[var(--background-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed');
+
   const desktopSearchBar = (
     <div className="w-full max-w-xl hidden sm:flex items-center gap-3">
         <form onSubmit={handleSearch} className="w-full">
@@ -251,7 +219,7 @@ export const Header: React.FC<HeaderProps> = () => {
         <button 
           type="button" 
           onClick={handleVoiceSearch}
-          className={`p-2.5 rounded-full flex-shrink-0 transition-all duration-300 bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] ${isListening ? 'text-red-500 border-red-500 animate-pulse' : 'text-[var(--text-primary)]'}`}
+          className={micButtonClasses}
         >
           <Mic className={`w-5 h-5 ${isListening ? 'animate-bounce' : ''}`} />
         </button>
@@ -262,19 +230,6 @@ export const Header: React.FC<HeaderProps> = () => {
     <>
       {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} onUploadSuccess={handleUploadSuccess} initialStep={uploadModalConfig.initialStep} isShortsDefault={uploadModalConfig.isShorts} />}
       {showSendToMobileModal && <SendToMobileModal onClose={() => setShowSendToMobileModal(false)} />}
-      
-      {/* Ad Creation Modals */}
-      {showChooseAdModal && (
-          <ChooseAdTypeModal 
-              onClose={() => setShowChooseAdModal(false)}
-              onSelectSkippable={() => { setShowChooseAdModal(false); setShowSkippableModal(true); }}
-              onSelectUnskippable={() => { setShowChooseAdModal(false); setShowUnskippableModal(true); }}
-              onSelectShortsAd={() => { setShowChooseAdModal(false); setShowShortsAdModal(true); }}
-          />
-      )}
-      {showSkippableModal && <CreateAdModal onClose={() => setShowSkippableModal(false)} onSuccess={handleCreateSkippableSuccess} />}
-      {showUnskippableModal && <CreateUnskippableAdModal onClose={() => setShowUnskippableModal(false)} onSuccess={handleCreateUnskippableSuccess} />}
-      {showShortsAdModal && <CreateShortsAdModal onClose={() => setShowShortsAdModal(false)} onSuccess={handleCreateShortsSuccess} />}
       
       <style>{`
         @keyframes on-air-blink {
@@ -385,19 +340,19 @@ export const Header: React.FC<HeaderProps> = () => {
               <span className="font-semibold text-sm hidden sm:block">Create</span>
             </button>
             {showCreateDropdown && (
-              <div ref={createDropdownRef} className="absolute top-full right-0 mt-2 w-64 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-2xl p-2 animate-in fade-in zoom-in-95">
-                  <button onClick={() => { openUploadModal('details', false); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Video className="w-4 h-4" /> Design Video
+              <div ref={createDropdownRef} className="absolute top-full right-0 mt-2 w-72 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-2xl p-2 animate-in fade-in zoom-in-95">
+                  <button onClick={() => { openUploadModal('initial', false); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Video className="w-4 h-4" /> Upload Video
                   </button>
-                  <button onClick={() => { openUploadModal('details', false); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <ImageIcon className="w-4 h-4" /> Design Thumbnail
+                  <button onClick={() => { openUploadModal('recording', true); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Camera className="w-4 h-4" /> Record a Short
                   </button>
-                  <button onClick={() => { openUploadModal('details', true); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Smartphone className="w-4 h-4" /> Design Short
+                   <button onClick={() => { navigate('/blur-video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <EyeOff className="w-4 h-4" /> Blur Video
                   </button>
-                  <div className="h-px bg-[var(--border-primary)] my-2"></div>
-                  <button onClick={() => { setShowChooseAdModal(true); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Megaphone className="w-4 h-4" /> Create an Ad
+                  <div className="h-px bg-[var(--border-primary)] my-1"></div>
+                  <button onClick={() => { navigate('/studio'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Tv2 className="w-4 h-4" /> News Broadcasting Software
                   </button>
               </div>
             )}
@@ -444,11 +399,7 @@ export const Header: React.FC<HeaderProps> = () => {
           title={currentUser ? "Download App" : "Sign in to download"}
           aria-label="Download App"
           disabled={!currentUser}
-          className={`p-2.5 rounded-full transition-all ${
-            currentUser
-              ? 'bg-[hsl(var(--accent-color))] text-white hover:brightness-90 shadow-md hover:shadow-lg'
-              : 'bg-[var(--background-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
-          }`}
+          className={downloadAppClasses}
         >
           <Download className="w-5 h-5" />
         </button>
@@ -498,7 +449,7 @@ export const Header: React.FC<HeaderProps> = () => {
                 ))}
               </div>
                <div className="p-2 text-center">
-                  <button onClick={() => setNotifications(prev => prev.map(n => ({...n, read: true})))} className="text-xs font-bold text-[hsl(var(--accent-color))] hover:underline">Mark all as read</button>
+                  <button onClick={() => setNotifications(prev => prev.map(n => ({...n, read: true})))} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-red-500 hover:bg-red-500/10 font-semibold text-sm transition-colors">Mark all as read</button>
                </div>
             </div>
           )}
@@ -538,14 +489,19 @@ export const Header: React.FC<HeaderProps> = () => {
                      <button onClick={() => { setShowSendToMobileModal(true); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Smartphone className="w-4 h-4"/> Send to Mobile</button>
                      <button onClick={() => { navigate('/test-new-features'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Sparkles className="w-4 h-4"/> Starlight Labs</button>
                      <button onClick={() => { navigate('/settings'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Settings className="w-4 h-4"/> Settings</button>
-                     <div className="h-px bg-[var(--border-primary)] my-2"></div>
-                     <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><LogOut className="w-4 h-4"/> Sign Out</button>
+                     <div className="h-px bg-[var(--border-primary)] my-1"></div>
+                     <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-red-500 hover:bg-red-500/10 font-semibold text-sm transition-colors"><LogOut className="w-4 h-4"/> Sign out</button>
                    </div>
                 </div>
               )}
            </div>
         ) : (
-           <button onClick={() => navigate('/signup')} className="px-4 py-2 bg-[hsl(var(--accent-color))] text-white text-sm font-bold rounded-full hover:brightness-90 transition-all">Sign In</button>
+          <button 
+            onClick={() => navigate('/signup')} 
+            className="px-4 py-2 bg-[hsl(var(--accent-color))] text-white rounded-full font-bold text-sm hover:brightness-90 transition-colors shadow-md"
+          >
+            Sign In
+          </button>
         )}
       </div>
     </header>

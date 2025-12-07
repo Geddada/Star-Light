@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Report } from '../types';
+import { Report, Video, Playlist as PlaylistType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { Flag, ArrowLeft, Clock, Check, ShieldAlert } from 'lucide-react';
+// FIX: Import missing icons for the StatusBadge component.
+import { Flag, Trash2, ArrowLeft, CheckCircle, Clock, ShieldAlert, Check } from 'lucide-react';
 
 const StatusBadge: React.FC<{ status: Report['status'] }> = ({ status }) => {
   const statusMap = {
@@ -54,6 +56,50 @@ export const MyReports: React.FC = () => {
   useEffect(() => {
     loadMyReports();
   }, [loadMyReports]);
+
+  const handleDeleteVideo = (videoId: string) => {
+    if (window.confirm("Are you sure you want to delete this video? This will remove the video and all associated reports. This cannot be undone.")) {
+      
+      const updateVideoList = (storageKey: string) => {
+        const json = localStorage.getItem(storageKey);
+        if(json) {
+          let videos: Video[] = JSON.parse(json);
+          videos = videos.filter(v => v.id !== videoId);
+          localStorage.setItem(storageKey, JSON.stringify(videos));
+        }
+      };
+
+      const updatePlaylists = () => {
+        const json = localStorage.getItem('starlight_playlists');
+        if (json) {
+          let playlists: PlaylistType[] = JSON.parse(json);
+          playlists = playlists.map(p => ({
+            ...p,
+            videos: p.videos.filter(v => v.id !== videoId)
+          }));
+          localStorage.setItem('starlight_playlists', JSON.stringify(playlists));
+        }
+      };
+
+      // Remove video from all user-specific lists
+      updateVideoList('starlight_uploaded_videos');
+      updateVideoList('watch_history');
+      updateVideoList('liked_videos');
+      updateVideoList('watch_later_videos');
+      updatePlaylists();
+      
+      // Remove all reports associated with this video from the main reports list
+      const allReportsJson = localStorage.getItem('starlight_reports');
+      if (allReportsJson) {
+          let allReports: Report[] = JSON.parse(allReportsJson);
+          allReports = allReports.filter(r => r.video.id !== videoId);
+          localStorage.setItem('starlight_reports', JSON.stringify(allReports));
+      }
+
+      loadMyReports(); // Re-load data to update the UI
+      window.dispatchEvent(new Event('playlistsUpdated'));
+    }
+  };
 
   if (!currentUser) return null; // Should be handled by ProtectedRoute
 

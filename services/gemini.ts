@@ -2,6 +2,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 // FIX: Added 'Activity' to the import list to resolve missing type error.
 // FIX: Added 'ShortsAdCampaign' to the import list to resolve missing type error.
 import { Video, Comment, AdCampaign, PressRelease, AnalyticsData, UnskippableAdCampaign, CATEGORIES, AdConcept, Activity, AdCreativeSuggestion, VideoMetadata, ShortsAdCampaign } from "../types";
+// FIX: Added SUBSCRIPTION_KEY to the import list to resolve missing type error.
+import { SUBSCRIPTION_KEY } from "../constants";
 
 const model = "gemini-2.5-flash";
 
@@ -809,7 +811,7 @@ export const generateVideo = async (
 
   } catch (error: any) {
     console.error("Video Generation Error:", error);
-    if (error.message && error.message.includes("Requested entity was not found")) {
+    if (error.message && error.message.includes("Requested entity was not found.")) {
         throw new Error("API Key validation failed. Please select a valid API key with Veo access and ensure billing is enabled.");
     }
     throw new Error(error.message || "An unknown error occurred during video generation.");
@@ -1069,6 +1071,7 @@ export const generateAdConcepts = async (
   productName: string,
   targetAudience: string,
   keyMessages: string,
+  tone: string,
   imagePart?: any
 ): Promise<AdConcept[] | null> => {
     try {
@@ -1077,6 +1080,7 @@ export const generateAdConcepts = async (
         let prompt = `You are a creative director at a top ad agency. A client is launching a product called "${productName}".
         The target audience is people interested in "${targetAudience}".
         The key messages are: "${keyMessages}".
+        ${tone ? `The desired tone and style for the ad is: "${tone}".` : ''}
         
         Generate 3 distinct and creative ad concepts for a skippable YouTube ad.
         For each concept, provide:
@@ -1084,7 +1088,7 @@ export const generateAdConcepts = async (
         - A brief script for a 15-30 second video ad.
         - A visual idea for the thumbnail.
         - A list of 3-4 specific sub-category interests to target within the main category.
-    Your response must be a valid JSON array of objects. Do not include any text before or after the JSON, and do not use markdown formatting.`;
+    Your response must be a valid JSON array of objects. Do not include any text before or after the JSON, and do not use markdown formatting.` + getLanguageSuffix();
         
         const contents: any = { parts: [{ text: prompt }] };
         if (imagePart) {

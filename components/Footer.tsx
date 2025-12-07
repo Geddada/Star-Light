@@ -62,7 +62,6 @@ export const Footer: React.FC = () => {
               <span>Powered by AI</span>
             </button>
             <button onClick={() => navigateTo('/help')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Help</button>
-            <button onClick={() => navigateTo('/typing-tools')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Typing Tools</button>
             
             <div className="relative">
               <button
