@@ -1,8 +1,38 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Report, Video, Playlist as PlaylistType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { Flag, Trash2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Flag, Trash2, ArrowLeft, CheckCircle, Clock, ShieldAlert, Check, BookOpen } from 'lucide-react';
+
+const StatusBadge: React.FC<{ status: Report['status'] }> = ({ status }) => {
+  const statusMap = {
+    'In Review': {
+      icon: Clock,
+      color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+      label: 'In Review'
+    },
+    'Action Taken': {
+      icon: ShieldAlert,
+      color: 'text-red-500 bg-red-500/10 border-red-500/20',
+      label: 'Action Taken'
+    },
+    'Dismissed': {
+      icon: Check,
+      color: 'text-gray-500 bg-gray-500/10 border-gray-500/20',
+      label: 'Dismissed'
+    }
+  };
+
+  const { icon: Icon, color, label } = statusMap[status] || statusMap['In Review'];
+
+  return (
+    <div className={`inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full border ${color}`}>
+      <Icon className="w-3.5 h-3.5" />
+      <span>{label}</span>
+    </div>
+  );
+};
 
 export const Reports: React.FC = () => {
   const { currentUser } = useAuth();
@@ -52,7 +82,7 @@ export const Reports: React.FC = () => {
       };
 
       // Remove video from all user-specific lists
-      updateVideoList('geminitube_uploaded_videos');
+      updateVideoList('starlight_uploaded_videos');
       updateVideoList('watch_history');
       updateVideoList('liked_videos');
       updateVideoList('watch_later_videos');
@@ -79,7 +109,7 @@ export const Reports: React.FC = () => {
         <button onClick={() => navigate(-1)} className="p-2 hover:bg-[var(--background-secondary)] rounded-full md:hidden">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <Flag className="w-8 h-8 text-yellow-500" />
+        <Flag className="w-8 h-8 text-blue-500" />
         <h1 className="text-3xl font-bold text-[var(--text-primary)]">My Content Reports</h1>
       </div>
 
@@ -96,7 +126,7 @@ export const Reports: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {reports.map(report => (
-            <div key={report.id} className="bg-[var(--background-secondary)] p-4 rounded-xl border border-yellow-500/30 flex flex-col sm:flex-row gap-4">
+            <div key={report.id} className="bg-[var(--background-secondary)] p-4 rounded-xl border border-[var(--border-primary)] flex flex-col sm:flex-row gap-4 items-start">
               <img 
                 src={report.video.thumbnailUrl} 
                 alt={report.video.title} 
@@ -104,11 +134,21 @@ export const Reports: React.FC = () => {
                 onClick={() => navigate(`/watch/${report.video.id}`, { state: { video: report.video } })}
               />
               <div className="flex-1">
-                <p className="text-xs text-[var(--text-tertiary)]">{new Date(report.reportDate).toLocaleString()}</p>
-                <h3 className="font-bold text-md cursor-pointer hover:text-[hsl(var(--accent-color))]" onClick={() => navigate(`/watch/${report.video.id}`, { state: { video: report.video } })}>{report.video.title}</h3>
-
-                <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <p className="font-semibold text-sm text-yellow-500 flex items-center gap-2"><Flag className="w-4 h-4" /> Report Reason:</p>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="text-xs text-[var(--text-tertiary)]">Reported on: {new Date(report.reportDate).toLocaleDateString()}</p>
+                        <h3 
+                            className="font-bold text-md cursor-pointer hover:text-[hsl(var(--accent-color))]" 
+                            onClick={() => navigate(`/watch/${report.video.id}`, { state: { video: report.video } })}
+                        >
+                            {report.video.title}
+                        </h3>
+                    </div>
+                    <StatusBadge status={report.status} />
+                </div>
+                
+                <div className="mt-3 p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg">
+                  <p className="font-semibold text-sm text-[var(--text-secondary)] flex items-center gap-2"><Flag className="w-4 h-4" /> Report Reason:</p>
                   <p className="text-sm text-[var(--text-primary)]">{report.reason}</p>
                 </div>
               </div>
@@ -125,6 +165,24 @@ export const Reports: React.FC = () => {
           ))}
         </div>
       )}
+
+      <div className="mt-12 bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] flex flex-col md:flex-row items-center gap-6">
+        <div className="p-4 bg-blue-500/10 rounded-full text-blue-500">
+            <BookOpen className="w-8 h-8" />
+        </div>
+        <div className="flex-1 text-center md:text-left">
+            <h3 className="text-xl font-bold mb-2">Copyright School</h3>
+            <p className="text-[var(--text-secondary)]">
+                Want to learn more about copyright policies and fair use? Take our interactive quiz to test your knowledge and become a better community member.
+            </p>
+        </div>
+        <button 
+            onClick={() => navigate('/copyright-school')}
+            className="px-6 py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all whitespace-nowrap"
+        >
+            Start Quiz
+        </button>
+      </div>
     </div>
   );
 };

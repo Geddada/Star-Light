@@ -59,7 +59,6 @@ import { ShortsAds } from './pages/ShortsAds';
 import { CreatorStudio } from './pages/CreatorStudio';
 import { CinematicAdCreator } from './pages/CinematicAdCreator';
 import { VideoEditor } from './pages/VideoEditor';
-import { BlurVideo } from './pages/BlurVideo';
 import { Business } from './pages/Business';
 
 
@@ -90,13 +89,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   
   const isWatchPage = location.pathname.startsWith('/watch');
   const isEditPage = location.pathname.startsWith('/edit');
-  const isBlurPage = location.pathname.startsWith('/blur-video');
   const isSignupPage = location.pathname === '/signup';
   const isShortsPage = location.pathname === '/shorts';
   const noLayoutPages = ['/thanks', '/signup'];
 
   
-  if (noLayoutPages.includes(location.pathname) || isEditPage || isBlurPage) {
+  if (noLayoutPages.includes(location.pathname) || isEditPage) {
       return (
          <div className="flex flex-col h-screen max-h-screen bg-[var(--background-primary)] text-[var(--text-primary)] font-sans selection:bg-[hsl(var(--accent-color))] selection:text-white">
              <main className="flex-1 overflow-y-auto flex flex-col">
@@ -165,11 +163,6 @@ const App: React.FC = () => {
                <Route path="/edit/:videoId" element={
                 <ProtectedRoute>
                   <VideoEditor />
-                </ProtectedRoute>
-              } />
-               <Route path="/blur-video" element={
-                <ProtectedRoute>
-                  <BlurVideo />
                 </ProtectedRoute>
               } />
               <Route path="/studio" element={

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     User, Mail, Phone, CheckCircle2, Globe, MapPin, Settings as SettingsIcon, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink, Beaker, Palette
+    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink, Beaker, Palette, Smartphone
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
@@ -270,15 +270,26 @@ const AccountSettings: React.FC<{
                             Create stunning thumbnails, channel art, and social media posts with Canva's free online design tool.
                         </p>
                     </div>
-                    <a
-                        href="https://www.canva.com/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00C4CC] to-[#7D2AE8] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
-                    >
-                        Open Canva
-                        <ExternalLink className="w-4 h-4" />
-                    </a>
+                    <div className="flex flex-col gap-3 items-center sm:items-end">
+                        <a
+                            href="https://www.canva.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00C4CC] to-[#7D2AE8] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
+                        >
+                            Open Canva Web
+                            <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <a
+                            href="https://play.google.com/store/apps/details?id=com.canva.editor"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-[var(--text-secondary)] hover:text-[#00C4CC] transition-colors flex items-center gap-1.5"
+                        >
+                            <Smartphone className="w-3.5 h-3.5" />
+                            Get the Android App
+                        </a>
+                    </div>
                 </div>
                 <p className="text-xs text-[var(--text-tertiary)] mt-4">
                     Starlight is not affiliated with Canva. Link provided for convenience.

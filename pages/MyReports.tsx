@@ -3,8 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Report, Video, Playlist as PlaylistType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-// FIX: Import missing icons for the StatusBadge component.
-import { Flag, Trash2, ArrowLeft, CheckCircle, Clock, ShieldAlert, Check } from 'lucide-react';
+import { Flag, Trash2, ArrowLeft, CheckCircle, Clock, ShieldAlert, Check, BookOpen } from 'lucide-react';
 
 const StatusBadge: React.FC<{ status: Report['status'] }> = ({ status }) => {
   const statusMap = {
@@ -152,10 +151,37 @@ export const MyReports: React.FC = () => {
                   <p className="text-sm text-[var(--text-primary)]">{report.reason}</p>
                 </div>
               </div>
+              <div className="flex items-center gap-2 pt-2 border-t sm:border-t-0 sm:pt-0 sm:border-l border-[var(--border-primary)] sm:pl-4">
+                <button 
+                  onClick={() => handleDeleteVideo(report.video.id)}
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 text-sm font-semibold transition-colors"
+                  title="Delete Video"
+                >
+                  <Trash2 className="w-4 h-4" /> <span>Delete Video</span>
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <div className="mt-12 bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] flex flex-col md:flex-row items-center gap-6">
+        <div className="p-4 bg-blue-500/10 rounded-full text-blue-500">
+            <BookOpen className="w-8 h-8" />
+        </div>
+        <div className="flex-1 text-center md:text-left">
+            <h3 className="text-xl font-bold mb-2">Copyright School</h3>
+            <p className="text-[var(--text-secondary)]">
+                Want to learn more about copyright policies and fair use? Take our interactive quiz to test your knowledge and become a better community member.
+            </p>
+        </div>
+        <button 
+            onClick={() => navigate('/copyright-school')}
+            className="px-6 py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all whitespace-nowrap"
+        >
+            Start Quiz
+        </button>
+      </div>
     </div>
   );
 };

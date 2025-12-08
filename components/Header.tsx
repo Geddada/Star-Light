@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, EyeOff } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
@@ -346,9 +347,6 @@ export const Header: React.FC<HeaderProps> = () => {
                   </button>
                   <button onClick={() => { openUploadModal('recording', true); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <Camera className="w-4 h-4" /> Record a Short
-                  </button>
-                   <button onClick={() => { navigate('/blur-video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <EyeOff className="w-4 h-4" /> Blur Video
                   </button>
               </div>
             )}
