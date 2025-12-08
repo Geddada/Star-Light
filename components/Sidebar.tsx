@@ -224,13 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
         {!currentUser && (
           <div className="hidden lg:block mt-auto pt-4 border-t border-[var(--border-primary)]/50 space-y-2">
-             <div 
-               onClick={handlePremiumLogin}
-               className={`flex items-center rounded-lg cursor-pointer p-3 transition-all duration-300 bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-md hover:shadow-lg hover:shadow-yellow-500/30 hover:scale-[1.02] active:scale-100 ${isOpen ? 'justify-start' : 'justify-center'}`}
-             >
-                <Gem className="w-5 h-5" />
-                {isOpen && <span className="ml-4 text-sm font-bold">Premium Access</span>}
-             </div>
+             {/* Premium Access button temporarily disabled */}
              <div 
                onClick={handleAdminLogin} 
                className={`flex items-center rounded-lg cursor-pointer p-3 transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-100 ${isOpen ? 'justify-start' : 'justify-center'}`}

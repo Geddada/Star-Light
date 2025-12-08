@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Smartphone, Send, Loader2, CheckCircle2, AlertTriangle, Settings, QrCode, Copy, Check, Download } from 'lucide-react';
+import { X, Smartphone, Send, Loader2, CheckCircle2, AlertTriangle, Settings, QrCode, Copy, Check, Download, MessageCircle, Link } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ProfileDetails } from '../types';
 
@@ -50,6 +50,18 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
       }, 3000);
     }, 1500);
   };
+
+  const handleWhatsAppSend = () => {
+    if (!verifiedNumber) return;
+    const cleanNumber = verifiedNumber.replace(/\D/g, '');
+    const message = `Here is the link to StarLight: ${currentUrl}`;
+    const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    setStatus('sent');
+    setTimeout(() => {
+      setStatus('idle');
+    }, 3000);
+  };
   
   const handleGoToSettings = () => {
       onClose();
@@ -60,15 +72,6 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
       navigator.clipboard.writeText(currentUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownloadApk = () => {
-    const link = document.createElement('a');
-    link.href = '/StarLight.apk';
-    link.setAttribute('download', 'StarLight.apk');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const renderSMSContent = () => {
@@ -86,7 +89,7 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
       return (
         <form onSubmit={handleSubmit}>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-[var(--text-secondary)]">A link to open Starlight will be sent via SMS to your verified mobile number.</p>
+              <p className="text-sm text-[var(--text-secondary)]">A link to open Starlight will be sent via SMS or WhatsApp to your verified mobile number.</p>
               
               <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-[var(--text-secondary)]">Verified Number</label>
@@ -102,7 +105,14 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
               </div>
             </div>
 
-            <div className="p-4 bg-[var(--background-primary)] border-t border-[var(--border-primary)] flex justify-end">
+            <div className="p-4 bg-[var(--background-primary)] border-t border-[var(--border-primary)] flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                type="button"
+                onClick={handleWhatsAppSend}
+                className="px-6 py-2.5 bg-[#25D366] text-white font-bold rounded-lg hover:brightness-90 transition-colors flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </button>
               <button
                 type="submit"
                 disabled={status === 'sending'}
@@ -114,7 +124,7 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4" /> Send Link
+                    <Send className="w-4 h-4" /> Send SMS
                   </>
                 )}
               </button>
@@ -128,7 +138,7 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
         <div className="p-8 text-center">
             <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold">No Verified Number</h3>
-            <p className="text-[var(--text-secondary)] mt-2 mb-6">To use SMS features, please add and verify a mobile number in your account settings.</p>
+            <p className="text-[var(--text-secondary)] mt-2 mb-6">To use messaging features, please add and verify a mobile number in your account settings.</p>
             <button
                 onClick={handleGoToSettings}
                 className="px-6 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-colors flex items-center justify-center gap-2 mx-auto"
@@ -154,6 +164,7 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
           </p>
           
           <div className="w-full flex items-center gap-2 bg-[var(--background-primary)] p-2 rounded-lg border border-[var(--border-primary)]">
+              <Link className="w-4 h-4 text-[var(--text-tertiary)] ml-1 flex-shrink-0" />
               <input 
                 type="text" 
                 readOnly 
@@ -175,13 +186,14 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
             <div className="h-px bg-[var(--border-primary)] flex-1"></div>
           </div>
 
-          <button 
-            onClick={handleDownloadApk}
-            className="w-full mt-4 flex items-center justify-center gap-3 py-3 bg-[hsl(var(--accent-color))]/10 hover:bg-[hsl(var(--accent-color))]/20 border border-[hsl(var(--accent-color))]/20 rounded-xl transition-all text-sm font-bold text-[hsl(var(--accent-color))]"
+          <a 
+            href="/StarLight.apk"
+            download="StarLight.apk"
+            className="w-full mt-4 flex items-center justify-center gap-3 py-3 bg-[hsl(var(--accent-color))]/10 hover:bg-[hsl(var(--accent-color))]/20 border border-[hsl(var(--accent-color))]/20 rounded-xl transition-all text-sm font-bold text-[hsl(var(--accent-color))] no-underline"
           >
             <Download className="w-5 h-5" />
             <span>Download Android App (APK)</span>
-          </button>
+          </a>
           <p className="text-xs text-[var(--text-tertiary)] mt-2">
             Direct install file. No Play Store required.
           </p>
@@ -213,7 +225,7 @@ export const SendToMobileModal: React.FC<SendToMobileModalProps> = ({ onClose })
                 onClick={() => setActiveTab('sms')}
                 className={`flex-1 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${activeTab === 'sms' ? 'text-[hsl(var(--accent-color))] border-b-2 border-[hsl(var(--accent-color))]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
-                <Send className="w-4 h-4" /> Send via SMS
+                <Send className="w-4 h-4" /> Send Message
             </button>
         </div>
         

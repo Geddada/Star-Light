@@ -280,15 +280,6 @@ const AccountSettings: React.FC<{
                             Open Canva Web
                             <ExternalLink className="w-4 h-4" />
                         </a>
-                        <a
-                            href="https://play.google.com/store/apps/details?id=com.canva.editor"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-medium text-[var(--text-secondary)] hover:text-[#00C4CC] transition-colors flex items-center gap-1.5"
-                        >
-                            <Smartphone className="w-3.5 h-3.5" />
-                            Get the Android App
-                        </a>
                     </div>
                 </div>
                 <p className="text-xs text-[var(--text-tertiary)] mt-4">
