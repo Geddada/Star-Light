@@ -4,8 +4,8 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 // FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { Video, Comment, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
-import { fetchComments, fetchVideos, generateBetterTitle, fetchAiComments, fetchTickerText, getAdForSlot } from '../services/gemini';
-import { ThumbsUp, ThumbsDown, Share2, Sparkles, Maximize, Minimize, Loader2, X, PictureInPicture, Play, Pause, SkipForward, Rewind, FastForward, Volume1, Volume2, VolumeX, Settings, ExternalLink, Star, Flag, Captions, Users, MoreVertical, Tv, Save } from 'lucide-react';
+import { fetchComments, fetchVideos, generateBetterTitle, fetchAiComments, fetchTickerText, getAdForSlot, generateVideoSummary } from '../services/gemini';
+import { ThumbsUp, ThumbsDown, Share2, Sparkles, Maximize, Minimize, Loader2, X, PictureInPicture, Play, Pause, SkipForward, Rewind, FastForward, Volume1, Volume2, VolumeX, Settings, ExternalLink, Star, Flag, Captions, Users, MoreVertical, Tv, Save, List } from 'lucide-react';
 import { ShareModal } from '../components/ShareModal';
 import { ReportModal } from '../components/ReportModal';
 import { VideoCard } from '../components/VideoCard';
@@ -145,6 +145,10 @@ export const Watch: React.FC = () => {
   const [editingVideo, setEditingVideo] = useState<Video | undefined>(undefined);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  // AI Summary State
+  const [aiSummary, setAiSummary] = useState<string[] | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const setupTicker = async () => {
@@ -177,6 +181,7 @@ export const Watch: React.FC = () => {
             setAiComments([]);
             setRelatedVideos([]);
             setSuggestedTitle('');
+            setAiSummary(null);
         }
 
         let currentVideo = state?.video;
@@ -275,6 +280,14 @@ export const Watch: React.FC = () => {
     const newTitle = await generateBetterTitle(video.title, video.description);
     setSuggestedTitle(newTitle);
     setGeneratingTitle(false);
+  };
+
+  const handleGenerateSummary = async () => {
+      if(!video) return;
+      setIsGeneratingSummary(true);
+      const summary = await generateVideoSummary(video.title, video.description);
+      setAiSummary(summary);
+      setIsGeneratingSummary(false);
   };
   
   const handleBlockUser = (username: string) => {
@@ -726,8 +739,36 @@ export const Watch: React.FC = () => {
           </div>
           
           <div className="bg-[var(--background-secondary)] p-4 rounded-xl">
-              <p className="text-sm font-semibold">{video.views} • {video.uploadDate || video.uploadTime}</p>
-              <p className={`text-sm mt-2 whitespace-pre-wrap ${!isDescriptionExpanded ? 'line-clamp-2' : ''}`}>
+              <div className="flex justify-between items-start mb-2">
+                  <p className="text-sm font-semibold">{video.views} • {video.uploadDate || video.uploadTime}</p>
+                  {!aiSummary && (
+                      <button 
+                        onClick={handleGenerateSummary}
+                        disabled={isGeneratingSummary}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-purple-600/10 text-purple-400 rounded-full text-xs font-bold hover:bg-purple-600/20 transition-colors disabled:opacity-50"
+                      >
+                          {isGeneratingSummary ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>}
+                          {isGeneratingSummary ? 'Summarizing...' : 'Summarize with AI'}
+                      </button>
+                  )}
+              </div>
+
+              {aiSummary && (
+                  <div className="mb-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg animate-in fade-in slide-in-from-top-2">
+                      <div className="flex items-center gap-2 mb-2 text-purple-400 text-xs font-bold uppercase tracking-wider">
+                          <Sparkles className="w-3 h-3"/> AI Summary
+                      </div>
+                      <ul className="space-y-1">
+                          {aiSummary.map((point, i) => (
+                              <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1.5">•</span> {point}
+                              </li>
+                          ))}
+                      </ul>
+                  </div>
+              )}
+
+              <p className={`text-sm whitespace-pre-wrap ${!isDescriptionExpanded ? 'line-clamp-2' : ''}`}>
                 {video.description}
               </p>
               <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} className="text-sm font-semibold mt-2">

@@ -1199,3 +1199,83 @@ export const generateVideoMetadata = async (topic: string): Promise<VideoMetadat
         return null;
     }
 };
+
+export const generateSmartPlaylist = async (prompt: string): Promise<Video[]> => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const fullPrompt = `Generate a playlist of 5 realistic video metadata objects based on the user's request: "${prompt}".
+        Make the videos highly relevant to the theme or mood requested.
+        Include diverse and realistic titles, channel names, views, and upload times.
+        Your response must be a valid JSON array of objects. Do not include any text before or after the JSON.`;
+
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: fullPrompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            id: { type: Type.STRING },
+                            title: { type: Type.STRING },
+                            communityName: { type: Type.STRING },
+                            uploaderName: { type: Type.STRING },
+                            views: { type: Type.STRING },
+                            uploadTime: { type: Type.STRING },
+                            duration: { type: Type.STRING },
+                            description: { type: Type.STRING },
+                        },
+                        required: ["id", "title", "communityName", "uploaderName", "views", "uploadTime", "duration", "description"]
+                    },
+                },
+            },
+        });
+
+        const text = response.text;
+        if (!text) return [];
+
+        const videos: Video[] = JSON.parse(cleanJson(text));
+        return videos.map((v, i) => ({
+            ...v,
+            id: `gen-pl-${Date.now()}-${i}`,
+            thumbnailUrl: `https://picsum.photos/seed/${v.title.replace(/\s/g, '')}/640/360`,
+            communityAvatar: `https://picsum.photos/seed/${v.communityName}/64/64`,
+            uploaderAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(v.uploaderName || 'user')}`
+        }));
+    } catch (error) {
+        console.error("Smart Playlist Error", error);
+        return [];
+    }
+};
+
+export const generateVideoSummary = async (title: string, description: string): Promise<string[]> => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const prompt = `Summarize the following video content into exactly 3 concise, engaging bullet points.
+        Video Title: "${title}"
+        Video Description: "${description.substring(0, 500)}..."
+        
+        Your response must be a valid JSON array of 3 strings.`;
+
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                },
+            },
+        });
+
+        const text = response.text;
+        if (!text) return ["Summary unavailable."];
+        return JSON.parse(cleanJson(text));
+    } catch (error) {
+        console.error("Summary Gen Error", error);
+        return ["Could not generate summary."];
+    }
+};

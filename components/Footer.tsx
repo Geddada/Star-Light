@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Sparkles } from 'lucide-react';
@@ -53,6 +54,7 @@ export const Footer: React.FC = () => {
             <button onClick={() => navigateTo('/copyright')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Copyright</button>
             <button onClick={() => navigateTo('/contact')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Contact us</button>
             <button onClick={() => navigateTo('/creators')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Creators</button>
+            <button onClick={() => navigateTo('/business')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Business with us</button>
             <button onClick={() => navigateTo('/monetization')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Monetization</button>
             <button onClick={() => navigateTo('/developers')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Developers</button>
             <button onClick={() => navigateTo('/terms')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Terms</button>

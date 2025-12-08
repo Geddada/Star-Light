@@ -18,7 +18,6 @@ export const UnskippableAds: React.FC = () => {
   const [showChooseAdModal, setShowChooseAdModal] = useState(false);
   const [showSkippableModal, setShowSkippableModal] = useState(false);
   const [showUnskippableModal, setShowUnskippableModal] = useState(false);
-  // FIX: Added showShortsAdModal state.
   const [showShortsAdModal, setShowShortsAdModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'campaigns' | 'billing'>('campaigns');
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ export const UnskippableAds: React.FC = () => {
       const geminiCampaigns = await fetchUnskippableAdCampaigns();
 
       const userAdsJson = localStorage.getItem(USER_ADS_KEY);
-      // FIX: Updated userAds type to include ShortsAdCampaign.
       const userAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = userAdsJson ? JSON.parse(userAdsJson) : [];
       const userUnskippableAds = userAds.filter(ad => 'impressions' in ad && 'duration' in ad) as UnskippableAdCampaign[];
 
@@ -56,11 +54,8 @@ export const UnskippableAds: React.FC = () => {
       localStorage.setItem(USER_ADS_KEY, JSON.stringify(allUserAds));
 
       setShowSkippableModal(false);
-      // Note: This doesn't update the current page's view, but the ad is saved.
-      // A full app might use a global state for this.
   };
 
-  // FIX: Added handleCreateShortsSuccess function.
   const handleCreateShortsSuccess = (newCampaign: ShortsAdCampaign) => {
     const userAdsJson = localStorage.getItem(USER_ADS_KEY);
     const allUserAds = userAdsJson ? JSON.parse(userAdsJson) : [];
@@ -121,4 +116,62 @@ export const UnskippableAds: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {campaigns.map(campaign => (
+                <CampaignCard key={campaign.id} campaign={campaign} />
+              ))}
+            </div>
+          )
+      ) : (
+          <PaymentGateway />
+      )}
+      
+      {showChooseAdModal && (
+          <ChooseAdTypeModal 
+              onClose={() => setShowChooseAdModal(false)}
+              onSelectSkippable={() => {
+                  setShowChooseAdModal(false);
+                  setShowSkippableModal(true);
+              }}
+              onSelectUnskippable={() => {
+                  setShowChooseAdModal(false);
+                  setShowUnskippableModal(true);
+              }}
+              onSelectShortsAd={() => {
+                  setShowChooseAdModal(false);
+                  setShowShortsAdModal(true);
+              }}
+              onSelectAIAssistant={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/ai-ad-assistant');
+              }}
+              onSelectCinematicAd={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/cinematic-ad-creator');
+              }}
+          />
+      )}
+
+      {showSkippableModal && (
+          <CreateAdModal 
+              onClose={() => setShowSkippableModal(false)}
+              onSuccess={handleCreateSkippableSuccess}
+          />
+      )}
+      
+      {showUnskippableModal && (
+          <CreateUnskippableAdModal 
+              onClose={() => setShowUnskippableModal(false)}
+              onSuccess={handleCreateUnskippableSuccess}
+          />
+      )}
+
+      {showShortsAdModal && (
+        <CreateShortsAdModal 
+          onClose={() => setShowShortsAdModal(false)}
+          onSuccess={handleCreateShortsSuccess}
+        />
+      )}
+    </div>
+  );
+};

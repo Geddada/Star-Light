@@ -1,21 +1,23 @@
+
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     User, Mail, Phone, CheckCircle2, Globe, MapPin, Settings as SettingsIcon, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink
+    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink, Beaker, Palette
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
 import { ProfileDetails, Community } from '../types';
 
-type SettingsTab = 'account' | 'security' | 'api' | 'typing-tools';
+type SettingsTab = 'account' | 'security' | 'api' | 'typing-tools' | 'labs';
 
 const NAV_ITEMS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
     { id: 'account', label: 'Account', icon: User },
     { id: 'security', label: 'Login & Security', icon: Lock },
     { id: 'api', label: 'API Keys', icon: KeyRound },
     { id: 'typing-tools', label: 'Typing Tools', icon: Keyboard },
+    { id: 'labs', label: 'Labs', icon: Beaker },
 ];
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -255,6 +257,33 @@ const AccountSettings: React.FC<{
                     ))}
                 </div>
             </div>
+
+            <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
+                <div className="flex items-center gap-3 mb-6">
+                    <Palette className="w-6 h-6 text-[hsl(var(--accent-color))]" />
+                    <h3 className="text-lg font-bold">Content Creation Tools</h3>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[var(--background-primary)] p-4 rounded-xl border border-[var(--border-primary)]">
+                    <div>
+                        <h4 className="font-semibold text-[var(--text-primary)]">Canva Design</h4>
+                        <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-md">
+                            Create stunning thumbnails, channel art, and social media posts with Canva's free online design tool.
+                        </p>
+                    </div>
+                    <a
+                        href="https://www.canva.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00C4CC] to-[#7D2AE8] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
+                    >
+                        Open Canva
+                        <ExternalLink className="w-4 h-4" />
+                    </a>
+                </div>
+                <p className="text-xs text-[var(--text-tertiary)] mt-4">
+                    Starlight is not affiliated with Canva. Link provided for convenience.
+                </p>
+            </div>
             
             <div className="flex justify-end items-center gap-4 pt-4">
                 {saveStatus === 'saved' && <p className="text-green-500 text-sm font-semibold animate-in fade-in flex items-center gap-2"><CheckCircle2 className="w-4 h-4"/> Saved successfully!</p>}
@@ -493,6 +522,72 @@ const TypingToolsSettings: React.FC = () => {
     );
 };
 
+const LabsSettings: React.FC = () => {
+    const [isEnabled, setIsEnabled] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        setIsEnabled(localStorage.getItem('starlight_labs_enabled') === 'true');
+    }, []);
+
+    const toggleLabs = () => {
+        const newState = !isEnabled;
+        setIsEnabled(newState);
+        localStorage.setItem('starlight_labs_enabled', String(newState));
+        window.dispatchEvent(new Event('labsToggled'));
+    };
+
+    return (
+        <div id="labs" className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] animate-in fade-in">
+            <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-purple-500/10 rounded-xl text-purple-500">
+                    <Beaker className="w-8 h-8" />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold">Starlight Labs</h3>
+                    <p className="text-[var(--text-secondary)]">Try experimental features before they are released.</p>
+                </div>
+            </div>
+
+            <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)]">
+                    <div>
+                        <h4 className="font-semibold text-[var(--text-primary)]">Enable Labs Features</h4>
+                        <p className="text-sm text-[var(--text-secondary)]">Show the Labs tab in your sidebar to access experimental tools.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked={isEnabled} onChange={toggleLabs} className="sr-only peer" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[hsl(var(--accent-color))]"></div>
+                    </label>
+                </div>
+
+                {isEnabled && (
+                    <div className="grid gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)] flex justify-between items-center">
+                             <div>
+                                <h4 className="font-semibold text-[var(--text-primary)]">Veo Video Generator</h4>
+                                <p className="text-xs text-[var(--text-tertiary)]">Generate videos from text prompts.</p>
+                             </div>
+                             <button onClick={() => navigate('/test-new-features')} className="px-4 py-2 text-sm bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg font-bold hover:bg-[hsl(var(--accent-color))]/20 transition-colors">
+                                Launch
+                             </button>
+                        </div>
+                        <div className="p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)] flex justify-between items-center">
+                             <div>
+                                <h4 className="font-semibold text-[var(--text-primary)]">Cinematic Ad Creator</h4>
+                                <p className="text-xs text-[var(--text-tertiary)]">Create high-quality ads with AI.</p>
+                             </div>
+                             <button onClick={() => navigate('/cinematic-ad-creator')} className="px-4 py-2 text-sm bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg font-bold hover:bg-[hsl(var(--accent-color))]/20 transition-colors">
+                                Launch
+                             </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 export const Settings: React.FC = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -504,7 +599,7 @@ export const Settings: React.FC = () => {
         if (['blocked-users', 'delete-account'].includes(hash)) {
             return 'security';
         }
-        if (['account', 'security', 'api', 'typing-tools'].includes(hash)) {
+        if (['account', 'security', 'api', 'typing-tools', 'labs'].includes(hash)) {
             return hash as SettingsTab;
         }
         return 'account';
@@ -557,6 +652,8 @@ export const Settings: React.FC = () => {
                             return <ApiSettings />;
                         case 'typing-tools':
                             return <TypingToolsSettings />;
+                        case 'labs':
+                            return <LabsSettings />;
                         default:
                             return null;
                     }

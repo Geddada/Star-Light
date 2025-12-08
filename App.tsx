@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
@@ -59,6 +60,7 @@ import { CreatorStudio } from './pages/CreatorStudio';
 import { CinematicAdCreator } from './pages/CinematicAdCreator';
 import { VideoEditor } from './pages/VideoEditor';
 import { BlurVideo } from './pages/BlurVideo';
+import { Business } from './pages/Business';
 
 
 declare global {
@@ -271,6 +273,7 @@ const App: React.FC = () => {
               } />
               <Route path="/branded-email" element={<BrandedEmail />} />
               <Route path="/thanks" element={<Thanks />} />
+              <Route path="/business" element={<Business />} />
               <Route path="/access-denied" element={<AccessDenied />} />
             </Routes>
           </Layout>
