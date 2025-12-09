@@ -359,6 +359,34 @@ export const generateBetterTitle = async (currentTitle: string, description: str
   }
 };
 
+export const generateTitleVariations = async (currentTitle: string): Promise<string[]> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Generate 3 catchy, viral, clickbait-style YouTube video titles based on the original title: "${currentTitle}".
+    Keep them relevant but more engaging.
+    Return ONLY a JSON array of strings.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING }
+        }
+      }
+    });
+
+    const text = response.text;
+    if (!text) return [];
+    return JSON.parse(cleanJson(text));
+  } catch (error) {
+    console.error("Title variations error", error);
+    return ["Amazing Video", "Must Watch Content", "Viral Hit"]; // Fallbacks
+  }
+};
+
 export const fetchTickerText = async (): Promise<string> => {
   // Return the static brand welcome message as requested
   return "Welcome to 'Star Light' News, An AI Revolution in Digital Social Media, Create, Watch and Discover Everywhere.";

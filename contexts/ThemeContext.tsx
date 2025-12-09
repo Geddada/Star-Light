@@ -15,10 +15,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (savedTheme === 'light' || savedTheme === 'dark') {
       return savedTheme;
     }
-    // Default to system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
+    // Default to light mode always, ignoring system preference
     return 'light';
   });
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Video } from '../types';
-import { Edit2, Play, Star, Volume2, VolumeX, Trash2, Megaphone, Clock, Check } from 'lucide-react';
+import { Edit2, Play, Star, Volume2, VolumeX, Trash2, Megaphone, Clock, Check, Sparkles, Loader2, Copy } from 'lucide-react';
 import { PREVIEW_VIDEOS } from '../constants';
+import { generateTitleVariations } from '../services/gemini';
 
 interface VideoCardProps {
   video?: Video;
@@ -25,8 +26,15 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
   const [videoSrc, setVideoSrc] = useState('');
   const [isInWatchLater, setIsInWatchLater] = useState(false);
   
+  // AI Title State
+  const [showTitleDropdown, setShowTitleDropdown] = useState(false);
+  const [aiTitles, setAiTitles] = useState<string[]>([]);
+  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
+  const [copiedTitleIndex, setCopiedTitleIndex] = useState<number | null>(null);
+  
   const hoverTimeout = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const titleDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (video) {
@@ -51,11 +59,42 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
       }
   }, [isHovered, video, compact]);
   
+  useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+          if (titleDropdownRef.current && !titleDropdownRef.current.contains(event.target as Node)) {
+              setShowTitleDropdown(false);
+          }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (video) {
         navigate(`/edit/${video.id}`, { state: { video } });
     }
+  };
+
+  const handleAiClick = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!video) return;
+      
+      setShowTitleDropdown(prev => !prev);
+      
+      if (aiTitles.length === 0 && !isGeneratingTitles) {
+          setIsGeneratingTitles(true);
+          const variations = await generateTitleVariations(video.title);
+          setAiTitles(variations);
+          setIsGeneratingTitles(false);
+      }
+  };
+
+  const handleCopyTitle = (e: React.MouseEvent, title: string, index: number) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(title);
+      setCopiedTitleIndex(index);
+      setTimeout(() => setCopiedTitleIndex(null), 2000);
   };
 
   if (isLoading) {
@@ -115,6 +154,47 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
         <div className={`relative ${compact ? 'w-44 aspect-video' : 'w-full aspect-video'} rounded-xl overflow-hidden bg-[var(--background-secondary)] shadow-md transition-all duration-500 ${!compact && 'group-hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] group-hover:ring-1 group-hover:ring-[hsl(var(--accent-color))]/50'}`}>
           
           <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
+            <div className="relative">
+                <button
+                    onClick={handleAiClick}
+                    className="p-2 bg-black/60 backdrop-blur-sm rounded-full text-purple-400 hover:bg-purple-900/50 hover:text-purple-300 transition-all opacity-0 group-hover:opacity-100"
+                    aria-label="Generate AI Titles"
+                    title="Generate AI Title Ideas"
+                >
+                    <Sparkles className="w-4 h-4" />
+                </button>
+                {showTitleDropdown && (
+                    <div ref={titleDropdownRef} className="absolute top-10 right-0 w-64 bg-[var(--background-secondary)]/95 backdrop-blur-md border border-[var(--border-primary)] rounded-xl shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 cursor-default" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-2 mb-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                            <Sparkles className="w-3 h-3"/> AI Title Ideas
+                        </div>
+                        {isGeneratingTitles ? (
+                            <div className="flex flex-col items-center justify-center py-4 text-[var(--text-secondary)]">
+                                <Loader2 className="w-6 h-6 animate-spin mb-2 text-purple-500"/>
+                                <span className="text-xs">Generating...</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {aiTitles.length > 0 ? aiTitles.map((title, idx) => (
+                                    <div key={idx} className="group/item relative p-2 rounded-lg bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border border-transparent hover:border-purple-500/30 transition-all">
+                                        <p className="text-xs text-[var(--text-primary)] pr-6 leading-snug">{title}</p>
+                                        <button 
+                                            onClick={(e) => handleCopyTitle(e, title, idx)}
+                                            className="absolute top-2 right-2 text-[var(--text-tertiary)] hover:text-purple-400 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                            title="Copy"
+                                        >
+                                            {copiedTitleIndex === idx ? <Check className="w-3 h-3 text-green-500"/> : <Copy className="w-3 h-3"/>}
+                                        </button>
+                                    </div>
+                                )) : (
+                                    <p className="text-xs text-[var(--text-secondary)] text-center py-2">Click to generate ideas.</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
             {onEdit && (
               <button
                 onClick={handleEditClick}

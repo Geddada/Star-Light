@@ -80,7 +80,7 @@ export const Chatbot: React.FC = () => {
     };
 
     return (
-        <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${isOpen ? 'w-full max-w-sm h-[32rem]' : 'w-14 h-14'}`}>
+        <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 hidden md:block ${isOpen ? 'w-full max-w-sm h-[32rem]' : 'w-14 h-14'}`}>
             {isOpen ? (
                 <div className="w-full h-full flex flex-col bg-[var(--background-secondary)] rounded-2xl shadow-2xl border border-[var(--border-primary)] animate-in fade-in zoom-in-95">
                     {/* Header */}

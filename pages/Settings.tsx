@@ -2,22 +2,20 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-    User, Mail, Phone, CheckCircle2, Globe, MapPin, Settings as SettingsIcon, 
+    User, Mail, Phone, CheckCircle2, MapPin, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Users, Home, Check, Loader2, Save, UserX, Trash2, Keyboard, ExternalLink, Beaker, Palette, Smartphone
+    RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
-import { ProfileDetails, Community } from '../types';
+import { ProfileDetails } from '../types';
 
-type SettingsTab = 'account' | 'security' | 'api' | 'typing-tools' | 'labs';
+type SettingsTab = 'account' | 'security' | 'api';
 
 const NAV_ITEMS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
     { id: 'account', label: 'Account', icon: User },
     { id: 'security', label: 'Login & Security', icon: Lock },
     { id: 'api', label: 'API Keys', icon: KeyRound },
-    { id: 'typing-tools', label: 'Typing Tools', icon: Keyboard },
-    { id: 'labs', label: 'Labs', icon: Beaker },
 ];
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -36,14 +34,17 @@ const AccountSettings: React.FC<{
     const [mobileInput, setMobileInput] = useState('');
     const [otpInput, setOtpInput] = useState('');
     const [otpSent, setOtpSent] = useState(false);
-    const [otpMethod, setOtpMethod] = useState<'sms' | 'whatsapp'>('sms');
+    const [otpMethod, setOtpMethod] = useState<'sms' | 'whatsapp'>('whatsapp');
     const [stateInput, setStateInput] = useState('');
     const [cityInput, setCityInput] = useState('');
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [genderInput, setGenderInput] = useState<ProfileDetails['gender'] | ''>('');
     const [error, setError] = useState('');
+    const [otpSuccessMessage, setOtpSuccessMessage] = useState('');
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [showMobileForm, setShowMobileForm] = useState(false);
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
 
     useEffect(() => {
         if (profileDetails) {
@@ -64,6 +65,16 @@ const AccountSettings: React.FC<{
         }
         setShowMobileForm(!profileDetails.isMobileVerified);
     }, [profileDetails]);
+
+    useEffect(() => {
+        let interval: any;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [resendTimer]);
     
     const saveProfileDetails = (details: ProfileDetails) => {
         if (!currentUser?.email) return;
@@ -104,7 +115,25 @@ const AccountSettings: React.FC<{
             return;
         }
         setError('');
-        setOtpSent(true);
+        setOtpSuccessMessage('');
+        setIsSendingOtp(true);
+        
+        // Simulate API call delay for sending OTP
+        setTimeout(() => {
+            setIsSendingOtp(false);
+            setOtpSent(true);
+            setResendTimer(30);
+            const methodLabel = otpMethod === 'whatsapp' ? 'WhatsApp' : 'SMS';
+            setOtpSuccessMessage(`We've sent a verification code to ${countryCode} ${mobileInput} via ${methodLabel}.`);
+        }, 1500);
+    };
+
+    const handleEditNumber = () => {
+        setOtpSent(false);
+        setOtpSuccessMessage('');
+        setError('');
+        setResendTimer(0);
+        setOtpInput('');
     };
 
     const handleSubmitOtp = () => {
@@ -119,6 +148,7 @@ const AccountSettings: React.FC<{
             setOtpSent(false);
             setOtpInput('');
             setError('');
+            setOtpSuccessMessage('');
             setShowMobileForm(false);
         } else {
             setError('Invalid OTP. Please try again. (Hint: use 123456)');
@@ -193,32 +223,96 @@ const AccountSettings: React.FC<{
                     <div className="space-y-4">
                         <div className="relative flex w-full border border-[var(--border-primary)] rounded-lg focus-within:ring-2 focus-within:ring-[hsl(var(--accent-color))] bg-[var(--background-primary)] overflow-hidden">
                             <div className="relative">
-                                <select value={countryCode} onChange={(e) => setCountryCode(e.target.value)} disabled={otpSent} className="py-3 pl-3 pr-8 bg-transparent border-r border-[var(--border-primary)] text-[var(--text-secondary)] font-medium text-sm focus:outline-none appearance-none">
+                                <select value={countryCode} onChange={e => setCountryCode(e.target.value)} disabled={otpSent} className="py-3 pl-3 pr-8 bg-transparent border-r border-[var(--border-primary)] text-[var(--text-secondary)] font-medium text-sm focus:outline-none appearance-none disabled:bg-[var(--background-tertiary)] disabled:text-[var(--text-tertiary)]">
                                     {COUNTRY_CODES.map(c => <option key={c.iso} value={c.code}>{c.name} ({c.code})</option>)}
                                 </select>
                                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                             </div>
                             <div className="relative flex-grow">
                                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)] pointer-events-none" />
-                                <input type="tel" value={mobileInput} onChange={(e) => setMobileInput(e.target.value)} placeholder="Mobile number" disabled={otpSent} className="w-full p-3 pl-10 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none" />
+                                <input type="tel" value={mobileInput} onChange={e => setMobileInput(e.target.value)} placeholder="Mobile number" disabled={otpSent} className="w-full p-3 pl-10 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none disabled:bg-[var(--background-tertiary)] disabled:text-[var(--text-tertiary)]" />
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div>
-                                <div className="flex gap-2 rounded-lg bg-[var(--background-primary)] p-1 border border-[var(--border-primary)] mt-1">
-                                    <button type="button" onClick={() => setOtpMethod('sms')} className={`flex-1 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${otpMethod === 'sms' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>SMS</button>
-                                    <button type="button" onClick={() => setOtpMethod('whatsapp')} className={`flex-1 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${otpMethod === 'whatsapp' ? 'bg-green-600 text-white' : 'hover:bg-[var(--background-tertiary)]'}`}><WhatsAppIcon /> WhatsApp</button>
+                            <div className="flex-1 w-full">
+                                <div className="flex gap-2 rounded-lg bg-[var(--background-primary)] p-1 border border-[var(--border-primary)] w-full sm:w-auto">
+                                    <button type="button" onClick={() => setOtpMethod('sms')} disabled={otpSent} className={`flex-1 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${otpMethod === 'sms' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'} ${otpSent ? 'opacity-50 cursor-not-allowed' : ''}`}>SMS</button>
+                                    <button type="button" onClick={() => setOtpMethod('whatsapp')} disabled={otpSent} className={`flex-1 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${otpMethod === 'whatsapp' ? 'bg-[#25D366] text-white' : 'hover:bg-[var(--background-tertiary)]'} ${otpSent ? 'opacity-50 cursor-not-allowed' : ''}`}><WhatsAppIcon className="w-4 h-4" /> WhatsApp</button>
                                 </div>
                             </div>
-                            <button onClick={handleSendOtp} disabled={otpSent} className="px-5 py-3 bg-[hsl(var(--accent-color))] hover:brightness-90 text-white rounded-lg font-semibold text-sm transition-colors w-full sm:w-auto flex-shrink-0 disabled:opacity-50">{otpSent ? 'OTP Sent' : 'Send OTP'}</button>
+                            <button 
+                                onClick={otpSent ? handleEditNumber : handleSendOtp} 
+                                disabled={isSendingOtp} 
+                                className={`px-5 py-3 rounded-lg font-semibold text-sm transition-colors w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-2 min-w-[160px] ${
+                                    otpSent 
+                                    ? 'bg-[var(--background-tertiary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--border-primary)]'
+                                    : otpMethod === 'whatsapp' 
+                                        ? 'bg-[#25D366] hover:bg-[#128C7E] text-white' 
+                                        : 'bg-[hsl(var(--accent-color))] hover:brightness-90 text-white'
+                                }`}
+                            >
+                                {isSendingOtp ? (
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</>
+                                ) : otpSent ? (
+                                    <><Edit className="w-4 h-4" /> Change Number</>
+                                ) : (
+                                    <><Send className="w-4 h-4" /> Send {otpMethod === 'whatsapp' ? 'via WhatsApp' : 'OTP'}</>
+                                )}
+                            </button>
                         </div>
                         {otpSent && (
-                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 animate-in fade-in">
-                            <div className="relative flex-grow w-full"><input type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)} placeholder={`Enter OTP from ${otpMethod}`} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/></div>
-                            <button onClick={handleSubmitOtp} className="px-5 py-3 bg-[hsl(var(--accent-color))] hover:brightness-90 text-white rounded-lg font-semibold text-sm transition-colors w-full sm:w-auto flex-shrink-0">Submit OTP</button>
+                        <div className="mt-4 flex flex-col gap-3 animate-in fade-in">
+                            {otpSuccessMessage && (
+                                <div className={`p-3 rounded-lg flex items-start gap-3 ${otpMethod === 'whatsapp' ? 'bg-[#25D366]/10 border border-[#25D366]/20 text-[#128C7E]' : 'bg-green-500/10 border border-green-500/20 text-green-600'}`}>
+                                    {otpMethod === 'whatsapp' ? <WhatsAppIcon className="w-5 h-5 flex-shrink-0 mt-0.5" /> : <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                                    <p className="text-sm font-medium">{otpSuccessMessage}</p>
+                                </div>
+                            )}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                <div className="relative flex-grow w-full">
+                                    <input 
+                                        type="text" 
+                                        value={otpInput} 
+                                        onChange={(e) => setOtpInput(e.target.value)} 
+                                        placeholder="Enter 6-digit code" 
+                                        className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] font-mono tracking-widest text-center"
+                                        maxLength={6}
+                                        autoFocus
+                                    />
+                                </div>
+                                <button 
+                                    onClick={handleSubmitOtp} 
+                                    className={`px-6 py-3 text-white rounded-lg font-bold text-sm transition-colors w-full sm:w-auto flex-shrink-0 ${
+                                        otpMethod === 'whatsapp' ? 'bg-[#25D366] hover:bg-[#128C7E]' : 'bg-[hsl(var(--accent-color))] hover:brightness-90'
+                                    }`}
+                                >
+                                    Verify & Save
+                                </button>
+                            </div>
+                            <div className="flex flex-col sm:flex-row justify-between items-center text-xs mt-1 gap-2">
+                                <p className="text-[var(--text-tertiary)]">
+                                    Hint: Use code <strong>123456</strong> for this demo.
+                                </p>
+                                <button
+                                    onClick={handleSendOtp}
+                                    disabled={resendTimer > 0 || isSendingOtp}
+                                    className={`font-semibold flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-md ${
+                                        resendTimer > 0 
+                                            ? 'text-[var(--text-tertiary)] cursor-not-allowed bg-[var(--background-tertiary)]' 
+                                            : 'text-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)]'
+                                    }`}
+                                >
+                                    {isSendingOtp ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <RefreshCw className={`w-3 h-3 ${resendTimer > 0 ? '' : ''}`} />
+                                    )}
+                                    {isSendingOtp ? "Sending..." : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
+                                </button>
+                            </div>
                         </div>
                         )}
-                        {error && <p className="text-red-500 text-sm mt-2 animate-in fade-in">{error}</p>}
+                        {error && <p className="text-red-500 text-sm mt-2 animate-in fade-in flex items-center gap-2"><AlertTriangle className="w-4 h-4"/> {error}</p>}
                     </div>
                  )}
             </div>
@@ -256,35 +350,6 @@ const AccountSettings: React.FC<{
                         </label>
                     ))}
                 </div>
-            </div>
-
-            <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
-                <div className="flex items-center gap-3 mb-6">
-                    <Palette className="w-6 h-6 text-[hsl(var(--accent-color))]" />
-                    <h3 className="text-lg font-bold">Content Creation Tools</h3>
-                </div>
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[var(--background-primary)] p-4 rounded-xl border border-[var(--border-primary)]">
-                    <div>
-                        <h4 className="font-semibold text-[var(--text-primary)]">Canva Design</h4>
-                        <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-md">
-                            Create stunning thumbnails, channel art, and social media posts with Canva's free online design tool.
-                        </p>
-                    </div>
-                    <div className="flex flex-col gap-3 items-center sm:items-end">
-                        <a
-                            href="https://www.canva.com/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00C4CC] to-[#7D2AE8] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
-                        >
-                            Open Canva Web
-                            <ExternalLink className="w-4 h-4" />
-                        </a>
-                    </div>
-                </div>
-                <p className="text-xs text-[var(--text-tertiary)] mt-4">
-                    Starlight is not affiliated with Canva. Link provided for convenience.
-                </p>
             </div>
             
             <div className="flex justify-end items-center gap-4 pt-4">
@@ -498,98 +563,6 @@ const ApiSettings: React.FC = () => {
     );
 };
 
-const TypingToolsSettings: React.FC = () => {
-    return (
-        <div id="typing-tools" className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] text-center">
-            <h3 className="text-lg font-bold mb-4 flex items-center justify-center gap-2">
-                <Keyboard className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Typing Tools
-            </h3>
-            <p className="text-[var(--text-secondary)] max-w-xl mx-auto mb-6">
-                Google Input Tools makes it easy to type in the language you choose, whether you have the right keyboard or not. This free tool helps you communicate more effectively with your global audience.
-            </p>
-            <a
-                href="https://www.google.co.in/inputtools/try/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-full hover:brightness-90 transition-all shadow-lg"
-            >
-                Try Google Input Tools
-                <ExternalLink className="w-4 h-4" />
-            </a>
-            <div className="mt-8 text-sm text-[var(--text-tertiary)]">
-                <p>Please note: Starlight is providing a link to this third-party tool for your convenience.</p>
-                <p>We are not affiliated with Google Input Tools.</p>
-            </div>
-        </div>
-    );
-};
-
-const LabsSettings: React.FC = () => {
-    const [isEnabled, setIsEnabled] = useState(false);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        setIsEnabled(localStorage.getItem('starlight_labs_enabled') === 'true');
-    }, []);
-
-    const toggleLabs = () => {
-        const newState = !isEnabled;
-        setIsEnabled(newState);
-        localStorage.setItem('starlight_labs_enabled', String(newState));
-        window.dispatchEvent(new Event('labsToggled'));
-    };
-
-    return (
-        <div id="labs" className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] animate-in fade-in">
-            <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-purple-500/10 rounded-xl text-purple-500">
-                    <Beaker className="w-8 h-8" />
-                </div>
-                <div>
-                    <h3 className="text-xl font-bold">Starlight Labs</h3>
-                    <p className="text-[var(--text-secondary)]">Try experimental features before they are released.</p>
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)]">
-                    <div>
-                        <h4 className="font-semibold text-[var(--text-primary)]">Enable Labs Features</h4>
-                        <p className="text-sm text-[var(--text-secondary)]">Show the Labs tab in your sidebar to access experimental tools.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={isEnabled} onChange={toggleLabs} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[hsl(var(--accent-color))]"></div>
-                    </label>
-                </div>
-
-                {isEnabled && (
-                    <div className="grid gap-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)] flex justify-between items-center">
-                             <div>
-                                <h4 className="font-semibold text-[var(--text-primary)]">Veo Video Generator</h4>
-                                <p className="text-xs text-[var(--text-tertiary)]">Generate videos from text prompts.</p>
-                             </div>
-                             <button onClick={() => navigate('/test-new-features')} className="px-4 py-2 text-sm bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg font-bold hover:bg-[hsl(var(--accent-color))]/20 transition-colors">
-                                Launch
-                             </button>
-                        </div>
-                        <div className="p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)] flex justify-between items-center">
-                             <div>
-                                <h4 className="font-semibold text-[var(--text-primary)]">Cinematic Ad Creator</h4>
-                                <p className="text-xs text-[var(--text-tertiary)]">Create high-quality ads with AI.</p>
-                             </div>
-                             <button onClick={() => navigate('/cinematic-ad-creator')} className="px-4 py-2 text-sm bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg font-bold hover:bg-[hsl(var(--accent-color))]/20 transition-colors">
-                                Launch
-                             </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
 export const Settings: React.FC = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -601,7 +574,7 @@ export const Settings: React.FC = () => {
         if (['blocked-users', 'delete-account'].includes(hash)) {
             return 'security';
         }
-        if (['account', 'security', 'api', 'typing-tools', 'labs'].includes(hash)) {
+        if (['account', 'security', 'api'].includes(hash)) {
             return hash as SettingsTab;
         }
         return 'account';
@@ -652,10 +625,6 @@ export const Settings: React.FC = () => {
                             return <SecuritySettings currentUser={currentUser} />;
                         case 'api':
                             return <ApiSettings />;
-                        case 'typing-tools':
-                            return <TypingToolsSettings />;
-                        case 'labs':
-                            return <LabsSettings />;
                         default:
                             return null;
                     }

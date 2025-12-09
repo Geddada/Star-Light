@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Megaphone, X } from 'lucide-react';
@@ -30,7 +31,7 @@ export const AnnouncementBar: React.FC = () => {
 
   return (
     <div 
-      className="relative z-40 bg-[hsl(var(--accent-color))] border-b border-black/20 shadow-md h-14 flex items-center overflow-hidden group select-none"
+      className="relative z-40 bg-[hsl(var(--accent-color))] border-b border-black/20 shadow-md h-14 hidden md:flex items-center overflow-hidden group select-none"
       role="alert"
       aria-live="polite"
     >

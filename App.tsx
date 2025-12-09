@@ -19,7 +19,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AccessDenied } from './pages/AccessDenied';
 import { AnnouncementBar } from './components/AnnouncementBar';
-import { TestNewFeatures } from './pages/TestNewFeatures';
 import { Press } from './pages/Press';
 import { Footer } from './components/Footer';
 import { Creators } from './pages/Creators';
@@ -61,6 +60,7 @@ import { CinematicAdCreator } from './pages/CinematicAdCreator';
 import { VideoEditor } from './pages/VideoEditor';
 import { Business } from './pages/Business';
 import { AdCreationHub } from './pages/AdCreationHub';
+import { MobileBottomNav } from './components/MobileBottomNav';
 
 
 declare global {
@@ -113,9 +113,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <div className={`h-screen max-h-screen ${bgClass} text-[var(--text-primary)] font-sans overflow-hidden flex flex-col`}>
         {isShortsPage && <Header />}
-        <main className="h-full w-full flex-1 overflow-hidden">
+        <main className="h-full w-full flex-1 overflow-hidden pb-14 md:pb-0">
           {children}
         </main>
+        <MobileBottomNav />
       </div>
     );
   }
@@ -128,7 +129,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {/* Sidebar */}
         <aside
           aria-label="Main navigation"
-          className="w-72 flex-shrink-0 bg-[var(--background-primary)] border-r border-[var(--border-primary)] flex flex-col"
+          className="w-72 flex-shrink-0 bg-[var(--background-primary)] border-r border-[var(--border-primary)] hidden md:flex flex-col"
         >
            <div className="h-full overflow-y-auto custom-scrollbar">
             <Sidebar isOpen={true} />
@@ -136,13 +137,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </aside>
         
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto flex flex-col relative custom-scrollbar scroll-smooth">
+        <main className="flex-1 overflow-y-auto flex flex-col relative custom-scrollbar scroll-smooth pb-14 md:pb-0">
           <div className="flex-grow">
             {children}
           </div>
           {!isWatchPage && <Footer />}
         </main>
       </div>
+      <MobileBottomNav />
       {currentUser && <Chatbot />}
     </div>
   );
@@ -224,7 +226,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               } />
               <Route path="/ads/create" element={
-                <ProtectedRoute>
+                <ProtectedRoute requirePremium={true}>
                   <AdCreationHub />
                 </ProtectedRoute>
               } />

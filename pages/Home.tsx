@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 // FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { Video, CATEGORIES, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, isAd } from '../types';
@@ -225,7 +224,7 @@ export const Home: React.FC = () => {
 
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col relative">
       {showUploadModal && (
         <UploadModal 
           onClose={handleCloseModal} 
@@ -233,8 +232,9 @@ export const Home: React.FC = () => {
           videoToEdit={editingVideo}
         />
       )}
-      {/* Categories Sticky Header */}
-      <div className="sticky top-0 z-30 bg-[var(--background-primary)]/95 backdrop-blur-xl border-b border-[var(--border-primary)]/50 flex flex-col shadow-sm transition-all duration-300">
+      
+      {/* Categories Header: Fixed at bottom on mobile (above nav), Sticky at top on desktop */}
+      <div className="fixed bottom-14 left-0 right-0 z-40 md:static md:z-30 md:sticky md:top-0 bg-[var(--background-primary)]/95 backdrop-blur-xl border-t md:border-t-0 md:border-b border-[var(--border-primary)]/50 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-sm transition-all duration-300">
         
         {/* Row 1: Main Categories */}
         <div className="relative">
@@ -285,10 +285,10 @@ export const Home: React.FC = () => {
 
         {/* Row 2: Subcategories (Conditional) */}
         {activeCategory && activeCategory.id !== 'all' && activeCategory.subCategories && (
-          <div className="relative border-t border-[var(--border-primary)]/30 pt-2">
+          <div className="relative border-t border-[var(--border-primary)]/30 pt-2 md:pt-2 pb-2 md:pb-0">
             <div
               ref={subCategoryScrollContainerRef}
-              className="w-full flex items-center px-4 pb-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+              className="w-full flex items-center px-4 pb-1 md:pb-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
             >
               <button
                 onClick={() => setSelectedSubCategory(null)}
@@ -342,7 +342,7 @@ export const Home: React.FC = () => {
         )}
       </div>
 
-      <div className="flex flex-col xl:flex-row">
+      <div className="flex flex-col xl:flex-row pb-32 md:pb-0">
         <div className="flex-1 min-w-0">
           {/* Shorts Shelf Section */}
           <div className="p-4 sm:p-6 border-b xl:border-b-0 border-[var(--border-primary)]">

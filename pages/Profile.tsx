@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift, Users } from 'lucide-react';
+import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift, Users, Shield } from 'lucide-react';
 import { Video as VideoType, Report, Playlist as PlaylistType, ProfileDetails, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { UploadModal } from '../components/UploadModal';
@@ -40,7 +41,7 @@ const ReportStatusBadge: React.FC<{ status: Report['status'] }> = ({ status }) =
 
 
 export const Profile: React.FC = () => {
-  const { currentUser, isPremium, isAdmin, logout } = useAuth();
+  const { currentUser, isPremium, isAdmin, logout, login } = useAuth();
   const [uploadedVideos, setUploadedVideos] = useState<VideoType[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   // FIX: Updated ad type in state to include ShortsAdCampaign.
@@ -212,6 +213,16 @@ export const Profile: React.FC = () => {
     }
   };
 
+  const handleAdminLogin = () => {
+    if (window.confirm("Switch to Admin account for demonstration?")) {
+      login({
+        name: "Admin",
+        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
+        email: "admin@starlight.app"
+      });
+    }
+  };
+
   if (!currentUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] p-6">
@@ -260,6 +271,16 @@ export const Profile: React.FC = () => {
                     <p className="text-[var(--text-secondary)] text-sm mt-1">@{currentUser.name.toLowerCase().replace(/\s/g, '')} • {uploadedVideos.length} videos</p>
                 </div>
                 <div className="flex items-center gap-3 mt-4 sm:mt-0 flex-wrap">
+                    {!isAdmin && (
+                        <button
+                            onClick={handleAdminLogin}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors flex items-center gap-2 w-fit text-sm font-semibold shadow-md"
+                            aria-label="Admin Login"
+                        >
+                            <Shield className="w-4 h-4" />
+                            Admin Login
+                        </button>
+                    )}
                     <button
                         onClick={() => {
                           setEditingVideo(undefined);
@@ -273,7 +294,7 @@ export const Profile: React.FC = () => {
                     </button>
                     <button
                         onClick={() => navigate('/settings')}
-                        className="p-2.5 bg-[var(--background-secondary)] text-[var(--text-primary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors w-fit text-sm border border-[var(--border-primary)]"
+                        className="hidden md:block p-2.5 bg-[var(--background-secondary)] text-[var(--text-primary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors w-fit text-sm border border-[var(--border-primary)]"
                         aria-label="Settings"
                     >
                         <Settings className="w-4 h-4" />
@@ -389,7 +410,7 @@ export const Profile: React.FC = () => {
                                 </div>
                             )}
 
-                            <button onClick={() => navigate('/settings')} className="mt-6 text-sm font-semibold text-[hsl(var(--accent-color))] hover:underline">
+                            <button onClick={() => navigate('/settings')} className="hidden md:inline-block mt-6 text-sm font-semibold text-[hsl(var(--accent-color))] hover:underline">
                                 Edit details in Account Settings
                             </button>
                         </div>

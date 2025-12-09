@@ -137,26 +137,6 @@ export const Signup: React.FC = () => {
         {loadingProvider === 'guest1' ? 'Logging in...' : 'Continue as Guest'}
       </button>
 
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(2)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest2' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest2' ? 'Logging in...' : 'Continue as Guest User 2'}
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(3)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest3' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest3' ? 'Logging in...' : 'Continue as Guest User 3'}
-      </button>
-
       <div className="flex items-center gap-4 my-6">
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
         <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">Or sign up with email</span>
@@ -243,26 +223,6 @@ export const Signup: React.FC = () => {
       >
         {loadingProvider === 'guest1' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
         {loadingProvider === 'guest1' ? 'Logging in...' : 'Continue as Guest'}
-      </button>
-
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(2)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest2' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest2' ? 'Logging in...' : 'Continue as Guest User 2'}
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(3)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest3' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest3' ? 'Logging in...' : 'Continue as Guest User 3'}
       </button>
 
       <div className="flex items-center gap-4 my-6">

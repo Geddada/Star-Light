@@ -1,6 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
-// FIX: Added 'ArrowRight' to lucide-react imports to fix 'Cannot find name' error.
 import { X, UploadCloud, Video, Image as ImageIcon, Sparkles, RefreshCw, Loader2, Save, Folder, Tag, ArrowLeft, Camera, Users, Upload, Newspaper, ChevronDown, Tv, FileVideo, CheckCircle, ArrowRight } from 'lucide-react';
 import { Video as VideoType, CATEGORIES, Community } from '../types';
 import { generateThumbnail, generateVideoMetadata } from '../services/gemini';
@@ -231,6 +231,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   
   const filteredCommunities = communities.filter(c => c.name.toLowerCase().includes(communitySearch.toLowerCase()));
 
+  const acceptType = uploadType === 'image' ? 'image/*' : 'video/*,image/*';
+  const typeLabel = uploadType === 'image' ? 'Image' : 'Video';
+  const typeLabelGeneric = uploadType === 'image' ? 'image' : 'file';
+
   const renderHeader = () => (
     <div className="flex justify-between items-center p-5 border-b border-[var(--border-primary)] sticky top-0 bg-[var(--background-secondary)] z-10">
       <h2 className="text-xl font-bold text-[var(--text-primary)]">{videoToEdit ? 'Edit Content' : 'Upload Content'}</h2>
@@ -243,7 +247,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       <div className="bg-[var(--background-secondary)] rounded-xl shadow-2xl w-full max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 border border-[var(--border-primary)]">
         {renderHeader()}
         <div className="flex-1 overflow-y-auto">
-            {uploadStep === 'initial' && (<div className="p-6 md:p-10 flex flex-col items-center justify-center h-full"><input type="file" ref={fileInputRef} className="hidden" accept={'video/*,image/*'} onChange={(e) => handleFileChange(e)} /><button onClick={() => fileInputRef.current?.click()} className="w-full h-full min-h-[300px] bg-[var(--background-primary)] border-2 border-dashed border-[var(--border-primary)] rounded-xl flex flex-col items-center justify-center gap-4 font-semibold hover:border-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)] transition-colors"><UploadCloud className="w-12 h-12 text-blue-500"/><span className="text-xl">Select file to upload</span></button></div>)}
+            {uploadStep === 'initial' && (<div className="p-6 md:p-10 flex flex-col items-center justify-center h-full"><input type="file" ref={fileInputRef} className="hidden" accept={acceptType} onChange={(e) => handleFileChange(e)} /><button onClick={() => fileInputRef.current?.click()} className="w-full h-full min-h-[300px] bg-[var(--background-primary)] border-2 border-dashed border-[var(--border-primary)] rounded-xl flex flex-col items-center justify-center gap-4 font-semibold hover:border-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)] transition-colors"><UploadCloud className="w-12 h-12 text-blue-500"/><span className="text-xl">Select {typeLabelGeneric} to upload</span></button></div>)}
             {uploadStep === 'recording' && <VideoRecorder onRecordingComplete={handleRecordingComplete} onCancel={() => setUploadStep('initial')} />}
             
             {uploadStep === 'details' && (
@@ -254,11 +258,11 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     <div className="p-6 flex flex-col gap-8 animate-in fade-in">
                       {/* --- THUMBNAIL --- */}
                       <div className="space-y-3">
-                          <label className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"><ImageIcon className="w-5 h-5"/> Step 1: Create Thumbnail</label>
-                          <p className="text-sm text-slate-400 -mt-2">An eye-catching thumbnail is key to attracting viewers.</p>
+                          <label className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"><ImageIcon className="w-5 h-5"/> Step 1: {uploadType === 'image' ? 'Image Preview' : 'Create Thumbnail'}</label>
+                          <p className="text-sm text-slate-400 -mt-2">{uploadType === 'image' ? 'This image will be displayed as your content.' : 'An eye-catching thumbnail is key to attracting viewers.'}</p>
                           <div className="flex flex-col sm:flex-row gap-4">
                               <div className="relative w-full sm:w-64 aspect-video bg-[var(--background-primary)] rounded-lg border border-[var(--border-primary)] border-dashed flex items-center justify-center overflow-hidden group flex-shrink-0">
-                                  {thumbnailUrl ? <><img src={thumbnailUrl} alt="Thumbnail Preview" className="w-full h-full object-cover"/><button onClick={() => setThumbnailUrl(null)} className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 opacity-0 group-hover:opacity-100"><X className="w-4 h-4"/></button></> : <div className="flex flex-col items-center text-[var(--text-tertiary)]"><ImageIcon className="w-8 h-8 mb-2 opacity-50"/><span className="text-xs">Thumbnail Preview</span></div>)}
+                                  {thumbnailUrl ? <><img src={thumbnailUrl} alt="Thumbnail Preview" className="w-full h-full object-cover"/><button onClick={() => setThumbnailUrl(null)} className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 opacity-0 group-hover:opacity-100"><X className="w-4 h-4"/></button></> : <div className="flex flex-col items-center text-[var(--text-tertiary)]"><ImageIcon className="w-8 h-8 mb-2 opacity-50"/><span className="text-xs">Preview</span></div>)}
                               </div>
                               <div className="flex-1 space-y-3">
                                   <button onClick={handleGenerateThumbnail} disabled={isGeneratingThumbnail} className="w-full p-3 bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-[hsl(var(--accent-color))]/20 disabled:opacity-50"><Sparkles className="w-4 h-4"/> Generate with AI</button>
@@ -270,9 +274,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
                       {/* --- VIDEO FILE --- */}
                       <div className="space-y-3">
-                          <label className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"><FileVideo className="w-5 h-5" /> Step 2: Upload Video</label>
+                          <label className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"><FileVideo className="w-5 h-5" /> Step 2: Content File</label>
                           <div onClick={() => fileInputRef.current?.click()} className="w-full p-4 border-2 border-dashed border-[var(--border-primary)] rounded-xl flex items-center justify-between text-center transition-colors cursor-pointer hover:border-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)]">
-                              <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={(e) => handleFileChange(e, 'details')} />
+                              <input type="file" ref={fileInputRef} className="hidden" accept={acceptType} onChange={(e) => handleFileChange(e, 'details')} />
                               {selectedFileName ? (
                                   <div className="flex items-center gap-3 text-left">
                                       <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
@@ -284,14 +288,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                               ) : (
                                   <div className="w-full flex flex-col items-center py-4">
                                       <UploadCloud className="w-8 h-8 text-[var(--text-secondary)] mb-2" />
-                                      <p className="font-semibold text-sm">Click to upload video</p>
+                                      <p className="font-semibold text-sm">Click to upload {typeLabelGeneric}</p>
                                   </div>
                               )}
                           </div>
                       </div>
                     </div>
                     <div className="p-4 bg-[var(--background-primary)] border-t border-[var(--border-primary)] flex justify-end items-center sticky bottom-0">
-                        <button onClick={() => { if (!title) setTitle(selectedFileName?.replace(/\.[^/.]+$/, "") || "Untitled Video"); setDetailsSubStep(2); }} disabled={!thumbnailUrl || !selectedFile} className="px-6 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 flex items-center justify-center gap-2 disabled:opacity-50">Next <ArrowRight className="w-4 h-4"/></button>
+                        <button onClick={() => { if (!title) setTitle(selectedFileName?.replace(/\.[^/.]+$/, "") || "Untitled Content"); setDetailsSubStep(2); }} disabled={!thumbnailUrl || !selectedFile} className="px-6 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 flex items-center justify-center gap-2 disabled:opacity-50">Next <ArrowRight className="w-4 h-4"/></button>
                     </div>
                   </>
                 )}
@@ -302,13 +306,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     <div className="p-6 flex flex-col gap-6 animate-in fade-in">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">THUMBNAIL</label><img src={thumbnailUrl || ''} alt="Thumbnail Preview" className="w-full aspect-video rounded-lg object-cover border border-[var(--border-primary)]"/></div>
-                        <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">VIDEO FILE</label><div className="w-full aspect-video bg-[var(--background-primary)] rounded-lg flex flex-col items-center justify-center text-center p-2 border border-[var(--border-primary)]"><FileVideo className="w-8 h-8 text-[var(--text-tertiary)] mb-2"/><p className="text-sm font-semibold truncate w-full">{selectedFileName}</p></div></div>
+                        <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">FILE</label><div className="w-full aspect-video bg-[var(--background-primary)] rounded-lg flex flex-col items-center justify-center text-center p-2 border border-[var(--border-primary)]"><FileVideo className="w-8 h-8 text-[var(--text-tertiary)] mb-2"/><p className="text-sm font-semibold truncate w-full">{selectedFileName}</p></div></div>
                       </div>
 
                       <div className="space-y-4 pt-4 border-t border-[var(--border-primary)]">
                         <div className="flex flex-col gap-2"><div className="flex justify-between items-center"><label htmlFor="video-title" className="text-sm font-semibold text-[var(--text-secondary)]">Title</label><button onClick={handleGenerateDetails} disabled={isGeneratingText} className="text-xs font-medium flex items-center gap-1.5 text-[hsl(var(--accent-color))] bg-[hsl(var(--accent-color))]/10 px-2 py-1 rounded" title="Generate catchy title and description"><>{isGeneratingText ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>}{isGeneratingText ? 'Thinking...' : 'Auto-fill'}</></button></div><input id="video-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter a topic or title for AI..." className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" disabled={uploading}/></div>
-                        <div className="flex flex-col gap-2"><label htmlFor="video-description" className="text-sm font-semibold text-[var(--text-secondary)]">Description</label><textarea id="video-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell viewers about your video" rows={4} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] resize-y" disabled={uploading}></textarea></div>
-                        <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Content Type</label><div className="flex gap-2 rounded-lg bg-[var(--background-primary)] p-1 border border-[var(--border-primary)]"><button type="button" onClick={() => setVideoType('video')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'video' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Video (16:9)</button><button type="button" onClick={() => setVideoType('short')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'short' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Short (9:16)</button></div></div>
+                        <div className="flex flex-col gap-2"><label htmlFor="video-description" className="text-sm font-semibold text-[var(--text-secondary)]">Description</label><textarea id="video-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell viewers about your content" rows={4} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] resize-y" disabled={uploading}></textarea></div>
+                        <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Content Type</label><div className="flex gap-2 rounded-lg bg-[var(--background-primary)] p-1 border border-[var(--border-primary)]"><button type="button" onClick={() => setVideoType('video')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'video' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Standard (16:9)</button><button type="button" onClick={() => setVideoType('short')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'short' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Vertical (9:16)</button></div></div>
                         <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)] flex items-center gap-2"><Users className="w-4 h-4"/> Community</label><div className="relative" ref={communityDropdownRef}><button type="button" onClick={() => setIsCommunityDropdownOpen(p => !p)} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-left flex justify-between items-center" disabled={uploading}><span className={selectedCommunity ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}>{selectedCommunity || 'Select Community'}</span><ChevronDown className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${isCommunityDropdownOpen ? 'rotate-180' : ''}`}/></button>{isCommunityDropdownOpen && (<div className="absolute z-20 top-full mt-1 w-full bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-60 flex flex-col"><div className="p-2 border-b border-[var(--border-primary)]"><input type="text" value={communitySearch} onChange={(e) => setCommunitySearch(e.target.value)} placeholder="Search..." className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-md outline-none" autoFocus/></div><ul className="overflow-y-auto" role="listbox">{filteredCommunities.length > 0 ? (filteredCommunities.map(c => (<li key={c.id} onClick={() => { setSelectedCommunity(c.name); setIsCommunityDropdownOpen(false); }} className="px-4 py-2 hover:bg-[var(--background-tertiary)] cursor-pointer text-sm" role="option">{c.name}</li>))) : (<li className="px-4 py-2 text-sm text-[var(--text-tertiary)]">No communities found.</li>)}</ul></div>)}</div></div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Category</label><select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubCategory(''); }} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)]" disabled={uploading}><option value="">Select Category</option>{CATEGORIES.filter(c=>c.id!=='all').map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div><div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Sub-Category</label><select value={selectedSubCategory} onChange={(e) => setSelectedSubCategory(e.target.value)} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] disabled:opacity-50" disabled={uploading || !selectedCategory || activeSubCategories.length === 0}><option value="">Select Sub-Category</option>{activeSubCategories.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
                       </div>

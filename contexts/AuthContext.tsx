@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User as CurrentUser, Video, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Report } from '../types';
@@ -184,7 +185,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const userAdsJSON = localStorage.getItem('starlight_user_ads');
     if (userAdsJSON) {
-        // FIX: Updated ad type in deleteAccount function to include ShortsAdCampaign.
         const allUserAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = JSON.parse(userAdsJSON);
         // PromoteVideoModal uses communityName to store the uploader's name
         const otherUsersAds = allUserAds.filter(ad => ad.communityName !== userName);

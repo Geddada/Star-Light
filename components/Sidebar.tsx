@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Clock, ThumbsUp, Film, Settings, Beaker, Shield, CircleDollarSign, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Keyboard, Palette } from 'lucide-react';
+import { Home, Clock, ThumbsUp, Film, Settings, Shield, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Keyboard, Palette } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Playlist, Community } from '../types';
 import { TvConnectModal } from '../components/TvConnectModal';
@@ -82,15 +82,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const [subscribedCommunities, setSubscribedCommunities] = useState<Community[]>([]);
   const [showTvModal, setShowTvModal] = useState(false);
   const onSettingsPage = location.pathname === '/settings';
-  const [labsEnabled, setLabsEnabled] = useState(false);
   
   const loadData = useCallback(() => {
     // Load playlists
     const playlistsJson = localStorage.getItem('starlight_playlists');
     setPlaylists(playlistsJson ? JSON.parse(playlistsJson) : []);
-
-    // Load labs setting
-    setLabsEnabled(localStorage.getItem('starlight_labs_enabled') === 'true');
 
     if (currentUser) {
       const communitiesJson = localStorage.getItem('starlight_communities');
@@ -202,9 +198,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         
                       </>
                   )}
-                  {(isAdmin || isPremium || labsEnabled) && (
-                    <SidebarItem icon={Beaker} label="Labs" isActive={location.pathname === '/test-new-features'} isOpen={isOpen} onClick={() => navigate('/test-new-features')} />
-                  )}
                   <SidebarItem icon={Settings} label="Settings" isActive={onSettingsPage} isOpen={isOpen} onClick={() => navigate('/settings')} />
                   {onSettingsPage && isOpen && (
                     <div className="pl-6 space-y-1 mt-1 animate-in fade-in">
@@ -213,7 +206,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <SidebarSubItem label="Blocked Users" href="/settings#blocked-users" icon={UserX} />
                         <SidebarSubItem label="API Keys" href="/settings#api" icon={KeyRound} />
                         <SidebarSubItem label="Typing Tools" href="/settings#typing-tools" icon={Keyboard} />
-                        <SidebarSubItem label="Labs" href="/settings#labs" icon={Beaker} />
                     </div>
                   )}
                 </div>

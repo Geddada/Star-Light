@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2 } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
@@ -93,7 +93,11 @@ export const Header: React.FC<HeaderProps> = () => {
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [showAdsDropdown, setShowAdsDropdown] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploadModalConfig, setUploadModalConfig] = useState({ initialStep: 'initial' as 'initial' | 'recording' | 'details', isShorts: false });
+  const [uploadModalConfig, setUploadModalConfig] = useState<{
+    initialStep: 'initial' | 'recording' | 'details';
+    isShorts: boolean;
+    uploadType: 'video' | 'image';
+  }>({ initialStep: 'initial', isShorts: false, uploadType: 'video' });
   const [showSendToMobileModal, setShowSendToMobileModal] = useState(false);
 
   const [isSaved, setIsSaved] = useState(false);
@@ -181,8 +185,8 @@ export const Header: React.FC<HeaderProps> = () => {
     }, 2000);
   };
 
-  const openUploadModal = (initialStep: 'initial' | 'recording' | 'details' = 'initial', isShorts = false) => {
-    setUploadModalConfig({ initialStep, isShorts });
+  const openUploadModal = (initialStep: 'initial' | 'recording' | 'details' = 'initial', isShorts = false, uploadType: 'video' | 'image' = 'video') => {
+    setUploadModalConfig({ initialStep, isShorts, uploadType });
     setShowUploadModal(true);
   };
 
@@ -235,7 +239,7 @@ export const Header: React.FC<HeaderProps> = () => {
 
   return (
     <>
-      {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} onUploadSuccess={handleUploadSuccess} initialStep={uploadModalConfig.initialStep} isShortsDefault={uploadModalConfig.isShorts} />}
+      {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} onUploadSuccess={handleUploadSuccess} initialStep={uploadModalConfig.initialStep} isShortsDefault={uploadModalConfig.isShorts} uploadType={uploadModalConfig.uploadType} />}
       {showSendToMobileModal && <SendToMobileModal onClose={() => setShowSendToMobileModal(false)} />}
       
       <style>{`
@@ -253,7 +257,7 @@ export const Header: React.FC<HeaderProps> = () => {
           animation: on-air-blink 1.s infinite;
         }
       `}</style>
-      <header className="h-16 flex items-center justify-between px-4 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
+      <header className="h-16 hidden md:flex items-center justify-between px-4 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
         
         {/* Mobile Search Overlay */}
         {isMobileSearch && (
@@ -332,8 +336,8 @@ export const Header: React.FC<HeaderProps> = () => {
             <Search className="w-5 h-5" />
         </button>
         
-        {/* Ads Manager Dropdown */}
-        {currentUser && (
+        {/* Ads Manager Dropdown - Only for Premium or Admin */}
+        {(isPremium || isAdmin) && (
           <div className="relative" ref={adsButtonRef}>
             <button
               onClick={() => setShowAdsDropdown(prev => !prev)}
@@ -384,12 +388,24 @@ export const Header: React.FC<HeaderProps> = () => {
             </button>
             {showCreateDropdown && (
               <div ref={createDropdownRef} className="absolute top-full right-0 mt-2 w-72 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-2xl p-2 animate-in fade-in zoom-in-95">
-                  <button onClick={() => { openUploadModal('initial', false); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                  <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Media</div>
+                  <button onClick={() => { openUploadModal('initial', false, 'video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <Video className="w-4 h-4" /> Upload Video
                   </button>
-                  <button onClick={() => { openUploadModal('recording', true); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                  <button onClick={() => { openUploadModal('initial', false, 'image'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <ImageIcon className="w-4 h-4" /> Upload Image
+                  </button>
+                  <button onClick={() => { openUploadModal('recording', true, 'video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <Camera className="w-4 h-4" /> Record a Short
                   </button>
+                  <div className="h-px bg-[var(--border-primary)] my-1"></div>
+                  <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Tools</div>
+                  <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Palette className="w-4 h-4 text-[#7D2AE8]" /> Canva Design Tool
+                  </a>
+                  <a href="https://www.google.co.in/inputtools/try/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Keyboard className="w-4 h-4 text-blue-500" /> Typing Tools
+                  </a>
               </div>
             )}
           </div>
@@ -523,7 +539,6 @@ export const Header: React.FC<HeaderProps> = () => {
                      )}
                      <button onClick={() => { navigate('/profile'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><User className="w-4 h-4"/> Your Profile</button>
                      <button onClick={() => { setShowSendToMobileModal(true); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Smartphone className="w-4 h-4"/> Send to Mobile</button>
-                     <button onClick={() => { navigate('/test-new-features'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Sparkles className="w-4 h-4"/> Starlight Labs</button>
                      <button onClick={() => { navigate('/settings'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Settings className="w-4 h-4"/> Settings</button>
                      <div className="h-px bg-[var(--border-primary)] my-1"></div>
                      <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-red-500 hover:bg-red-500/10 font-semibold text-sm transition-colors"><LogOut className="w-4 h-4"/> Sign out</button>

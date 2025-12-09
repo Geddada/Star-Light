@@ -1,10 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   CircleDollarSign, 
   Users, 
-  Clock, 
   CheckCircle2, 
   Lock, 
   ArrowRight, 
@@ -12,7 +12,8 @@ import {
   MessageSquareHeart, 
   ShoppingBag,
   Layout,
-  Gem
+  Gem,
+  LayoutDashboard
 } from 'lucide-react';
 import { Video } from '../types';
 
@@ -98,6 +99,11 @@ export const Monetization: React.FC = () => {
           title: "Shopping",
           desc: "Share products across your channel from your own store.",
           icon: ShoppingBag
+      },
+      {
+          title: "Ads Manager Facility",
+          desc: "Control ad placements and categories to maximize your revenue potential.",
+          icon: LayoutDashboard
       }
   ];
 
