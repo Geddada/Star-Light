@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
@@ -91,6 +91,7 @@ export const Header: React.FC<HeaderProps> = () => {
   const [isMobileSearch, setIsMobileSearch] = useState(false);
   
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
+  const [showAdsDropdown, setShowAdsDropdown] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadModalConfig, setUploadModalConfig] = useState({ initialStep: 'initial' as 'initial' | 'recording' | 'details', isShorts: false });
   const [showSendToMobileModal, setShowSendToMobileModal] = useState(false);
@@ -108,6 +109,8 @@ export const Header: React.FC<HeaderProps> = () => {
   const notifButtonRef = useRef<HTMLButtonElement>(null);
   const createDropdownRef = useRef<HTMLDivElement>(null);
   const createButtonRef = useRef<HTMLDivElement>(null);
+  const adsDropdownRef = useRef<HTMLDivElement>(null);
+  const adsButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -119,6 +122,9 @@ export const Header: React.FC<HeaderProps> = () => {
       }
       if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node) && !createButtonRef.current?.contains(event.target as Node)) {
         setShowCreateDropdown(false);
+      }
+      if (adsDropdownRef.current && !adsDropdownRef.current.contains(event.target as Node) && !adsButtonRef.current?.contains(event.target as Node)) {
+        setShowAdsDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -326,6 +332,42 @@ export const Header: React.FC<HeaderProps> = () => {
             <Search className="w-5 h-5" />
         </button>
         
+        {/* Ads Manager Dropdown */}
+        {currentUser && (
+          <div className="relative" ref={adsButtonRef}>
+            <button
+              onClick={() => setShowAdsDropdown(prev => !prev)}
+              title="Ads Manager"
+              aria-label="Manage Ads"
+              aria-haspopup="true"
+              aria-expanded={showAdsDropdown}
+              className="flex items-center gap-2 rounded-full bg-[hsl(var(--accent-color))] text-white hover:brightness-90 transition-all p-2.5 sm:px-4 sm:py-2 shadow-md hover:shadow-lg"
+            >
+              <Megaphone className="w-5 h-5" />
+              <span className="font-bold text-sm hidden sm:block">Ads Manager</span>
+            </button>
+            {showAdsDropdown && (
+              <div ref={adsDropdownRef} className="absolute top-full right-0 mt-2 w-64 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-2xl p-2 animate-in fade-in zoom-in-95 z-50">
+                  <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Campaigns</div>
+                  <button onClick={() => { navigate('/skippable-ads'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <PlayCircle className="w-4 h-4 text-blue-500" /> Skippable Ads
+                  </button>
+                  <button onClick={() => { navigate('/unskippable-ads'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <RadioTower className="w-4 h-4 text-purple-500" /> Unskippable Ads
+                  </button>
+                  <button onClick={() => { navigate('/shorts-ads'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Smartphone className="w-4 h-4 text-red-500" /> Shorts Ads
+                  </button>
+                  <div className="h-px bg-[var(--border-primary)] my-1"></div>
+                  <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Tools</div>
+                  <button onClick={() => { navigate('/ads/create'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Wand2 className="w-4 h-4 text-orange-500" /> Creation Studio
+                  </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Create Button with Dropdown */}
         {currentUser && (
           <div className="relative" ref={createButtonRef}>

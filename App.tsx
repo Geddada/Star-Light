@@ -60,6 +60,7 @@ import { CreatorStudio } from './pages/CreatorStudio';
 import { CinematicAdCreator } from './pages/CinematicAdCreator';
 import { VideoEditor } from './pages/VideoEditor';
 import { Business } from './pages/Business';
+import { AdCreationHub } from './pages/AdCreationHub';
 
 
 declare global {
@@ -220,6 +221,11 @@ const App: React.FC = () => {
               <Route path="/ai-ad-assistant" element={
                 <ProtectedRoute requirePremium={true}>
                   <AIAdAssistant />
+                </ProtectedRoute>
+              } />
+              <Route path="/ads/create" element={
+                <ProtectedRoute>
+                  <AdCreationHub />
                 </ProtectedRoute>
               } />
               <Route path="/cinematic-ad-creator" element={
