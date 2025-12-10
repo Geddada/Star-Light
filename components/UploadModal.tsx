@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
-import { X, UploadCloud, Video, Image as ImageIcon, Sparkles, RefreshCw, Loader2, Save, Folder, Tag, ArrowLeft, Camera, Users, Upload, Newspaper, ChevronDown, Tv, FileVideo, CheckCircle, ArrowRight } from 'lucide-react';
+import { X, UploadCloud, Video, Image as ImageIcon, Sparkles, RefreshCw, Loader2, Save, Folder, Tag, ArrowLeft, Camera, Users, Upload, Newspaper, ChevronDown, Tv, FileVideo, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Video as VideoType, CATEGORIES, Community } from '../types';
 import { generateThumbnail, generateVideoMetadata } from '../services/gemini';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +20,9 @@ interface UploadModalProps {
 }
 
 const USER_IMAGES_KEY = 'starlight_user_images';
+
+// Basic HTML sanitization function
+const sanitizeInput = (text: string) => text.replace(/<[^>]*>?/gm, "").trim();
 
 export const UploadModal: React.FC<UploadModalProps> = ({ 
     onClose, onUploadSuccess, videoToEdit, isShortsDefault = false, 
@@ -106,6 +109,16 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Security Check: STRICT ALLOWLIST
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'avi', 'webm', 'mkv'];
+    
+    if (!ext || !allowedExtensions.includes(ext)) {
+        alert("Security Alert: File type not supported. Please upload a valid image or video.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+    }
+
     if (file.type.startsWith('video/')) {
         setSelectedFile(file);
         setSelectedFileName(file.name);
@@ -130,7 +143,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         setUploadStep('details');
         setDetailsSubStep(1);
     } else {
-        alert(`Please upload a valid file.`);
+        alert(`Please upload a valid image or video file.`);
         if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -178,6 +191,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+        // Security check for thumbnail as well
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        const allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        if (!ext || !allowedImageExtensions.includes(ext)) {
+            alert("Invalid image file. Please use JPG, PNG, GIF, or WEBP.");
+            return;
+        }
       const url = URL.createObjectURL(file);
       setThumbnailUrl(url);
     }
@@ -191,8 +212,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     setUploading(true);
 
     const existingUploadedVideos: VideoType[] = JSON.parse(localStorage.getItem('starlight_uploaded_videos') || '[]');
+    
+    // Sanitize Inputs
+    const cleanTitle = sanitizeInput(title).substring(0, 100); // Limit title length
+    const cleanDescription = sanitizeInput(description).substring(0, 5000); // Limit description length
+
     const sharedData = {
-        title: title.trim(), description: description.trim(), category: selectedCategory, subCategory: selectedSubCategory,
+        title: cleanTitle, description: cleanDescription, category: selectedCategory, subCategory: selectedSubCategory,
         thumbnailUrl: thumbnailUrl!, isShort: videoType === 'short', communityName: selectedCommunity,
         communityAvatar: `https://picsum.photos/seed/${encodeURIComponent(selectedCommunity)}/64/64`,
         uploaderName: currentUser.name, uploaderAvatar: currentUser.avatar,
@@ -310,8 +336,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                       </div>
 
                       <div className="space-y-4 pt-4 border-t border-[var(--border-primary)]">
-                        <div className="flex flex-col gap-2"><div className="flex justify-between items-center"><label htmlFor="video-title" className="text-sm font-semibold text-[var(--text-secondary)]">Title</label><button onClick={handleGenerateDetails} disabled={isGeneratingText} className="text-xs font-medium flex items-center gap-1.5 text-[hsl(var(--accent-color))] bg-[hsl(var(--accent-color))]/10 px-2 py-1 rounded" title="Generate catchy title and description"><>{isGeneratingText ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>}{isGeneratingText ? 'Thinking...' : 'Auto-fill'}</></button></div><input id="video-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter a topic or title for AI..." className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" disabled={uploading}/></div>
-                        <div className="flex flex-col gap-2"><label htmlFor="video-description" className="text-sm font-semibold text-[var(--text-secondary)]">Description</label><textarea id="video-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell viewers about your content" rows={4} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] resize-y" disabled={uploading}></textarea></div>
+                        <div className="flex flex-col gap-2"><div className="flex justify-between items-center"><label htmlFor="video-title" className="text-sm font-semibold text-[var(--text-secondary)]">Title (Max 100 chars)</label><button onClick={handleGenerateDetails} disabled={isGeneratingText} className="text-xs font-medium flex items-center gap-1.5 text-[hsl(var(--accent-color))] bg-[hsl(var(--accent-color))]/10 px-2 py-1 rounded" title="Generate catchy title and description"><>{isGeneratingText ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>}{isGeneratingText ? 'Thinking...' : 'Auto-fill'}</></button></div><input id="video-title" type="text" maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter a topic or title for AI..." className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" disabled={uploading}/></div>
+                        <div className="flex flex-col gap-2"><label htmlFor="video-description" className="text-sm font-semibold text-[var(--text-secondary)]">Description (Max 5000 chars)</label><textarea id="video-description" maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell viewers about your content" rows={4} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] resize-y" disabled={uploading}></textarea></div>
                         <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Content Type</label><div className="flex gap-2 rounded-lg bg-[var(--background-primary)] p-1 border border-[var(--border-primary)]"><button type="button" onClick={() => setVideoType('video')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'video' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Standard (16:9)</button><button type="button" onClick={() => setVideoType('short')} className={`flex-1 p-2 rounded-md text-sm font-semibold ${videoType === 'short' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Vertical (9:16)</button></div></div>
                         <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)] flex items-center gap-2"><Users className="w-4 h-4"/> Community</label><div className="relative" ref={communityDropdownRef}><button type="button" onClick={() => setIsCommunityDropdownOpen(p => !p)} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-left flex justify-between items-center" disabled={uploading}><span className={selectedCommunity ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}>{selectedCommunity || 'Select Community'}</span><ChevronDown className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${isCommunityDropdownOpen ? 'rotate-180' : ''}`}/></button>{isCommunityDropdownOpen && (<div className="absolute z-20 top-full mt-1 w-full bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-60 flex flex-col"><div className="p-2 border-b border-[var(--border-primary)]"><input type="text" value={communitySearch} onChange={(e) => setCommunitySearch(e.target.value)} placeholder="Search..." className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-md outline-none" autoFocus/></div><ul className="overflow-y-auto" role="listbox">{filteredCommunities.length > 0 ? (filteredCommunities.map(c => (<li key={c.id} onClick={() => { setSelectedCommunity(c.name); setIsCommunityDropdownOpen(false); }} className="px-4 py-2 hover:bg-[var(--background-tertiary)] cursor-pointer text-sm" role="option">{c.name}</li>))) : (<li className="px-4 py-2 text-sm text-[var(--text-tertiary)]">No communities found.</li>)}</ul></div>)}</div></div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Category</label><select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubCategory(''); }} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)]" disabled={uploading}><option value="">Select Category</option>{CATEGORIES.filter(c=>c.id!=='all').map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div><div className="flex flex-col gap-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Sub-Category</label><select value={selectedSubCategory} onChange={(e) => setSelectedSubCategory(e.target.value)} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] disabled:opacity-50" disabled={uploading || !selectedCategory || activeSubCategories.length === 0}><option value="">Select Sub-Category</option>{activeSubCategories.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>

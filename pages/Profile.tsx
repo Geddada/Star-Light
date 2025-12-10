@@ -214,12 +214,16 @@ export const Profile: React.FC = () => {
   };
 
   const handleAdminLogin = () => {
-    if (window.confirm("Switch to Admin account for demonstration?")) {
+    if (!currentUser) return;
+    const pin = window.prompt("Enter Admin PIN (Hint: 1234):");
+    if (pin === "1234") {
       login({
         name: "Admin",
         avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
         email: "admin@starlight.app"
       });
+    } else if (pin !== null) {
+        alert("Incorrect PIN. Access Denied.");
     }
   };
 
@@ -428,7 +432,7 @@ export const Profile: React.FC = () => {
                                             onClick={() => navigate(`/watch/${report.video.id}`, { state: { video: report.video } })}
                                         />
                                         <div className="flex-1">
-                                            <p className="text-xs text-[var(--text-tertiary)]">{new Date(report.reportDate).toLocaleString()}</p>
+                                            <p className="text-xs text-[var(--text-tertiary)]">{new Date(report.reportDate).toLocaleDateString()}</p>
                                             <h3 className="font-bold text-md cursor-pointer hover:text-[hsl(var(--accent-color))]" onClick={() => navigate(`/watch/${report.video.id}`, { state: { video: report.video } })}>{report.video.title}</h3>
 
                                             <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">

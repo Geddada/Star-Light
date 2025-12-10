@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Clock, ThumbsUp, Film, Settings, Shield, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Keyboard, Palette } from 'lucide-react';
+import { Home, Clock, ThumbsUp, Film, Settings, Shield, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Palette } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Playlist, Community } from '../types';
 import { TvConnectModal } from '../components/TvConnectModal';
@@ -117,11 +117,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
 
   const handleAdminLogin = () => {
-    login({
-      name: "Admin",
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
-      email: "admin@starlight.app"
-    });
+    const pin = window.prompt("Enter Admin PIN (Hint: 1234):");
+    if (pin === "1234") {
+        login({
+          name: "Admin",
+          avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
+          email: "admin@starlight.app"
+        });
+    } else if (pin !== null) {
+        alert("Incorrect PIN. Access Denied.");
+    }
   };
 
   const handlePremiumLogin = () => {
@@ -205,7 +210,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <SidebarSubItem label="Login & Security" href="/settings#security" icon={Lock} />
                         <SidebarSubItem label="Blocked Users" href="/settings#blocked-users" icon={UserX} />
                         <SidebarSubItem label="API Keys" href="/settings#api" icon={KeyRound} />
-                        <SidebarSubItem label="Typing Tools" href="/settings#typing-tools" icon={Keyboard} />
                     </div>
                   )}
                 </div>
@@ -214,9 +218,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           )}
         </div>
 
-        {!currentUser && (
+        {!isAdmin && (
           <div className="hidden lg:block mt-auto pt-4 border-t border-[var(--border-primary)]/50 space-y-2">
-             {/* Premium Access button temporarily disabled */}
              <div 
                onClick={handleAdminLogin} 
                className={`flex items-center rounded-lg cursor-pointer p-3 transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-100 ${isOpen ? 'justify-start' : 'justify-center'}`}

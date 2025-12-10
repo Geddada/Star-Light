@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Zap, PlayCircle, ShieldCheck, Gem, CheckCircle2, MonitorPlay, Gift, Loader2 } from 'lucide-react';
+import { Zap, PlayCircle, ShieldCheck, Gem, CheckCircle2, Gift, Loader2 } from 'lucide-react';
 import { ProfileDetails } from '../types';
 
 const PhonePeIcon = () => (
@@ -82,7 +83,6 @@ export const Premium: React.FC = () => {
     { icon: PlayCircle, title: "Ad-Free Viewing", description: "Enjoy your favorite content without any interruptions from pre-roll or mid-roll ads." },
     { icon: Zap, title: "Background Play", description: "Listen to videos even when you're in another app or your screen is off. (Feature simulated)" },
     { icon: ShieldCheck, title: "Early Access", description: "Be the first to try experimental features from Starlight Labs, like AI video generation." },
-    { icon: MonitorPlay, title: "High-Quality Video", description: "Stream your favorite content in stunning 1080p and higher resolutions where available." },
     { icon: Gift, title: "10 Free Ad Credits", description: "Get 5 skippable and 5 unskippable ad credits each month to promote your content." },
   ];
 

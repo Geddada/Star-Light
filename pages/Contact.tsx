@@ -1,5 +1,6 @@
-import React from 'react';
-import { Mail, MapPin, Send, HelpCircle } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Mail, MapPin, Send, HelpCircle, ShieldCheck } from 'lucide-react';
 
 const DiscordIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}>
@@ -8,6 +9,40 @@ const DiscordIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export const Contact: React.FC = () => {
+  const [captcha, setCaptcha] = useState({ num1: 0, num2: 0 });
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [website, setWebsite] = useState(''); // Honeypot state
+
+  useEffect(() => {
+    regenerateCaptcha();
+  }, []);
+
+  const regenerateCaptcha = () => {
+    setCaptcha({ 
+        num1: Math.floor(Math.random() * 10), 
+        num2: Math.floor(Math.random() * 10) 
+    });
+    setCaptchaInput('');
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      // Honeypot anti-spam check
+      if (website) {
+          e.preventDefault();
+          console.warn("Bot submission detected.");
+          return;
+      }
+
+      // Basic security check before the form actually submits to Formspree
+      const sum = captcha.num1 + captcha.num2;
+      if (parseInt(captchaInput, 10) !== sum) {
+          e.preventDefault();
+          alert("Security Check Failed: Incorrect math answer.");
+          regenerateCaptcha();
+          return;
+      }
+      // If correct, allow the default form submission to proceed
+  };
 
   return (
     <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] p-6 md:p-12 overflow-y-auto">
@@ -82,7 +117,19 @@ export const Contact: React.FC = () => {
             {/* Contact Form */}
             <div className="bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] shadow-lg animate-in fade-in slide-in-from-right-4 duration-700 delay-200">
                 <h3 className="text-2xl font-bold mb-6">Send us a message</h3>
-                <form action="https://formspree.io/f/mldywbwz" method="POST" className="space-y-5">
+                <form action="https://formspree.io/f/mldywbwz" method="POST" className="space-y-5" onSubmit={handleSubmit}>
+                    
+                    {/* Honeypot Field */}
+                    <input 
+                        type="text" 
+                        name="website" 
+                        value={website} 
+                        onChange={(e) => setWebsite(e.target.value)} 
+                        style={{ position: 'absolute', opacity: 0, zIndex: -1, width: 0, height: 0 }} 
+                        tabIndex={-1} 
+                        autoComplete="off"
+                    />
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-[var(--text-secondary)]">First Name</label>
@@ -149,6 +196,23 @@ export const Contact: React.FC = () => {
                             name="message"
                             placeholder="How can we help you?"
                             className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] resize-none"
+                        />
+                    </div>
+
+                    {/* Security CAPTCHA */}
+                    <div className="p-3 rounded-lg bg-[var(--background-tertiary)]/50 border border-[var(--border-primary)] flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="w-5 h-5 text-green-500" />
+                            <span className="text-sm font-semibold text-[var(--text-secondary)]">Security Check:</span>
+                            <span className="font-bold text-[var(--text-primary)]">{captcha.num1} + {captcha.num2} = ?</span>
+                        </div>
+                        <input 
+                            type="number" 
+                            required 
+                            placeholder="Answer"
+                            value={captchaInput}
+                            onChange={e => setCaptchaInput(e.target.value)}
+                            className="w-24 p-2 text-center bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
                         />
                     </div>
 

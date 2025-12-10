@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const Signup: React.FC = () => {
@@ -16,6 +16,12 @@ export const Signup: React.FC = () => {
   const [biometricStatus, setBiometricStatus] = useState<'scanning' | 'passcode' | 'success'>('scanning');
   const [passcodeInput, setPasscodeInput] = useState('');
   const timeoutRef = useRef<number | null>(null);
+
+  // Security CAPTCHA State
+  const [captcha, setCaptcha] = useState({ num1: 0, num2: 0 });
+  const [captchaInput, setCaptchaInput] = useState('');
+  // Honeypot state for anti-spam (hidden field)
+  const [website, setWebsite] = useState('');
 
   const [signupForm, setSignupForm] = useState({
     fullName: '',
@@ -35,6 +41,19 @@ export const Signup: React.FC = () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  // Initialize CAPTCHA
+  useEffect(() => {
+    regenerateCaptcha();
+  }, []);
+
+  const regenerateCaptcha = () => {
+    setCaptcha({ 
+        num1: Math.floor(Math.random() * 10), 
+        num2: Math.floor(Math.random() * 10) 
+    });
+    setCaptchaInput('');
+  };
 
   // Handle Passcode Logic
   useEffect(() => {
@@ -84,16 +103,56 @@ export const Signup: React.FC = () => {
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Honeypot check: if the hidden field 'website' has a value, it's likely a bot
+    if (website) {
+        console.warn("Bot detected via honeypot.");
+        return; 
+    }
+
     if (!signupForm.agreeTerms) {
       alert("You must agree to the Terms & Conditions to create an account.");
       return;
     }
+
+    // Password Complexity Check
+    if (signupForm.password.length < 8) {
+        alert("Security Alert: Password must be at least 8 characters long.");
+        return;
+    }
+    if (!/\d/.test(signupForm.password)) {
+        alert("Security Alert: Password must contain at least one number.");
+        return;
+    }
+
+    // Security Check
+    if (parseInt(captchaInput, 10) !== captcha.num1 + captcha.num2) {
+        alert("Incorrect security answer. Please prove you are human.");
+        regenerateCaptcha();
+        return;
+    }
+
+    // Check for duplicate account name
+    const allUsersJSON = localStorage.getItem('starlight_all_users');
+    if (allUsersJSON) {
+        const allUsers = JSON.parse(allUsersJSON);
+        const nameExists = allUsers.some((u: any) => u.name.trim().toLowerCase() === signupForm.fullName.trim().toLowerCase());
+        
+        if (nameExists) {
+            alert("Account name already exists. Please choose a different name.");
+            return;
+        }
+    }
+
     setLoadingProvider('email');
     await new Promise(resolve => setTimeout(resolve, 1500));
+    // Sanitize name just in case (basic strip)
+    const cleanName = signupForm.fullName.replace(/<[^>]*>?/gm, "").trim();
+    
     const newUser = {
-      name: signupForm.fullName,
+      name: cleanName,
       email: signupForm.email,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${signupForm.fullName.replace(/\s/g, '')}`
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${cleanName.replace(/\s/g, '')}`
     };
     login(newUser);
   };
@@ -102,6 +161,9 @@ export const Signup: React.FC = () => {
     e.preventDefault();
     setLoadingProvider('email');
     await new Promise(resolve => setTimeout(resolve, 1000));
+    // For login, we simulate finding the user. 
+    // In a real app, this would validate credentials against the database.
+    // Here we just "log in" with the provided email.
     const mockUser = {
       name: loginForm.email.split('@')[0],
       email: loginForm.email,
@@ -210,6 +272,17 @@ export const Signup: React.FC = () => {
       </div>
       
       <form onSubmit={handleSignupSubmit} className="space-y-5">
+        {/* Honeypot Field - Hidden */}
+        <input 
+            type="text" 
+            name="website" 
+            value={website} 
+            onChange={(e) => setWebsite(e.target.value)} 
+            style={{ position: 'absolute', opacity: 0, zIndex: -1, width: 0, height: 0 }} 
+            tabIndex={-1} 
+            autoComplete="off"
+        />
+
         <div className="space-y-2">
             <label className="text-sm font-semibold text-[var(--text-secondary)]">Full Name</label>
             <div className="relative">
@@ -228,9 +301,28 @@ export const Signup: React.FC = () => {
             <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="password" required placeholder="••••••••" value={signupForm.password} onChange={e => setSignupForm({...signupForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+              <input type="password" required placeholder="•••••••• (Min 8 chars)" value={signupForm.password} onChange={e => setSignupForm({...signupForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
             </div>
+            <p className="text-xs text-[var(--text-tertiary)]">Must be at least 8 characters with at least one number.</p>
         </div>
+
+        {/* Security CAPTCHA */}
+        <div className="p-3 rounded-lg bg-[var(--background-tertiary)]/50 border border-[var(--border-primary)] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-green-500" />
+                <span className="text-sm font-semibold text-[var(--text-secondary)]">Security Check:</span>
+                <span className="font-bold text-[var(--text-primary)]">{captcha.num1} + {captcha.num2} = ?</span>
+            </div>
+            <input 
+                type="number" 
+                required 
+                placeholder="Answer"
+                value={captchaInput}
+                onChange={e => setCaptchaInput(e.target.value)}
+                className="w-20 p-2 text-center bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+            />
+        </div>
+
         <div className="flex items-start gap-3 pt-2">
             <div className="flex items-center h-5">
               <input id="terms" type="checkbox" required checked={signupForm.agreeTerms} onChange={e => setSignupForm({...signupForm, agreeTerms: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>

@@ -30,6 +30,7 @@ const AccountSettings: React.FC<{
     profileDetails: ProfileDetails;
     setProfileDetails: React.Dispatch<React.SetStateAction<ProfileDetails>>;
 }> = ({ currentUser, profileDetails, setProfileDetails }) => {
+    const { deleteAccount } = useAuth();
     const [countryCode, setCountryCode] = useState('+91');
     const [mobileInput, setMobileInput] = useState('');
     const [otpInput, setOtpInput] = useState('');
@@ -45,6 +46,11 @@ const AccountSettings: React.FC<{
     const [showMobileForm, setShowMobileForm] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
+
+    // Delete Account State
+    const [deleteStep, setDeleteStep] = useState<'initial' | 'confirm_otp' | 'deleting'>('initial');
+    const [deleteOtpCode, setDeleteOtpCode] = useState('');
+    const [deleteError, setDeleteError] = useState('');
 
     useEffect(() => {
         if (profileDetails) {
@@ -152,6 +158,28 @@ const AccountSettings: React.FC<{
             setShowMobileForm(false);
         } else {
             setError('Invalid OTP. Please try again. (Hint: use 123456)');
+        }
+    };
+
+    const initiateDelete = () => {
+        if(window.confirm("Are you sure you want to begin the account deletion process? An OTP will be sent to your email to confirm.")) {
+            setDeleteStep('confirm_otp');
+            // In a real app, an API call would be made here to send an OTP.
+            // We simulate this and immediately move to the OTP entry step.
+        }
+    };
+    
+    const handleConfirmDelete = () => {
+        setDeleteError('');
+        if (deleteOtpCode === '123456') {
+            setDeleteStep('deleting');
+            // Simulate API call delay
+            setTimeout(() => {
+                deleteAccount();
+                // User will be logged out and redirected by deleteAccount function
+            }, 1500);
+        } else {
+            setDeleteError('Invalid OTP. Please try again. (Hint: use 123456)');
         }
     };
     
@@ -351,6 +379,53 @@ const AccountSettings: React.FC<{
                     ))}
                 </div>
             </div>
+
+            <div id="delete-account" className="bg-red-500/5 p-6 rounded-2xl border border-red-500/20">
+                <h3 className="text-lg font-bold text-red-500 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5"/> Danger Zone
+                </h3>
+                <p className="text-red-300/80 text-sm mt-3">
+                    Deleting your account is a permanent action. All of your uploaded content,
+                    ad campaigns, reports, and personal settings will be permanently removed.
+                    This action cannot be undone.
+                </p>
+                
+                {deleteStep === 'initial' && (
+                    <div className="mt-6 flex justify-end">
+                        <button onClick={initiateDelete} className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all flex items-center gap-2">
+                            <Trash2 className="w-4 h-4"/> Delete My Account
+                        </button>
+                    </div>
+                )}
+                
+                {deleteStep === 'confirm_otp' && (
+                    <div className="mt-6 pt-4 border-t border-red-500/20 animate-in fade-in">
+                        <p className="font-semibold text-red-400">Enter the 6-digit confirmation code sent to your email to proceed.</p>
+                        <p className="text-xs text-red-300/70 mb-4">(For this demo, use the code: <strong className="text-white">123456</strong>)</p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                                type="text"
+                                value={deleteOtpCode}
+                                onChange={e => setDeleteOtpCode(e.target.value)}
+                                placeholder="Enter 6-digit OTP"
+                                maxLength={6}
+                                className="flex-1 p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            />
+                            <button onClick={handleConfirmDelete} className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2">
+                                Confirm & Delete
+                            </button>
+                        </div>
+                        {deleteError && <p className="text-sm text-yellow-300 mt-2">{deleteError}</p>}
+                    </div>
+                )}
+
+                {deleteStep === 'deleting' && (
+                     <div className="mt-6 pt-4 border-t border-red-500/20 flex items-center justify-center gap-3 text-white">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <p className="font-semibold">Deleting your account data...</p>
+                    </div>
+                )}
+            </div>
             
             <div className="flex justify-end items-center gap-4 pt-4">
                 {saveStatus === 'saved' && <p className="text-green-500 text-sm font-semibold animate-in fade-in flex items-center gap-2"><CheckCircle2 className="w-4 h-4"/> Saved successfully!</p>}
@@ -405,39 +480,11 @@ const BlockedUsersManager: React.FC = () => {
 
 const SecuritySettings: React.FC<{ currentUser: any }> = ({ currentUser }) => {
     const [resetLinkSent, setResetLinkSent] = useState(false);
-    const { deleteAccount } = useAuth();
-    
-    const [deleteStep, setDeleteStep] = useState<'initial' | 'confirm_otp' | 'deleting'>('initial');
-    const [otpCode, setOtpCode] = useState('');
-    const [deleteError, setDeleteError] = useState('');
 
     const handleSendPasswordReset = () => {
         setResetLinkSent(true);
         setTimeout(() => { setResetLinkSent(false); }, 5000);
     };
-
-    const initiateDelete = () => {
-        if(window.confirm("Are you sure you want to begin the account deletion process? An OTP will be sent to your email to confirm.")) {
-            setDeleteStep('confirm_otp');
-            // In a real app, an API call would be made here to send an OTP.
-            // We simulate this and immediately move to the OTP entry step.
-        }
-    };
-    
-    const handleConfirmDelete = () => {
-        setDeleteError('');
-        if (otpCode === '123456') {
-            setDeleteStep('deleting');
-            // Simulate API call delay
-            setTimeout(() => {
-                deleteAccount();
-                // User will be logged out and redirected by deleteAccount function
-            }, 1500);
-        } else {
-            setDeleteError('Invalid OTP. Please try again. (Hint: use 123456)');
-        }
-    };
-
 
     return (
         <div className="space-y-8">
@@ -461,53 +508,6 @@ const SecuritySettings: React.FC<{ currentUser: any }> = ({ currentUser }) => {
                 </div>
             </div>
             <BlockedUsersManager />
-
-            <div id="delete-account" className="bg-red-500/5 p-6 rounded-2xl border border-red-500/20">
-                <h3 className="text-lg font-bold text-red-500 flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5"/> Danger Zone
-                </h3>
-                <p className="text-red-300/80 text-sm mt-3">
-                    Deleting your account is a permanent action. All of your uploaded content,
-                    ad campaigns, reports, and personal settings will be permanently removed.
-                    This action cannot be undone.
-                </p>
-                
-                {deleteStep === 'initial' && (
-                    <div className="mt-6 flex justify-end">
-                        <button onClick={initiateDelete} className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all flex items-center gap-2">
-                            <Trash2 className="w-4 h-4"/> Delete My Account
-                        </button>
-                    </div>
-                )}
-                
-                {deleteStep === 'confirm_otp' && (
-                    <div className="mt-6 pt-4 border-t border-red-500/20 animate-in fade-in">
-                        <p className="font-semibold text-red-400">Enter the 6-digit confirmation code sent to your email to proceed.</p>
-                        <p className="text-xs text-red-300/70 mb-4">(For this demo, use the code: <strong className="text-white">123456</strong>)</p>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <input
-                                type="text"
-                                value={otpCode}
-                                onChange={e => setOtpCode(e.target.value)}
-                                placeholder="Enter 6-digit OTP"
-                                maxLength={6}
-                                className="flex-1 p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:outline-none focus:ring-2 focus:ring-red-400"
-                            />
-                            <button onClick={handleConfirmDelete} className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2">
-                                Confirm & Delete
-                            </button>
-                        </div>
-                        {deleteError && <p className="text-sm text-yellow-300 mt-2">{deleteError}</p>}
-                    </div>
-                )}
-
-                {deleteStep === 'deleting' && (
-                     <div className="mt-6 pt-4 border-t border-red-500/20 flex items-center justify-center gap-3 text-white">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <p className="font-semibold">Deleting your account data...</p>
-                    </div>
-                )}
-            </div>
         </div>
     );
 };
@@ -571,8 +571,11 @@ export const Settings: React.FC = () => {
     
     const activeTab: SettingsTab = useMemo(() => {
         const hash = location.hash.substring(1);
-        if (['blocked-users', 'delete-account'].includes(hash)) {
+        if (['blocked-users'].includes(hash)) {
             return 'security';
+        }
+        if (['delete-account'].includes(hash)) {
+            return 'account';
         }
         if (['account', 'security', 'api'].includes(hash)) {
             return hash as SettingsTab;
