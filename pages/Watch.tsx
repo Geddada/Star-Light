@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -276,18 +275,18 @@ export const Watch: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button onClick={togglePlay} className="text-white hover:text-red-500 transition-colors">
-                            {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
+                    <div className="flex items-center gap-3">
+                        <button onClick={togglePlay} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105">
+                            {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
                         </button>
                         
-                        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="text-white hover:bg-white/20 p-1.5 rounded-full rotate-12 text-xs font-bold">
-                            +10
+                        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm w-7 h-7 flex items-center justify-center group-hover:scale-105">
+                            <span className="text-[9px] font-bold rotate-12">+10</span>
                         </button>
 
                         <div className="flex items-center gap-2 group/volume">
-                            <button onClick={toggleMute} className="text-white">
-                                {isMuted || volume === 0 ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                            <button onClick={toggleMute} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105">
+                                {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                             </button>
                             <input 
                                 type="range" 
@@ -300,16 +299,16 @@ export const Watch: React.FC = () => {
                             />
                         </div>
 
-                        <span className="text-white text-sm font-medium">
+                        <span className="text-white text-xs font-medium ml-1">
                             {formatTime(currentTime)} / {formatTime(duration)}
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <div className="relative">
-                            <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="text-white p-2" title="Playback speed">
-                                <Settings className={`w-5 h-5 ${showSpeedMenu ? 'rotate-90' : ''} transition-transform`}/>
-                                {playbackRate !== 1 && <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full">{playbackRate}x</span>}
+                            <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105" title="Playback speed">
+                                <Settings className={`w-3.5 h-3.5 ${showSpeedMenu ? 'rotate-90' : ''} transition-transform`}/>
+                                {playbackRate !== 1 && <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full">{playbackRate}x</span>}
                             </button>
                             {showSpeedMenu && (
                                 <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-1 flex flex-col gap-1 backdrop-blur-md border border-white/10 w-48 shadow-xl">
@@ -332,11 +331,11 @@ export const Watch: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        <button onClick={togglePiP} className="text-white p-2 hidden sm:block" title="Picture in picture">
-                            <PictureInPicture className="w-5 h-5"/>
+                        <button onClick={togglePiP} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm hidden sm:block group-hover:scale-105" title="Picture in picture">
+                            <PictureInPicture className="w-3.5 h-3.5"/>
                         </button>
-                        <button onClick={toggleFullscreen} className="text-white p-2" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                            {isFullscreen ? <Minimize className="w-5 h-5"/> : <Maximize className="w-5 h-5"/>}
+                        <button onClick={toggleFullscreen} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                            {isFullscreen ? <Minimize className="w-3.5 h-3.5"/> : <Maximize className="w-3.5 h-3.5"/>}
                         </button>
                     </div>
                 </div>

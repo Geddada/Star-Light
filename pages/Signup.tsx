@@ -1,8 +1,7 @@
 
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const Signup: React.FC = () => {
@@ -11,6 +10,12 @@ export const Signup: React.FC = () => {
   
   const [isLoginView, setIsLoginView] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+
+  // Biometric / Passcode State
+  const [showBiometricModal, setShowBiometricModal] = useState(false);
+  const [biometricStatus, setBiometricStatus] = useState<'scanning' | 'passcode' | 'success'>('scanning');
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const timeoutRef = useRef<number | null>(null);
 
   const [signupForm, setSignupForm] = useState({
     fullName: '',
@@ -24,6 +29,59 @@ export const Signup: React.FC = () => {
     rememberMe: false
   });
   
+  // Clear timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // Handle Passcode Logic
+  useEffect(() => {
+    if (biometricStatus === 'passcode' && passcodeInput.length === 6) {
+        if (passcodeInput === '123456') {
+            setBiometricStatus('success');
+            timeoutRef.current = window.setTimeout(() => {
+                completeBiometricLogin();
+            }, 1000);
+        } else {
+            // Shake effect or error could go here
+            setPasscodeInput('');
+            alert("Incorrect passcode. (Demo Hint: 123456)");
+        }
+    }
+  }, [passcodeInput, biometricStatus]);
+
+  const completeBiometricLogin = () => {
+      login({
+        name: "Alex Bio",
+        email: "alex.bio@starlight.app",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=AlexBio",
+        isPremium: true
+      });
+      setShowBiometricModal(false);
+  };
+
+  const handleBiometricLogin = () => {
+    setShowBiometricModal(true);
+    setBiometricStatus('scanning');
+    setPasscodeInput('');
+    
+    // Simulate biometric scan delay
+    timeoutRef.current = window.setTimeout(() => {
+        // Only transition to success if user hasn't switched to passcode manually
+        setBiometricStatus((prev) => {
+            if (prev === 'scanning') {
+                timeoutRef.current = window.setTimeout(() => {
+                    completeBiometricLogin();
+                }, 1000);
+                return 'success';
+            }
+            return prev;
+        });
+    }, 2500);
+  };
+
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signupForm.agreeTerms) {
@@ -69,7 +127,6 @@ export const Signup: React.FC = () => {
 
   const handleGuestLogin = (userNumber = 1) => {
     setLoadingProvider(`guest${userNumber}`);
-    // Simulate a brief delay for UX
     setTimeout(() => {
       login({
         name: userNumber === 1 ? "Guest User" : `Guest User ${userNumber}`,
@@ -82,7 +139,6 @@ export const Signup: React.FC = () => {
   
   const handlePremiumLogin = () => {
     setLoadingProvider('premium');
-    // Simulate a brief delay for UX
     setTimeout(() => {
       login({
         name: "Premium User",
@@ -91,6 +147,16 @@ export const Signup: React.FC = () => {
         isPremium: true,
       });
     }, 500);
+  };
+
+  const handleDigitPress = (digit: number) => {
+      if (passcodeInput.length < 6) {
+          setPasscodeInput(prev => prev + digit);
+      }
+  };
+
+  const handleBackspace = () => {
+      setPasscodeInput(prev => prev.slice(0, -1));
   };
   
   const desktopSignupView = (
@@ -225,6 +291,16 @@ export const Signup: React.FC = () => {
         {loadingProvider === 'guest1' ? 'Logging in...' : 'Continue as Guest'}
       </button>
 
+      <button
+        type="button"
+        onClick={handleBiometricLogin}
+        disabled={loadingProvider !== null}
+        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
+      >
+        <Fingerprint className="w-5 h-5 text-[hsl(var(--accent-color))]" />
+        <span>Sign in with Passkey</span>
+      </button>
+
       <div className="flex items-center gap-4 my-6">
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
         <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">Or log in with email</span>
@@ -267,6 +343,71 @@ export const Signup: React.FC = () => {
 
   return (
     <div className="w-full min-h-full flex items-center justify-center p-6 bg-[var(--background-primary)] overflow-y-auto relative">
+      
+      {/* Biometric Modal Overlay */}
+      {showBiometricModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-[var(--background-secondary)] w-full max-w-sm rounded-3xl p-8 border border-[var(--border-primary)] shadow-2xl relative overflow-hidden flex flex-col items-center">
+                <button onClick={() => { setShowBiometricModal(false); if (timeoutRef.current) clearTimeout(timeoutRef.current); }} className="absolute top-4 right-4 p-2 hover:bg-[var(--background-tertiary)] rounded-full transition-colors"><X className="w-5 h-5"/></button>
+                
+                {biometricStatus === 'scanning' && (
+                    <div className="flex flex-col items-center text-center animate-in fade-in zoom-in-95 w-full">
+                        <div className="w-24 h-24 rounded-full bg-[hsl(var(--accent-color))]/10 flex items-center justify-center mb-6 relative">
+                            <Fingerprint className="w-12 h-12 text-[hsl(var(--accent-color))] animate-pulse" />
+                            <div className="absolute inset-0 rounded-full border-4 border-[hsl(var(--accent-color))] border-t-transparent animate-spin"></div>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-2">Verify it's you</h3>
+                        <p className="text-[var(--text-secondary)] mb-8 text-sm">Touch the fingerprint sensor or look at the camera.</p>
+                        <button 
+                            onClick={() => { setBiometricStatus('passcode'); if (timeoutRef.current) clearTimeout(timeoutRef.current); }} 
+                            className="text-[hsl(var(--accent-color))] font-semibold hover:underline bg-[var(--background-tertiary)] px-4 py-2 rounded-lg text-sm w-full"
+                        >
+                            Use Device Passcode
+                        </button>
+                    </div>
+                )}
+
+                {biometricStatus === 'passcode' && (
+                    <div className="flex flex-col items-center text-center animate-in slide-in-from-right w-full">
+                        <div className="w-16 h-16 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-6">
+                            <Lock className="w-8 h-8 text-[var(--text-secondary)]" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">Enter Passcode</h3>
+                        <p className="text-[var(--text-secondary)] mb-6 text-sm">Enter your 6-digit device passcode.</p>
+                        
+                        <div className="flex gap-3 mb-8 justify-center">
+                            {[0, 1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className={`w-3 h-3 rounded-full transition-all duration-200 ${passcodeInput.length > i ? 'bg-[hsl(var(--accent-color))] scale-110' : 'bg-[var(--border-primary)]'}`}></div>
+                            ))}
+                        </div>
+                        
+                        {/* Virtual Numpad */}
+                        <div className="grid grid-cols-3 gap-4 w-full max-w-[260px] mx-auto">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                                <button key={num} type="button" onClick={() => handleDigitPress(num)} className="h-16 w-16 rounded-full bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] text-xl font-bold transition-all active:scale-95 flex items-center justify-center">
+                                    {num}
+                                </button>
+                            ))}
+                            <div className="h-16 w-16 flex items-center justify-center"></div>
+                            <button type="button" onClick={() => handleDigitPress(0)} className="h-16 w-16 rounded-full bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] text-xl font-bold transition-all active:scale-95 flex items-center justify-center">0</button>
+                            <button type="button" onClick={handleBackspace} className="h-16 w-16 rounded-full flex items-center justify-center hover:bg-[var(--background-tertiary)] transition-colors active:scale-95 text-[var(--text-secondary)]"><Delete className="w-6 h-6"/></button>
+                        </div>
+                    </div>
+                )}
+
+                {biometricStatus === 'success' && (
+                    <div className="flex flex-col items-center text-center animate-in zoom-in w-full py-10">
+                        <div className="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center mb-6">
+                            <CheckCircle2 className="w-12 h-12 text-green-500 animate-in zoom-in duration-500" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-2">Verified!</h3>
+                        <p className="text-[var(--text-secondary)]">Signing you in...</p>
+                    </div>
+                )}
+            </div>
+        </div>
+      )}
+
       <button
         onClick={() => navigate('/')}
         className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-full text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--background-tertiary)] transition-colors"

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -61,6 +61,7 @@ import { VideoEditor } from './pages/VideoEditor';
 import { Business } from './pages/Business';
 import { AdCreationHub } from './pages/AdCreationHub';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { SplashScreen } from './components/SplashScreen';
 
 
 declare global {
@@ -151,10 +152,33 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const App: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(() => window.innerWidth < 768);
+  const [splashOpacity, setSplashOpacity] = useState('opacity-100');
+
+  useEffect(() => {
+    if (showSplash) {
+      // Start fade out after 2.5s
+      const fadeTimer = setTimeout(() => {
+        setSplashOpacity('opacity-0');
+      }, 2500);
+
+      // Unmount after 3s (2.5s wait + 0.5s transition)
+      const unmountTimer = setTimeout(() => {
+        setShowSplash(false);
+      }, 3000);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(unmountTimer);
+      };
+    }
+  }, [showSplash]);
+
   return (
     <ThemeProvider>
       <HashRouter>
         <AuthProvider>
+          {showSplash && <SplashScreen opacity={splashOpacity} />}
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
