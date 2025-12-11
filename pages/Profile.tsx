@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift } from 'lucide-react';
+import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Video as VideoType, Report, Playlist as PlaylistType, ProfileDetails, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { UploadModal } from '../components/UploadModal';
@@ -53,6 +53,12 @@ export const Profile: React.FC = () => {
   const [promotingVideo, setPromotingVideo] = useState<VideoType | null>(null);
   const [activeTab, setActiveTab] = useState<'videos' | 'shorts' | 'about' | 'reports' | 'promotions'>('videos');
   const [profileDetails, setProfileDetails] = useState<ProfileDetails>({});
+
+  // Scroll Arrows State
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollArrows, setShowScrollArrows] = useState(false);
+  const [isScrolledLeft, setIsScrolledLeft] = useState(true);
+  const [isScrolledRight, setIsScrolledRight] = useState(false);
 
   const loadData = useCallback(() => {
     if (currentUser) {
@@ -120,6 +126,40 @@ export const Profile: React.FC = () => {
       window.removeEventListener('videosUpdated', loadData);
     };
   }, [loadData]);
+
+  // Tab Scroll Logic
+  const checkScrollPosition = useCallback(() => {
+    const container = tabsContainerRef.current;
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      setShowScrollArrows(scrollWidth > clientWidth);
+      setIsScrolledLeft(scrollLeft <= 0);
+      setIsScrolledRight(Math.ceil(scrollLeft + clientWidth) >= scrollWidth);
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (container) {
+      checkScrollPosition();
+      container.addEventListener('scroll', checkScrollPosition);
+      window.addEventListener('resize', checkScrollPosition);
+      return () => {
+        container.removeEventListener('scroll', checkScrollPosition);
+        window.removeEventListener('resize', checkScrollPosition);
+      };
+    }
+  }, [checkScrollPosition, activeTab]); // Re-check when active tab potentially changes layout or initial render
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsContainerRef.current) {
+      const scrollAmount = 200;
+      tabsContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
   
   const handleUploadSuccess = () => {
     setShowUploadModal(false);
@@ -288,15 +328,39 @@ export const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mt-8 border-b border-[var(--border-primary)]">
-          <div className="flex gap-6 overflow-x-auto no-scrollbar">
+        {/* Tabs with Arrows */}
+        <div className="mt-8 border-b border-[var(--border-primary)] relative">
+          <div ref={tabsContainerRef} className="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth px-1">
             <button onClick={() => setActiveTab('videos')} className={`py-3 font-bold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'videos' ? 'border-[hsl(var(--accent-color))] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}><VideoIcon className="w-4 h-4"/> Videos</button>
             <button onClick={() => setActiveTab('shorts')} className={`py-3 font-bold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'shorts' ? 'border-[hsl(var(--accent-color))] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}><Film className="w-4 h-4"/> Shorts</button>
             {(isPremium || isAdmin) && <button onClick={() => setActiveTab('promotions')} className={`py-3 font-bold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'promotions' ? 'border-[hsl(var(--accent-color))] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}><Megaphone className="w-4 h-4"/> Promotions</button>}
             <button onClick={() => setActiveTab('about')} className={`py-3 font-bold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'about' ? 'border-[hsl(var(--accent-color))] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}><User className="w-4 h-4"/> About</button>
             <button onClick={() => setActiveTab('reports')} className={`py-3 font-bold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${activeTab === 'reports' ? 'border-[hsl(var(--accent-color))] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}><Flag className="w-4 h-4"/> Reports</button>
           </div>
+
+          {/* Left Arrow */}
+          {showScrollArrows && !isScrolledLeft && (
+            <div className="absolute left-0 top-0 bottom-0 flex items-center bg-gradient-to-r from-[var(--background-primary)] to-transparent pr-4 pl-1 z-10">
+                <button 
+                    onClick={() => scrollTabs('left')} 
+                    className="p-1.5 rounded-full bg-[var(--background-secondary)] border border-[var(--border-primary)] shadow-md text-[var(--text-primary)] hover:bg-[var(--background-tertiary)]"
+                >
+                    <ChevronLeft className="w-4 h-4" />
+                </button>
+            </div>
+          )}
+          
+          {/* Right Arrow */}
+          {showScrollArrows && !isScrolledRight && (
+            <div className="absolute right-0 top-0 bottom-0 flex items-center bg-gradient-to-l from-[var(--background-primary)] to-transparent pl-4 pr-1 z-10">
+                <button 
+                    onClick={() => scrollTabs('right')} 
+                    className="p-1.5 rounded-full bg-[var(--background-secondary)] border border-[var(--border-primary)] shadow-md text-[var(--text-primary)] hover:bg-[var(--background-tertiary)]"
+                >
+                    <ChevronRight className="w-4 h-4" />
+                </button>
+            </div>
+          )}
         </div>
 
         {/* Tab Content */}

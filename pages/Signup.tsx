@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck, Shield } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck, Shield, Phone, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { COUNTRY_CODES } from '../constants';
 
 export const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export const Signup: React.FC = () => {
   const [isLoginView, setIsLoginView] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  // Secret Admin Access Check: Check both query param AND dedicated route
+  // Secret Admin Access Check
   const isLeadAdminRoute = location.pathname === '/lead-admin';
   const showLeadAccess = new URLSearchParams(location.search).get('access') === 'lead_admin' || isLeadAdminRoute;
   const [isLoadingLead, setIsLoadingLead] = useState(false);
@@ -26,8 +27,16 @@ export const Signup: React.FC = () => {
   // Security CAPTCHA State
   const [captcha, setCaptcha] = useState({ num1: 0, num2: 0 });
   const [captchaInput, setCaptchaInput] = useState('');
-  // Honeypot state for anti-spam (hidden field)
   const [website, setWebsite] = useState('');
+
+  // Mobile Login State
+  const [loginMethod, setLoginMethod] = useState<'email' | 'mobile'>('email');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [mobileError, setMobileError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
 
   const [signupForm, setSignupForm] = useState({
     fullName: '',
@@ -53,6 +62,17 @@ export const Signup: React.FC = () => {
     regenerateCaptcha();
   }, []);
 
+  // Timer for OTP Resend
+  useEffect(() => {
+    let interval: any;
+    if (resendTimer > 0) {
+        interval = setInterval(() => {
+            setResendTimer((prev) => prev - 1);
+        }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
   const regenerateCaptcha = () => {
     setCaptcha({ 
         num1: Math.floor(Math.random() * 10), 
@@ -70,7 +90,6 @@ export const Signup: React.FC = () => {
                 completeBiometricLogin();
             }, 1000);
         } else {
-            // Shake effect or error could go here
             setPasscodeInput('');
             alert("Incorrect passcode. (Demo Hint: 123456)");
         }
@@ -92,9 +111,7 @@ export const Signup: React.FC = () => {
     setBiometricStatus('scanning');
     setPasscodeInput('');
     
-    // Simulate biometric scan delay
     timeoutRef.current = window.setTimeout(() => {
-        // Only transition to success if user hasn't switched to passcode manually
         setBiometricStatus((prev) => {
             if (prev === 'scanning') {
                 timeoutRef.current = window.setTimeout(() => {
@@ -110,7 +127,6 @@ export const Signup: React.FC = () => {
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Honeypot check: if the hidden field 'website' has a value, it's likely a bot
     if (website) {
         console.warn("Bot detected via honeypot.");
         return; 
@@ -121,7 +137,6 @@ export const Signup: React.FC = () => {
       return;
     }
 
-    // Password Complexity Check
     if (signupForm.password.length < 8) {
         alert("Security Alert: Password must be at least 8 characters long.");
         return;
@@ -131,14 +146,12 @@ export const Signup: React.FC = () => {
         return;
     }
 
-    // Security Check
     if (parseInt(captchaInput, 10) !== captcha.num1 + captcha.num2) {
         alert("Incorrect security answer. Please prove you are human.");
         regenerateCaptcha();
         return;
     }
 
-    // Check for duplicate account name
     const allUsersJSON = localStorage.getItem('starlight_all_users');
     if (allUsersJSON) {
         const allUsers = JSON.parse(allUsersJSON);
@@ -152,7 +165,6 @@ export const Signup: React.FC = () => {
 
     setLoadingProvider('email');
     await new Promise(resolve => setTimeout(resolve, 1500));
-    // Sanitize name just in case (basic strip)
     const cleanName = signupForm.fullName.replace(/<[^>]*>?/gm, "").trim();
     
     const newUser = {
@@ -167,15 +179,67 @@ export const Signup: React.FC = () => {
     e.preventDefault();
     setLoadingProvider('email');
     await new Promise(resolve => setTimeout(resolve, 1000));
-    // For login, we simulate finding the user. 
-    // In a real app, this would validate credentials against the database.
-    // Here we just "log in" with the provided email.
     const mockUser = {
       name: loginForm.email.split('@')[0],
       email: loginForm.email,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${loginForm.email}`
     };
     login(mockUser);
+  };
+
+  const handleSendMobileOtp = () => {
+    setMobileError('');
+    if (!mobileNumber || mobileNumber.length < 5) {
+        setMobileError('Please enter a valid mobile number.');
+        return;
+    }
+    
+    setLoadingProvider('mobile');
+    
+    setTimeout(() => {
+        setLoadingProvider(null);
+        setIsOtpSent(true);
+        setResendTimer(30);
+    }, 1500);
+  };
+
+  const handleMobileLogin = () => {
+    setMobileError('');
+    if (otp !== '123456') {
+        setMobileError('Invalid OTP. Please use 123456.');
+        return;
+    }
+
+    setLoadingProvider('mobile');
+
+    setTimeout(() => {
+        const fullNumber = countryCode + mobileNumber;
+        const detailsJson = localStorage.getItem('starlight_profile_details');
+        const usersJson = localStorage.getItem('starlight_all_users');
+        
+        let foundUser = null;
+
+        if (detailsJson && usersJson) {
+            const details = JSON.parse(detailsJson);
+            const users = JSON.parse(usersJson);
+            const userEmail = Object.keys(details).find(email => details[email].mobileNumber === fullNumber);
+            if (userEmail) {
+                foundUser = users.find((u: any) => u.email === userEmail);
+            }
+        }
+
+        if (foundUser) {
+            login(foundUser);
+        } else {
+            // Mock user if not found in DB for demo purposes
+            login({
+                name: "Mobile User",
+                email: `mobile_${mobileNumber}@starlight.app`,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${mobileNumber}`,
+                isPremium: false
+            });
+        }
+    }, 1000);
   };
 
   const handleGoogleAuth = async (redirectPath: string = '/') => {
@@ -284,6 +348,16 @@ export const Signup: React.FC = () => {
         </button>
       </div>
 
+      <button
+        type="button"
+        onClick={handleBiometricLogin}
+        disabled={loadingProvider !== null}
+        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
+      >
+        <Fingerprint className="w-5 h-5 text-[hsl(var(--accent-color))]" />
+        <span>Sign in with Passkey</span>
+      </button>
+
       <div className="flex items-center gap-4 my-6">
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
         <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">Or sign up with email</span>
@@ -291,7 +365,6 @@ export const Signup: React.FC = () => {
       </div>
       
       <form onSubmit={handleSignupSubmit} className="space-y-5">
-        {/* Honeypot Field - Hidden */}
         <input 
             type="text" 
             name="website" 
@@ -325,7 +398,6 @@ export const Signup: React.FC = () => {
             <p className="text-xs text-[var(--text-tertiary)]">Must be at least 8 characters with at least one number.</p>
         </div>
 
-        {/* Security CAPTCHA */}
         <div className="p-3 rounded-lg bg-[var(--background-tertiary)]/50 border border-[var(--border-primary)] flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-green-500" />
@@ -416,38 +488,142 @@ export const Signup: React.FC = () => {
 
       <div className="flex items-center gap-4 my-6">
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
-        <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">Or log in with email</span>
+        <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">Or log in with</span>
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
       </div>
-      
-      <form onSubmit={handleLoginSubmit} className="space-y-5">
-        <div className="space-y-2">
-            <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="email" required placeholder="jane@example.com" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
-            </div>
-        </div>
-        <div className="space-y-2">
-            <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="password" required placeholder="••••••••" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
-            </div>
-        </div>
 
-        <div className="flex justify-between items-center pt-2">
-          <label htmlFor="rememberMe" className="flex items-center gap-2 cursor-pointer">
-            <input id="rememberMe" type="checkbox" checked={loginForm.rememberMe} onChange={e => setLoginForm({...loginForm, rememberMe: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>
-            <span className="text-sm text-[var(--text-secondary)]">Remember me</span>
-          </label>
-          <button type="button" className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot password?</button>
-        </div>
-
-        <button type="submit" disabled={loadingProvider !== null} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
-          {loadingProvider === 'email' ? (<>Logging In <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Log In <LogIn className="w-5 h-5" /></>)}
+      {/* Login Method Tabs */}
+      <div className="flex bg-[var(--background-primary)] p-1 rounded-xl mb-6 border border-[var(--border-primary)]">
+        <button 
+            type="button"
+            onClick={() => { setLoginMethod('email'); setMobileError(''); }}
+            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginMethod === 'email' ? 'bg-[hsl(var(--accent-color))] text-white shadow-sm' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
+        >
+            Email
         </button>
-      </form>
+        <button 
+            type="button"
+            onClick={() => { setLoginMethod('mobile'); setMobileError(''); }}
+            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginMethod === 'mobile' ? 'bg-[hsl(var(--accent-color))] text-white shadow-sm' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
+        >
+            Mobile Number
+        </button>
+      </div>
+      
+      {loginMethod === 'email' ? (
+        <form onSubmit={handleLoginSubmit} className="space-y-5 animate-in fade-in">
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
+                <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
+                <input type="email" required placeholder="jane@example.com" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+                </div>
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
+                <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
+                <input type="password" required placeholder="••••••••" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2">
+            <label htmlFor="rememberMe" className="flex items-center gap-2 cursor-pointer">
+                <input id="rememberMe" type="checkbox" checked={loginForm.rememberMe} onChange={e => setLoginForm({...loginForm, rememberMe: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>
+                <span className="text-sm text-[var(--text-secondary)]">Remember me</span>
+            </label>
+            <button type="button" className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot password?</button>
+            </div>
+
+            <button type="submit" disabled={loadingProvider !== null} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
+            {loadingProvider === 'email' ? (<>Logging In <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Log In <LogIn className="w-5 h-5" /></>)}
+            </button>
+        </form>
+      ) : (
+        <form onSubmit={(e) => { e.preventDefault(); isOtpSent ? handleMobileLogin() : handleSendMobileOtp(); }} className="space-y-5 animate-in fade-in">
+            {!isOtpSent ? (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-[var(--text-secondary)]">Mobile Number</label>
+                        <div className="flex gap-2">
+                            <div className="relative w-24 flex-shrink-0">
+                                <select 
+                                    value={countryCode} 
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] appearance-none"
+                                >
+                                    {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
+                                </select>
+                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
+                            </div>
+                            <div className="relative flex-1">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
+                                <input 
+                                    type="tel" 
+                                    value={mobileNumber} 
+                                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))} 
+                                    placeholder="Mobile Number" 
+                                    className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {mobileError && <p className="text-red-500 text-xs flex items-center gap-1"><ShieldCheck className="w-3 h-3"/> {mobileError}</p>}
+
+                    <button 
+                        type="submit" 
+                        disabled={loadingProvider !== null || !mobileNumber} 
+                        className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait"
+                    >
+                        {loadingProvider === 'mobile' ? (<>Sending OTP... <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Send OTP <ArrowRight className="w-5 h-5" /></>)}
+                    </button>
+                </div>
+            ) : (
+                <div className="space-y-4 animate-in slide-in-from-right">
+                    <div className="text-center mb-4">
+                        <p className="text-sm text-[var(--text-secondary)]">Enter the 6-digit code sent to</p>
+                        <p className="font-bold text-[var(--text-primary)]">{countryCode} {mobileNumber} <button type="button" onClick={() => { setIsOtpSent(false); setOtp(''); }} className="text-[hsl(var(--accent-color))] text-xs ml-2 hover:underline">Change</button></p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <input 
+                            type="text" 
+                            maxLength={6}
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                            placeholder="123456" 
+                            className="w-full p-4 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] text-center text-2xl tracking-widest font-mono"
+                            autoFocus
+                        />
+                        <div className="text-center text-xs text-[var(--text-tertiary)] mt-2">Hint: Use 123456</div>
+                    </div>
+
+                    {mobileError && <p className="text-red-500 text-xs flex items-center gap-1 justify-center"><ShieldCheck className="w-3 h-3"/> {mobileError}</p>}
+
+                    <button 
+                        type="submit" 
+                        disabled={loadingProvider !== null || otp.length !== 6} 
+                        className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait"
+                    >
+                        {loadingProvider === 'mobile' ? (<>Verifying... <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Verify & Login <ArrowRight className="w-5 h-5" /></>)}
+                    </button>
+                    
+                    <div className="text-center mt-4">
+                        <button 
+                            type="button" 
+                            onClick={handleSendMobileOtp}
+                            disabled={resendTimer > 0}
+                            className={`text-xs font-semibold ${resendTimer > 0 ? 'text-[var(--text-tertiary)] cursor-not-allowed' : 'text-[hsl(var(--accent-color))] hover:underline'}`}
+                        >
+                            {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </form>
+      )}
+
       <div className="mt-8 text-center border-t border-[var(--border-primary)] pt-6">
           <p className="text-[var(--text-secondary)]"> Don't have an account? <button onClick={() => setIsLoginView(false)} className="text-[hsl(var(--accent-color))] font-bold hover:underline">Sign Up</button></p>
       </div>
@@ -599,20 +775,6 @@ export const Signup: React.FC = () => {
            </div>
         </div>
       </div>
-
-      {/* Secret Lead Admin Access Section (via Query Param) */}
-      {showLeadAccess && (
-        <div className="w-full max-w-md mt-8 animate-in fade-in slide-in-from-bottom-4">
-            <button 
-                onClick={handleLeadAdminLogin}
-                disabled={isLoadingLead}
-                className="w-full py-3 bg-red-600 text-white border border-red-700 rounded-xl hover:bg-red-700 transition-all font-semibold flex items-center justify-center gap-3 shadow-lg shadow-red-600/20"
-            >
-                {isLoadingLead ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
-                {isLoadingLead ? 'Authenticating Lead Admin...' : 'Lead Admin Access'}
-            </button>
-        </div>
-      )}
     </div>
   );
 };

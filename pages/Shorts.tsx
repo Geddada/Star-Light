@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchShorts } from '../services/gemini';
 import { Video } from '../types';
@@ -69,7 +70,7 @@ export const Shorts: React.FC = () => {
 
         <button
           onClick={() => navigate('/')}
-          className="absolute top-6 left-6 z-50 p-3 bg-black/40 rounded-full text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
+          className="absolute top-6 left-6 z-50 p-3 bg-black/40 rounded-full text-white hover:bg-black/70 transition-colors backdrop-blur-sm hidden md:block"
           aria-label="Back to Home"
         >
           <Home className="w-6 h-6" />
@@ -78,7 +79,7 @@ export const Shorts: React.FC = () => {
         {currentUser && (
             <button
             onClick={() => setShowUploadModal(true)}
-            className="absolute top-6 right-6 z-50 p-3 bg-black/40 rounded-full text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
+            className="absolute top-6 right-6 z-50 p-3 bg-black/40 rounded-full text-white hover:bg-black/70 transition-colors backdrop-blur-sm hidden md:block"
             aria-label="Upload a Short"
             >
             <Camera className="w-6 h-6" />

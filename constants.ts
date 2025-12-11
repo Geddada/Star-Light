@@ -1,3 +1,4 @@
+
 export const COUNTRIES = [
   "Afghanistan", "Aland Islands", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan",
   "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
@@ -51,11 +52,22 @@ export const UK_STATES = [
 ];
 
 export const ANDHRA_PRADESH_CITIES = [
-  "Adoni", "Amaravati", "Anakapalle", "Anantapur", "Bapatla", "Bhimavaram", "Chirala", "Chittoor", 
-  "Dharmavaram", "Eluru", "Gooty", "Gudivada", "Guntur", "Hindupur", "Kadapa", "Kakinada", "Kavali", 
-  "Kurnool", "Machilipatnam", "Madanapalle", "Mangalagiri", "Markapur", "Nandyal", "Narasaraopet", 
-  "Nellore", "Ongole", "Palakollu", "Proddatur", "Rajahmundry", "Rayachoti", "Srikakulam", "Tadipatri", 
-  "Tadepalligudem", "Tenali", "Tirupati", "Vijayawada", "Visakhapatnam", "Vizianagaram"
+  "Addanki", "Adoni", "Akividu", "Allagadda", "Alur", "Amalapuram", "Amadalavalasa", "Amaravati", 
+  "Anakapalle", "Anantapur", "Anaparthy", "Atmakur (Kurnool)", "Atmakur (Nellore)", "Avanigadda", 
+  "Badvel", "Bapatla", "Bethamcherla", "Bhimavaram", "Bheemunipatnam", "Bobbili", "Cheepurupalle", 
+  "Chilakaluripet", "Chirala", "Chittoor", "Chodavaram", "Dharmavaram", "Dhone", "Eluru", "Gannavaram", 
+  "Gooty", "Gudivada", "Gudur", "Guntakal", "Guntur", "Hindupur", "Ichchapuram", "Jaggaiahpet", 
+  "Jaggampeta", "Jammalamadugu", "Jangareddigudem", "Kadapa", "Kadiri", "Kakinada", "Kalyandurg", 
+  "Kamalapuram", "Kandukur", "Kanigiri", "Kavali", "Kovvur", "Kuppam", "Kurnool", "Macherla", 
+  "Machilipatnam", "Madanapalle", "Mandapeta", "Mangalagiri", "Markapur", "Mummidivaram", "Mydukur", 
+  "Nagari", "Naidupet", "Nandyal", "Nandikotkur", "Narasapuram", "Narasaraopet", "Narsipatnam", 
+  "Nellore", "Nidadavole", "Nuzvid", "Ongole", "Palacole", "Palakonda", "Palamaner", "Palasa Kasibugga", 
+  "Pamidi", "Parvathipuram", "Pedana", "Peddapuram", "Penukonda", "Piduguralla", "Pithapuram", "Ponnur", 
+  "Proddatur", "Punganur", "Puttaparthi", "Puttur", "Rajahmundry", "Rajam", "Rajampet", "Ramachandrapuram", 
+  "Rayachoti", "Rayadurg", "Renigunta", "Repalle", "Salur", "Samalkot", "Sattenapalle", "Singarayakonda", 
+  "Srikakulam", "Srikalahasti", "Srisailam", "Sullurpeta", "Tadepalligudem", "Tadipatri", "Tanuku", 
+  "Tekkali", "Tenali", "Tirupati", "Tiruvuru", "Tuni", "Uravakonda", "Venkatagiri", "Vijayawada", 
+  "Vinukonda", "Visakhapatnam", "Vizianagaram", "Vuyyuru", "Yemmiganur", "Yerraguntla"
 ];
 
 export const COUNTRY_CODES = [
@@ -496,5 +508,4 @@ export const ANDHRA_PRADESH_CONSTITUENCIES = [
   { id: 'tadepalligudem', name: 'Tadepalligudem', isReservedSC: false },
 ];
 
-// FIX: Exported SUBSCRIPTION_KEY to resolve errors in other files.
 export const SUBSCRIPTION_KEY = 'starlight_subscriptions';

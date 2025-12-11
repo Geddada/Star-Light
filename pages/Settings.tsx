@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     User, Mail, Phone, CheckCircle2, MapPin, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit, Shield, LogIn
+    RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit, Shield, LogIn,
+    ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
@@ -571,6 +572,12 @@ export const Settings: React.FC = () => {
     const [profileDetails, setProfileDetails] = useState<ProfileDetails>({});
     const [showAdminModal, setShowAdminModal] = useState(false);
     
+    // Tab Navigation State
+    const [showScrollArrows, setShowScrollArrows] = useState(false);
+    const [isScrolledLeft, setIsScrolledLeft] = useState(true);
+    const [isScrolledRight, setIsScrolledRight] = useState(false);
+    const tabsContainerRef = useRef<HTMLDivElement>(null);
+
     const activeTab: SettingsTab = useMemo(() => {
         const hash = location.hash.substring(1);
         if (['blocked-users'].includes(hash)) {
@@ -614,11 +621,46 @@ export const Settings: React.FC = () => {
         loadProfileData();
     }, [loadProfileData]);
 
+    // Mobile Scroll Arrow Logic
+    const checkScrollPosition = useCallback(() => {
+        const container = tabsContainerRef.current;
+        if (container) {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            setShowScrollArrows(scrollWidth > clientWidth);
+            setIsScrolledLeft(scrollLeft <= 0);
+            // Use a small threshold for precision issues
+            setIsScrolledRight(Math.ceil(scrollLeft + clientWidth) >= scrollWidth);
+        }
+    }, []);
+
+    useEffect(() => {
+        const container = tabsContainerRef.current;
+        if (container) {
+            checkScrollPosition();
+            container.addEventListener('scroll', checkScrollPosition);
+            window.addEventListener('resize', checkScrollPosition);
+            return () => {
+                container.removeEventListener('scroll', checkScrollPosition);
+                window.removeEventListener('resize', checkScrollPosition);
+            };
+        }
+    }, [checkScrollPosition, activeTab]);
+
+    const scrollTabs = (direction: 'left' | 'right') => {
+        if (tabsContainerRef.current) {
+            const scrollAmount = 200;
+            tabsContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     const renderContent = () => {
         const currentNavItem = NAV_ITEMS.find(item => item.id === activeTab);
         return (
             <div className="animate-in fade-in duration-300">
-                <h1 className="text-3xl font-bold mb-8">{currentNavItem?.label}</h1>
+                <h1 className="text-3xl font-bold mb-8 hidden md:block">{currentNavItem?.label}</h1>
                 {(() => {
                     switch(activeTab) {
                         case 'account':
@@ -694,6 +736,55 @@ export const Settings: React.FC = () => {
     return (
         <main className="p-4 sm:p-6 md:p-8">
             <div className="max-w-4xl mx-auto">
+                {/* Mobile Tabs Navigation */}
+                <div className="relative mb-6 border-b border-[var(--border-primary)] md:hidden">
+                    <div 
+                        ref={tabsContainerRef}
+                        className="flex overflow-x-auto no-scrollbar items-center gap-6 px-4 scroll-smooth"
+                    >
+                        {NAV_ITEMS.map(item => (
+                            <button
+                                key={item.id}
+                                onClick={() => navigate(`#${item.id}`)}
+                                className={`py-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors flex-shrink-0 ${
+                                    activeTab === item.id 
+                                    ? 'border-[hsl(var(--accent-color))] text-[hsl(var(--accent-color))]' 
+                                    : 'border-transparent text-[var(--text-secondary)]'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <item.icon className="w-4 h-4" />
+                                    {item.label}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    
+                    {/* Left Scroll Arrow */}
+                    {showScrollArrows && !isScrolledLeft && (
+                        <div className="absolute left-0 top-0 bottom-0 flex items-center bg-gradient-to-r from-[var(--background-primary)] to-transparent pr-4 pl-1 z-10">
+                            <button 
+                                onClick={() => scrollTabs('left')} 
+                                className="p-1.5 rounded-full bg-[var(--background-secondary)] border border-[var(--border-primary)] shadow-md text-[var(--text-primary)] hover:bg-[var(--background-tertiary)]"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+                    
+                    {/* Right Scroll Arrow */}
+                    {showScrollArrows && !isScrolledRight && (
+                        <div className="absolute right-0 top-0 bottom-0 flex items-center bg-gradient-to-l from-[var(--background-primary)] to-transparent pl-4 pr-1 z-10">
+                            <button 
+                                onClick={() => scrollTabs('right')} 
+                                className="p-1.5 rounded-full bg-[var(--background-secondary)] border border-[var(--border-primary)] shadow-md text-[var(--text-primary)] hover:bg-[var(--background-tertiary)]"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
                 {renderContent()}
             </div>
         </main>

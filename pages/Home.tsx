@@ -233,14 +233,14 @@ export const Home: React.FC = () => {
         />
       )}
       
-      {/* Categories Header: Fixed at bottom on mobile (above nav), Sticky at top on desktop */}
-      <div className="fixed bottom-14 left-0 right-0 z-40 md:static md:z-30 md:sticky md:top-0 bg-[var(--background-primary)]/95 backdrop-blur-xl border-t md:border-t-0 md:border-b border-[var(--border-primary)]/50 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-sm transition-all duration-300">
+      {/* Categories Header: Sticky at top on all devices */}
+      <div className="sticky top-0 z-40 bg-[var(--background-primary)]/95 backdrop-blur-xl border-b border-[var(--border-primary)]/50 flex flex-col shadow-sm transition-all duration-300">
         
         {/* Row 1: Main Categories */}
         <div className="relative">
           <div
             ref={scrollContainerRef}
-            className="w-full flex items-center px-4 py-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+            className="w-full flex items-center px-4 py-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {CATEGORIES.map((cat) => (
               <button
@@ -257,7 +257,7 @@ export const Home: React.FC = () => {
             ))}
           </div>
 
-          {/* Left Scroll Button & Gradient */}
+          {/* Left Scroll Button & Gradient - Visible on all screens */}
           <div className={`absolute top-0 left-0 h-full flex items-center transition-opacity duration-300 ${showScrollArrows && !isScrolledLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[var(--background-primary)] to-transparent"></div>
             <button
@@ -269,7 +269,7 @@ export const Home: React.FC = () => {
             </button>
           </div>
 
-          {/* Right Scroll Button & Gradient */}
+          {/* Right Scroll Button & Gradient - Visible on all screens */}
           <div className={`absolute top-0 right-0 h-full flex items-center justify-end transition-opacity duration-300 ${showScrollArrows && !isScrolledRight ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[var(--background-primary)] to-transparent"></div>
              <button
@@ -315,7 +315,7 @@ export const Home: React.FC = () => {
               ))}
             </div>
 
-            {/* Left Scroll Button & Gradient */}
+            {/* Left Scroll Button & Gradient - Visible on all screens */}
             <div className={`absolute top-0 left-0 h-full flex items-center transition-opacity duration-300 ${showSubCategoryScrollArrows && !isSubCategoryScrolledLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[var(--background-primary)] to-transparent"></div>
               <button
@@ -327,7 +327,7 @@ export const Home: React.FC = () => {
               </button>
             </div>
 
-            {/* Right Scroll Button & Gradient */}
+            {/* Right Scroll Button & Gradient - Visible on all screens */}
             <div className={`absolute top-0 right-0 h-full flex items-center justify-end transition-opacity duration-300 ${showSubCategoryScrollArrows && !isSubCategoryScrolledRight ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[var(--background-primary)] to-transparent"></div>
               <button
@@ -342,7 +342,7 @@ export const Home: React.FC = () => {
         )}
       </div>
 
-      <div className="flex flex-col xl:flex-row pb-32 md:pb-0">
+      <div className="flex flex-col xl:flex-row pb-4 md:pb-0">
         <div className="flex-1 min-w-0">
           {/* Shorts Shelf Section */}
           <div className="p-4 sm:p-6 border-b xl:border-b-0 border-[var(--border-primary)]">

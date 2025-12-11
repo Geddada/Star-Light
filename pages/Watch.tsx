@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -232,7 +233,7 @@ export const Watch: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6 max-w-[1800px] mx-auto w-full">
+    <div className="flex flex-col lg:flex-row gap-0 md:gap-6 p-0 md:p-6 max-w-[1800px] mx-auto w-full">
         {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoUrl={window.location.href} videoTitle={video.title} currentTime={currentTime} />}
         {showSaveModal && <SaveToPlaylistModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} video={video} />}
         {showReportModal && <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} video={video} />}
@@ -241,7 +242,7 @@ export const Watch: React.FC = () => {
         {/* Video Player */}
         <div 
             ref={playerContainerRef}
-            className="relative aspect-video bg-black rounded-xl overflow-hidden group"
+            className="relative aspect-video bg-black md:rounded-xl overflow-hidden group w-full"
             onMouseMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
         >
@@ -343,7 +344,7 @@ export const Watch: React.FC = () => {
         </div>
 
         {/* Video Info */}
-        <div className="mt-4">
+        <div className="p-4 md:p-0 md:mt-4">
             <div className="flex items-start gap-2">
                 <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] line-clamp-2 flex-1">{video.title}</h1>
                 <button 
@@ -458,7 +459,7 @@ export const Watch: React.FC = () => {
       </div>
 
       {/* Sidebar Recommendations */}
-      <div className="lg:w-[400px] flex-shrink-0">
+      <div className="lg:w-[400px] flex-shrink-0 p-4 md:p-0">
         <div className="space-y-4">
             <h2 className="font-bold text-lg px-1">Sponsored</h2>
             <SidebarAd ad={ad} />

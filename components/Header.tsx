@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon, Tv2, PlusCircle, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
 import { SendToMobileModal } from './SendToMobileModal';
+import { TvConnectModal } from './TvConnectModal';
 
 
 interface CurrentUser {
@@ -93,6 +94,7 @@ export const Header: React.FC<HeaderProps> = () => {
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [showAdsDropdown, setShowAdsDropdown] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showTvModal, setShowTvModal] = useState(false);
   const [uploadModalConfig, setUploadModalConfig] = useState<{
     initialStep: 'initial' | 'recording' | 'details';
     isShorts: boolean;
@@ -109,8 +111,15 @@ export const Header: React.FC<HeaderProps> = () => {
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const avatarButtonRef = useRef<HTMLButtonElement>(null);
+  
+  // Desktop Notification Refs
   const notificationRef = useRef<HTMLDivElement>(null);
   const notifButtonRef = useRef<HTMLButtonElement>(null);
+  
+  // Mobile Notification Refs
+  const mobileNotificationRef = useRef<HTMLDivElement>(null);
+  const mobileNotifButtonRef = useRef<HTMLButtonElement>(null);
+
   const createDropdownRef = useRef<HTMLDivElement>(null);
   const createButtonRef = useRef<HTMLDivElement>(null);
   const adsDropdownRef = useRef<HTMLDivElement>(null);
@@ -118,15 +127,24 @@ export const Header: React.FC<HeaderProps> = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // User Menu
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) && !avatarButtonRef.current?.contains(event.target as Node)) {
         setShowDropdown(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node) && !notifButtonRef.current?.contains(event.target as Node)) {
+      
+      // Notifications (Desktop & Mobile)
+      const clickedDesktopNotif = notificationRef.current?.contains(event.target as Node) || notifButtonRef.current?.contains(event.target as Node);
+      const clickedMobileNotif = mobileNotificationRef.current?.contains(event.target as Node) || mobileNotifButtonRef.current?.contains(event.target as Node);
+      
+      if (!clickedDesktopNotif && !clickedMobileNotif) {
         setShowNotifications(false);
       }
+
+      // Create Menu
       if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node) && !createButtonRef.current?.contains(event.target as Node)) {
         setShowCreateDropdown(false);
       }
+      // Ads Menu
       if (adsDropdownRef.current && !adsDropdownRef.current.contains(event.target as Node) && !adsButtonRef.current?.contains(event.target as Node)) {
         setShowAdsDropdown(false);
       }
@@ -241,6 +259,7 @@ export const Header: React.FC<HeaderProps> = () => {
     <>
       {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} onUploadSuccess={handleUploadSuccess} initialStep={uploadModalConfig.initialStep} isShortsDefault={uploadModalConfig.isShorts} uploadType={uploadModalConfig.uploadType} />}
       {showSendToMobileModal && <SendToMobileModal onClose={() => setShowSendToMobileModal(false)} />}
+      {showTvModal && <TvConnectModal onClose={() => setShowTvModal(false)} />}
       
       <style>{`
         @keyframes on-air-blink {
@@ -257,11 +276,13 @@ export const Header: React.FC<HeaderProps> = () => {
           animation: on-air-blink 1.s infinite;
         }
       `}</style>
-      <header className="h-16 hidden md:flex items-center justify-between px-4 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
+
+      {/* Mobile Header */}
+      <header className="flex md:hidden items-center justify-between px-4 h-14 bg-[var(--background-primary)] border-b border-[var(--border-primary)] sticky top-0 z-50">
         
         {/* Mobile Search Overlay */}
         {isMobileSearch && (
-          <div className="absolute inset-0 h-full w-full bg-[var(--background-secondary)] z-20 flex items-center px-2 animate-in fade-in">
+          <div className="absolute inset-0 h-full w-full bg-[var(--background-secondary)] z-50 flex items-center px-2 animate-in fade-in">
             <button onClick={() => setIsMobileSearch(false)} className="p-2 text-[var(--text-secondary)] hover:bg-[var(--background-tertiary)] rounded-full">
                 <ArrowLeft className="w-6 h-6" />
             </button>
@@ -293,6 +314,78 @@ export const Header: React.FC<HeaderProps> = () => {
           </div>
         )}
 
+        <div className="flex items-center gap-2" onClick={() => navigate('/')}>
+             <div className="relative">
+              <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 rounded-full"></div>
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-6 h-6 text-red-500 relative z-10"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+            </div>
+            <span className="font-bold text-lg tracking-tighter text-[var(--text-primary)]">StarLight</span>
+        </div>
+        
+        <div className="flex items-center gap-1">
+            <button onClick={() => setShowTvModal(true)} className="p-2 text-[var(--text-primary)] hover:bg-[var(--background-secondary)] rounded-full">
+                <Tv2 className="w-5 h-5" />
+            </button>
+            
+            {/* Mobile Notifications */}
+            <div className="relative">
+                <button 
+                    ref={mobileNotifButtonRef}
+                    onClick={() => {
+                        if (!currentUser) {
+                            navigate('/signup');
+                        } else {
+                            setShowNotifications(!showNotifications);
+                        }
+                    }}
+                    className="p-2 text-[var(--text-primary)] hover:bg-[var(--background-secondary)] rounded-full relative"
+                >
+                    <Bell className="w-5 h-5" />
+                    {currentUser && unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{unreadCount}</span>}
+                </button>
+                {currentUser && showNotifications && (
+                    <div ref={mobileNotificationRef} className="absolute top-full right-[-50px] mt-2 w-80 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-2xl animate-in fade-in zoom-in-95 z-50">
+                        <div className="p-3 font-semibold border-b border-[var(--border-primary)] flex items-center justify-between">
+                            <span>Notifications</span>
+                            <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-[var(--background-tertiary)] rounded-full"><X className="w-4 h-4"/></button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto">
+                            {notifications.map(n => (
+                            <div key={n.id} className={`p-3 flex gap-3 border-b border-[var(--border-primary)]/50 ${!n.read ? 'bg-[hsl(var(--accent-color))]/5' : ''}`}>
+                                <img src={n.avatar} className="w-10 h-10 rounded-full flex-shrink-0" alt="" />
+                                <div className="flex-1">
+                                <p className="text-sm">
+                                    <span className="font-bold">{n.user}</span> {n.action}
+                                </p>
+                                <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{n.time}</p>
+                                </div>
+                                {n.thumbnail && <img src={n.thumbnail} className="w-16 aspect-video rounded-md object-cover" alt="" />}
+                            </div>
+                            ))}
+                        </div>
+                        <div className="p-2 text-center border-t border-[var(--border-primary)]">
+                            <button onClick={() => setNotifications(prev => prev.map(n => ({...n, read: true})))} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-red-500 hover:bg-red-500/10 font-semibold text-sm transition-colors">Mark all as read</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <button onClick={() => setIsMobileSearch(true)} className="p-2 text-[var(--text-primary)] hover:bg-[var(--background-secondary)] rounded-full">
+                <Search className="w-5 h-5" />
+            </button>
+        </div>
+      </header>
+
+      {/* Desktop Header */}
+      <header className="h-16 hidden md:flex items-center justify-between px-4 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
+        
         {/* Left Section */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <div 
@@ -331,11 +424,6 @@ export const Header: React.FC<HeaderProps> = () => {
 
       {/* Right Section */}
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        {/* Mobile search button */}
-        <button onClick={() => setIsMobileSearch(true)} className="p-2.5 rounded-full hover:bg-[var(--background-tertiary)] sm:hidden">
-            <Search className="w-5 h-5" />
-        </button>
-        
         {/* Ads Manager Dropdown - Only for Premium or Admin */}
         {(isPremium || isAdmin) && (
           <div className="relative" ref={adsButtonRef}>
@@ -465,7 +553,7 @@ export const Header: React.FC<HeaderProps> = () => {
           {theme === 'light' ? <Moon className="w-5 h-5"/> : <Sun className="w-5 h-5"/>}
         </button>
 
-        {/* Notifications */}
+        {/* Notifications (Desktop) */}
         <div className="relative">
           <button
             ref={notifButtonRef}
@@ -555,7 +643,6 @@ export const Header: React.FC<HeaderProps> = () => {
           </button>
         )}
       </div>
-    </header>
     </>
   );
 };
