@@ -5,7 +5,7 @@ import {
     User, Mail, Phone, CheckCircle2, MapPin, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
     RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit, Shield, LogIn,
-    ChevronLeft, ChevronRight
+    ChevronLeft, ChevronRight, Monitor, Smartphone, LogOut
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
@@ -482,33 +482,129 @@ const BlockedUsersManager: React.FC = () => {
 
 const SecuritySettings: React.FC<{ currentUser: any }> = ({ currentUser }) => {
     const [resetLinkSent, setResetLinkSent] = useState(false);
+    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+    const [is2FALoading, setIs2FALoading] = useState(false);
+    const [devices, setDevices] = useState([
+        { id: 1, name: 'Chrome on Windows', location: 'Mountain View, CA', time: 'Active now', icon: Monitor, current: true },
+        { id: 2, name: 'Starlight App on iPhone 13', location: 'San Francisco, CA', time: '2 hours ago', icon: Smartphone, current: false },
+        { id: 3, name: 'Safari on MacBook Pro', location: 'New York, NY', time: 'Yesterday', icon: Monitor, current: false },
+    ]);
 
     const handleSendPasswordReset = () => {
         setResetLinkSent(true);
         setTimeout(() => { setResetLinkSent(false); }, 5000);
     };
 
+    const toggle2FA = () => {
+        setIs2FALoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIs2FAEnabled(!is2FAEnabled);
+            setIs2FALoading(false);
+        }, 1500);
+    };
+
+    const handleSignOutDevice = (id: number) => {
+        if(window.confirm('Are you sure you want to sign out this device?')) {
+            setDevices(devices.filter(d => d.id !== id));
+        }
+    };
+
     return (
         <div className="space-y-8">
+            {/* Password Section */}
             <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
-                <h3 className="text-lg font-bold mb-3">Change Password</h3>
-                 <div className="bg-[var(--background-primary)] rounded-lg p-6 border border-[var(--border-primary)] flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-[hsl(var(--accent-color))]/10 flex items-center justify-center text-[hsl(var(--accent-color))] flex-shrink-0"><Lock className="w-6 h-6" /></div>
-                    <div className="flex-1 text-center sm:text-left"><p className="text-[var(--text-primary)] font-medium">Forgot your password or want to change it?</p><p className="text-[var(--text-secondary)] text-sm mt-1">We will send a secure link to <strong>{currentUser.email || 'your email'}</strong> to create a new password.</p></div>
-                    <button onClick={handleSendPasswordReset} disabled={resetLinkSent || !currentUser.email} className="px-6 py-2.5 bg-[hsl(var(--accent-color))] hover:brightness-90 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors shadow-md whitespace-nowrap flex items-center gap-2">
-                        {resetLinkSent ? <CheckCircle2 className="w-4 h-4" /> : <Send className="w-4 h-4" />}
-                        {resetLinkSent ? 'Link Sent' : 'Send Reset Link'}
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Password
+                </h3>
+                 <div className="bg-[var(--background-primary)] rounded-xl p-6 border border-[var(--border-primary)] flex flex-col sm:flex-row items-center gap-6">
+                    <div className="flex-1 text-center sm:text-left">
+                        <p className="text-[var(--text-primary)] font-medium">Last changed 3 months ago</p>
+                        <p className="text-[var(--text-secondary)] text-sm mt-1">
+                            We recommend changing your password periodically to keep your account secure.
+                            Link will be sent to <strong>{currentUser.email}</strong>.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={handleSendPasswordReset} 
+                        disabled={resetLinkSent || !currentUser.email} 
+                        className="px-6 py-2.5 bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg font-semibold text-sm transition-colors shadow-sm whitespace-nowrap flex items-center gap-2"
+                    >
+                        {resetLinkSent ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Send className="w-4 h-4" />}
+                        {resetLinkSent ? 'Reset Link Sent' : 'Send Reset Link'}
                     </button>
                 </div>
             </div>
+
+            {/* 2FA Section */}
             <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
-                <h3 className="text-lg font-bold mb-3">Two-Factor Authentication</h3>
-                 <div className="bg-[var(--background-primary)] rounded-lg p-6 border border-[var(--border-primary)] flex flex-col sm:flex-row items-center gap-6 opacity-60">
-                    <div className="w-12 h-12 rounded-full bg-gray-500/10 flex items-center justify-center text-gray-500 flex-shrink-0"><ShieldCheck className="w-6 h-6" /></div>
-                    <div className="flex-1 text-center sm:text-left"><p className="text-[var(--text-primary)] font-medium">Add an extra layer of security</p><p className="text-[var(--text-secondary)] text-sm mt-1">Protect your account from unauthorized access.</p></div>
-                    <div className="px-6 py-2.5 bg-gray-500 text-white rounded-lg font-semibold text-sm cursor-not-allowed">Coming Soon</div>
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-green-500" /> 2-Step Verification
+                    </h3>
+                    {is2FAEnabled && <span className="px-3 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20">Enabled</span>}
+                </div>
+                 <div className="bg-[var(--background-primary)] rounded-xl p-6 border border-[var(--border-primary)]">
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${is2FAEnabled ? 'bg-green-500/10 text-green-500' : 'bg-[var(--background-tertiary)] text-[var(--text-tertiary)]'}`}>
+                            <ShieldCheck className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 text-center sm:text-left">
+                            <p className="text-[var(--text-primary)] font-medium">Add an extra layer of security</p>
+                            <p className="text-[var(--text-secondary)] text-sm mt-1">
+                                Enter a password and a unique verification code sent to your phone when signing in.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={toggle2FA} 
+                            disabled={is2FALoading}
+                            className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-sm min-w-[120px] flex items-center justify-center ${
+                                is2FAEnabled 
+                                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20' 
+                                : 'bg-[hsl(var(--accent-color))] text-white hover:brightness-90'
+                            }`}
+                        >
+                            {is2FALoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (is2FAEnabled ? 'Turn Off' : 'Turn On')}
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Devices Section */}
+            <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Monitor className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Your Devices
+                </h3>
+                <p className="text-[var(--text-secondary)] text-sm mb-6">You’re signed in on these devices.</p>
+                <div className="space-y-3">
+                    {devices.map(device => (
+                        <div key={device.id} className="flex items-center justify-between p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)]">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-[var(--background-tertiary)] rounded-full text-[var(--text-secondary)]">
+                                    <device.icon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+                                        {device.name}
+                                        {device.current && <span className="px-2 py-0.5 bg-[hsl(var(--accent-color))]/10 text-[hsl(var(--accent-color))] text-[10px] font-bold rounded uppercase">Current Device</span>}
+                                    </p>
+                                    <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)] mt-0.5">
+                                        <span>{device.location}</span>
+                                        <span>•</span>
+                                        <span>{device.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {!device.current && (
+                                <button onClick={() => handleSignOutDevice(device.id)} className="p-2 text-[var(--text-tertiary)] hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors" title="Sign out device">
+                                    <LogOut className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <BlockedUsersManager />
         </div>
     );

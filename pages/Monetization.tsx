@@ -13,14 +13,15 @@ import {
   ShoppingBag,
   Layout,
   Gem,
-  LayoutDashboard
+  LayoutDashboard,
+  Film
 } from 'lucide-react';
 import { Video } from '../types';
 
 export const Monetization: React.FC = () => {
   const { currentUser, isPremium } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ subs: 0, hours: 0, videos: 0, invites: 0 });
+  const [stats, setStats] = useState({ subs: 0, hours: 0, videos: 0, shorts: 0 });
 
   useEffect(() => {
     if (currentUser) {
@@ -29,16 +30,19 @@ export const Monetization: React.FC = () => {
       // Generate numbers that are often close to the goal for demo excitement
       const mockSubs = Math.floor((seed * 13) % 600); 
       const mockHours = Math.floor((seed * 47) % 2500); // Adjusted to be more likely near 2000
-      const mockInvites = Math.floor((seed * 23) % 110);
       
       const existingUploadedVideosJSON = localStorage.getItem('starlight_uploaded_videos');
       let userVideosCount = 0;
+      let userShortsCount = 0;
+
       if (existingUploadedVideosJSON) {
           const allUploadedVideos: Video[] = JSON.parse(existingUploadedVideosJSON);
-          userVideosCount = allUploadedVideos.filter(video => video.uploaderName === currentUser.name).length;
+          const userContent = allUploadedVideos.filter(video => video.uploaderName === currentUser.name);
+          userVideosCount = userContent.filter(v => !v.isShort).length;
+          userShortsCount = userContent.filter(v => v.isShort).length;
       }
 
-      setStats({ subs: mockSubs, hours: mockHours, videos: userVideosCount, invites: mockInvites });
+      setStats({ subs: mockSubs, hours: mockHours, videos: userVideosCount, shorts: userShortsCount });
     }
   }, [currentUser]);
 
@@ -64,15 +68,15 @@ export const Monetization: React.FC = () => {
 
   const subTarget = 500;
   const hourTarget = 2000;
-  const videoTarget = 60;
-  const inviteTarget = 100;
+  const videoTarget = 50;
+  const shortsTarget = 100;
   
   const subProgress = Math.min((stats.subs / subTarget) * 100, 100);
   const hourProgress = Math.min((stats.hours / hourTarget) * 100, 100);
   const videoProgress = Math.min((stats.videos / videoTarget) * 100, 100);
-  const inviteProgress = Math.min((stats.invites / inviteTarget) * 100, 100);
+  const shortsProgress = Math.min((stats.shorts / shortsTarget) * 100, 100);
   
-  const isEligible = stats.subs >= subTarget && stats.hours >= hourTarget && stats.videos >= videoTarget && stats.invites >= inviteTarget;
+  const isEligible = stats.subs >= subTarget && stats.hours >= hourTarget && stats.videos >= videoTarget && stats.shorts >= shortsTarget;
 
   const benefits = [
       {
@@ -229,33 +233,33 @@ export const Monetization: React.FC = () => {
                        </div>
                    </div>
 
-                    {/* User Invites Requirement */}
+                    {/* Shorts Requirement */}
                    <div className="space-y-4">
                        <div className="flex justify-between items-end mb-2">
                            <span className="text-sm font-medium text-[var(--text-secondary)]">Requirement</span>
                            <div className="flex items-center gap-2">
-                               {stats.invites >= inviteTarget ? (
+                               {stats.shorts >= shortsTarget ? (
                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
                                ) : (
-                                   <span className="text-xs bg-[var(--background-primary)] px-2 py-1 rounded border border-[var(--border-primary)]">{inviteTarget - stats.invites} left</span>
+                                   <span className="text-xs bg-[var(--background-primary)] px-2 py-1 rounded border border-[var(--border-primary)]">{shortsTarget - stats.shorts} left</span>
                                )}
                            </div>
                        </div>
                        
                        <div className="relative h-4 bg-[var(--background-tertiary)] rounded-full overflow-hidden">
                            <div 
-                               className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${stats.invites >= inviteTarget ? 'bg-green-500' : 'bg-[hsl(var(--accent-color))]'}`} 
-                               style={{ width: `${inviteProgress}%` }}
+                               className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${stats.shorts >= shortsTarget ? 'bg-green-500' : 'bg-[hsl(var(--accent-color))]'}`} 
+                               style={{ width: `${shortsProgress}%` }}
                            />
                        </div>
                        
                        <div className="flex justify-between items-baseline">
                            <div className="flex flex-col">
-                               <span className="text-3xl font-bold">{stats.invites.toLocaleString()}</span>
-                               <span className="text-sm text-[var(--text-secondary)]">invited users</span>
+                               <span className="text-3xl font-bold">{stats.shorts.toLocaleString()}</span>
+                               <span className="text-sm text-[var(--text-secondary)]">public shorts</span>
                            </div>
                            <span className="text-sm font-medium text-[var(--text-secondary)]">
-                               of {inviteTarget.toLocaleString()} required
+                               of {shortsTarget.toLocaleString()} required
                            </span>
                        </div>
                    </div>
