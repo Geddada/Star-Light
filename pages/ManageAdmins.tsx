@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Admin, AdminRole, ADMIN_ROLES } from '../types';
 import { Loader2, PlusCircle, UserPlus, Users, Trash2, Edit, Save, X, Shield, MapPin, AlertCircle } from 'lucide-react';
-import { COUNTRIES, USA_STATES, INDIAN_STATES, UK_STATES } from '../constants';
+import { COUNTRIES, USA_STATES, INDIAN_STATES, UK_STATES, ANDHRA_PRADESH_CITIES, ANDHRA_PRADESH_CONSTITUENCIES } from '../constants';
 
 const ADMINS_STORAGE_KEY = 'starlight_admins';
 
@@ -104,6 +105,7 @@ export const ManageAdmins: React.FC = () => {
                 state: formState.state,
                 district: formState.district,
                 city: formState.city,
+                constituency: formState.constituency,
                 avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formState.name.replace(/\s/g, '')}`,
             };
             updatedAdmins = [...admins, newAdmin];
@@ -157,7 +159,7 @@ export const ManageAdmins: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 text-[var(--text-secondary)] hidden md:table-cell">
-                                            {[admin.city, admin.district, admin.state, admin.country].filter(Boolean).join(', ')}
+                                            {[admin.city, admin.constituency, admin.district, admin.state, admin.country].filter(Boolean).join(', ')}
                                         </td>
                                         <td className="px-4 py-3 hidden sm:table-cell">
                                             <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full ${admin.role === 'Lead Admin' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
@@ -201,11 +203,11 @@ export const ManageAdmins: React.FC = () => {
                             </div>
                             <h3 className="text-md font-bold text-[var(--text-primary)] pt-4 mt-2 border-t border-[var(--border-primary)] flex items-center gap-2"><MapPin className="w-4 h-4" /> Location</h3>
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div className="space-y-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Country *</label><select value={formState.country || ''} onChange={e => setFormState({...formState, country: e.target.value, state: '', city: '', district: ''})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"><option value="">Select Country</option>{COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                                <div className="space-y-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">Country *</label><select value={formState.country || ''} onChange={e => setFormState({...formState, country: e.target.value, state: '', city: '', district: '', constituency: ''})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"><option value="">Select Country</option>{COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-[var(--text-secondary)]">State / Region</label>
                                     {stateOptions.length > 0 ? (
-                                        <select value={formState.state || ''} onChange={e => setFormState({...formState, state: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"><option value="">Select State</option>{stateOptions.map(s => <option key={s} value={s}>{s}</option>)}</select>
+                                        <select value={formState.state || ''} onChange={e => setFormState({...formState, state: e.target.value, city: '', constituency: ''})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"><option value="">Select State</option>{stateOptions.map(s => <option key={s} value={s}>{s}</option>)}</select>
                                     ) : (
                                         <input value={formState.state || ''} onChange={e => setFormState({...formState, state: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"/>
                                     )}
@@ -213,8 +215,27 @@ export const ManageAdmins: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div className="space-y-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">District</label><input value={formState.district || ''} onChange={e => setFormState({...formState, district: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"/></div>
-                                <div className="space-y-2"><label className="text-sm font-semibold text-[var(--text-secondary)]">City</label><input value={formState.city || ''} onChange={e => setFormState({...formState, city: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"/></div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-[var(--text-secondary)]">City</label>
+                                    {formState.state === 'Andhra Pradesh' ? (
+                                        <select value={formState.city || ''} onChange={e => setFormState({...formState, city: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg">
+                                            <option value="">Select City</option>
+                                            {ANDHRA_PRADESH_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    ) : (
+                                        <input value={formState.city || ''} onChange={e => setFormState({...formState, city: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg"/>
+                                    )}
+                                </div>
                             </div>
+                            {formState.state === 'Andhra Pradesh' && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-[var(--text-secondary)]">Constituency</label>
+                                    <select value={formState.constituency || ''} onChange={e => setFormState({...formState, constituency: e.target.value})} className="w-full p-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg">
+                                        <option value="">Select Constituency</option>
+                                        {ANDHRA_PRADESH_CONSTITUENCIES.map(c => <option key={c.id} value={c.name}>{c.name}{c.isReservedSC ? ' (SC)' : ''}</option>)}
+                                    </select>
+                                </div>
+                            )}
                             {error && <div className="flex items-start gap-2 text-red-500 text-sm bg-red-500/5 p-3 rounded-lg border border-red-500/10"><AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /><p>{error}</p></div>}
                              <div className="flex justify-end pt-4"><button type="submit" className="px-5 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 flex items-center gap-2"><Save className="w-4 h-4"/> Save</button></div>
                         </form>

@@ -1,15 +1,21 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, login } = useAuth();
   
   const [isLoginView, setIsLoginView] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+
+  // Secret Admin Access Check: Check both query param AND dedicated route
+  const isLeadAdminRoute = location.pathname === '/lead-admin';
+  const showLeadAccess = new URLSearchParams(location.search).get('access') === 'lead_admin' || isLeadAdminRoute;
+  const [isLoadingLead, setIsLoadingLead] = useState(false);
 
   // Biometric / Passcode State
   const [showBiometricModal, setShowBiometricModal] = useState(false);
@@ -211,6 +217,17 @@ export const Signup: React.FC = () => {
     }, 500);
   };
 
+  const handleLeadAdminLogin = () => {
+    setIsLoadingLead(true);
+    setTimeout(() => {
+        login({
+            name: "Admin",
+            avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
+            email: "admin@starlight.app"
+        });
+    }, 600);
+  };
+
   const handleDigitPress = (digit: number) => {
       if (passcodeInput.length < 6) {
           setPasscodeInput(prev => prev + digit);
@@ -245,25 +262,27 @@ export const Signup: React.FC = () => {
         {loadingProvider === 'google' ? 'Connecting...' : 'Continue with Google'}
       </button>
 
-      <button
-        type="button"
-        onClick={handlePremiumLogin}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black border border-amber-600 rounded-xl hover:brightness-105 transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'premium' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Gem className="w-5 h-5" />}
-        {loadingProvider === 'premium' ? 'Logging in...' : 'Continue as Premium User (Demo)'}
-      </button>
+      <div className="grid grid-cols-2 gap-3 mt-4">
+        <button
+            type="button"
+            onClick={handlePremiumLogin}
+            disabled={loadingProvider !== null}
+            className="py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black border border-amber-600 rounded-xl hover:brightness-105 transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait text-sm"
+        >
+            {loadingProvider === 'premium' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gem className="w-4 h-4" />}
+            {loadingProvider === 'premium' ? 'Logging in...' : 'Premium User'}
+        </button>
 
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(1)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest1' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest1' ? 'Logging in...' : 'Continue as Guest'}
-      </button>
+        <button
+            type="button"
+            onClick={() => handleGuestLogin(1)}
+            disabled={loadingProvider !== null}
+            className="py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait text-sm"
+        >
+            {loadingProvider === 'guest1' ? <Loader2 className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
+            {loadingProvider === 'guest1' ? 'Logging in...' : 'Guest User'}
+        </button>
+      </div>
 
       <div className="flex items-center gap-4 my-6">
         <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
@@ -363,25 +382,27 @@ export const Signup: React.FC = () => {
         {loadingProvider === 'google' ? 'Connecting...' : 'Continue with Google'}
       </button>
 
-      <button
-        type="button"
-        onClick={handlePremiumLogin}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black border border-amber-600 rounded-xl hover:brightness-105 transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'premium' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Gem className="w-5 h-5" />}
-        {loadingProvider === 'premium' ? 'Logging in...' : 'Continue as Premium User (Demo)'}
-      </button>
+      <div className="grid grid-cols-2 gap-3 mt-4">
+        <button
+            type="button"
+            onClick={handlePremiumLogin}
+            disabled={loadingProvider !== null}
+            className="py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black border border-amber-600 rounded-xl hover:brightness-105 transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait text-sm"
+        >
+            {loadingProvider === 'premium' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gem className="w-4 h-4" />}
+            {loadingProvider === 'premium' ? 'Logging in...' : 'Premium User'}
+        </button>
 
-      <button
-        type="button"
-        onClick={() => handleGuestLogin(1)}
-        disabled={loadingProvider !== null}
-        className="w-full py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-3 mt-4 disabled:opacity-70 disabled:cursor-wait"
-      >
-        {loadingProvider === 'guest1' ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-        {loadingProvider === 'guest1' ? 'Logging in...' : 'Continue as Guest'}
-      </button>
+        <button
+            type="button"
+            onClick={() => handleGuestLogin(1)}
+            disabled={loadingProvider !== null}
+            className="py-3 bg-[var(--background-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] rounded-xl hover:bg-[var(--background-tertiary)] transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait text-sm"
+        >
+            {loadingProvider === 'guest1' ? <Loader2 className="w-4 h-4 animate-spin" /> : <User className="w-4 h-4" />}
+            {loadingProvider === 'guest1' ? 'Logging in...' : 'Guest User'}
+        </button>
+      </div>
 
       <button
         type="button"
@@ -433,8 +454,37 @@ export const Signup: React.FC = () => {
     </>
   );
 
+  // Dedicated Lead Admin Login View - displayed only on specific route
+  if (isLeadAdminRoute) {
+      return (
+          <div className="w-full min-h-full flex flex-col items-center justify-center p-6 bg-[var(--background-primary)]">
+              <div className="w-full max-w-md p-8 bg-[var(--background-secondary)] rounded-3xl shadow-2xl border border-red-500/30">
+                  <div className="text-center mb-8">
+                      <Shield className="w-16 h-16 text-red-600 mx-auto mb-4" />
+                      <h1 className="text-2xl font-bold text-red-600">Lead Admin Access</h1>
+                      <p className="text-[var(--text-secondary)] mt-2">Restricted Entry</p>
+                  </div>
+                  <button 
+                    onClick={handleLeadAdminLogin}
+                    disabled={isLoadingLead}
+                    className="w-full py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3"
+                  >
+                    {isLoadingLead ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+                    {isLoadingLead ? 'Verifying...' : 'Enter Dashboard'}
+                  </button>
+                  <button 
+                    onClick={() => navigate('/')} 
+                    className="mt-6 text-sm text-[var(--text-tertiary)] hover:underline block mx-auto"
+                  >
+                    Return Home
+                  </button>
+              </div>
+          </div>
+      );
+  }
+
   return (
-    <div className="w-full min-h-full flex items-center justify-center p-6 bg-[var(--background-primary)] overflow-y-auto relative">
+    <div className="w-full min-h-full flex flex-col items-center justify-center p-6 bg-[var(--background-primary)] overflow-y-auto relative">
       
       {/* Biometric Modal Overlay */}
       {showBiometricModal && (
@@ -549,6 +599,20 @@ export const Signup: React.FC = () => {
            </div>
         </div>
       </div>
+
+      {/* Secret Lead Admin Access Section (via Query Param) */}
+      {showLeadAccess && (
+        <div className="w-full max-w-md mt-8 animate-in fade-in slide-in-from-bottom-4">
+            <button 
+                onClick={handleLeadAdminLogin}
+                disabled={isLoadingLead}
+                className="w-full py-3 bg-red-600 text-white border border-red-700 rounded-xl hover:bg-red-700 transition-all font-semibold flex items-center justify-center gap-3 shadow-lg shadow-red-600/20"
+            >
+                {isLoadingLead ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
+                {isLoadingLead ? 'Authenticating Lead Admin...' : 'Lead Admin Access'}
+            </button>
+        </div>
+      )}
     </div>
   );
 };

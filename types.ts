@@ -222,6 +222,7 @@ export interface Admin {
   state?: string;
   district?: string;
   city?: string;
+  constituency?: string;
 }
 
 

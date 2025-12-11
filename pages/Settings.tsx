@@ -4,11 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     User, Mail, Phone, CheckCircle2, MapPin, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
-    RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit
+    RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit, Shield, LogIn
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
 import { ProfileDetails } from '../types';
+import { AdminLoginModal } from '../components/AdminLoginModal';
 
 type SettingsTab = 'account' | 'security' | 'api';
 
@@ -20,7 +21,7 @@ const NAV_ITEMS: { id: SettingsTab; label: string; icon: React.ElementType }[] =
 
 const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.39 1.88 6.161l-1.334 4.869 4.893-1.309zM9.356 8.014c-.13-.306-.279-.32-1.042-.324-.712-.004-1.393-.243-1.393-.243s-.542.13-.542.13c-.144.06-.144.06-.144.06-.516.216-1.033.972-1.033 2.064 0 1.062.279 2.1.279 2.1s.18.216.516.576c.336.36.456.456 1.448 1.968 1.488 2.209 2.133 2.58 3.129 2.928.612.216 1.296.12 1.776-.18.396-.24.516-.54.516-.54s.06-.12.06-.12c0-.06 0-.624-.036-.66-.036-.036-.216-.096-.456-.216-.24-.12-.48-.12-1.116-.36-.456-.156-.812-.12-.812-.12s-.216.06-.396.24c-.18.18-.36.36-.54.36-.18.012-.336-.024-.336-.024s-.276-.12-.516-.24c-.24-.12-.54-.24-.816-.54-.6-.66-1.068-1.344-1.068-1.344s-.06-.096 0-.192c.06-.096.12-.12.18-.18.06.012.276-.24.396-.396.12-.156.18-.24.24-.36.06-.12.12-.24.06-.36-.06-.12-.516-1.2-.516-1.2z"/>
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.39 1.88 6.161l-1.334 4.869 4.893-1.309zM9.356 8.014c-.13-.306-.279-.32-1.042-.324-.712-.004-1.393-.243-1.393-.243s-.542.13-.542.13c-.144.06-.144.06-.144.06-.516.216-1.033.972-1.033 2.064 0 1.062.279 2.1.279 2.1s.18.216.516.576c.336.36.456.456 1.448 1.968 1.488 2.209 2.1.279 2.1s.18.216.516.576c.336.36.456.456 1.448 1.968 1.488 2.209 2.133 2.58 3.129 2.928.612.216 1.296.12 1.776-.18.396-.24.516-.54.516-.54s.06-.12.06-.12c0-.06 0-.624-.036-.66-.036-.036-.216-.096-.456-.216-.24-.12-.48-.12-1.116-.36-.456-.156-.812-.12-.812-.12s-.216.06-.396.24c-.18.18-.36.36-.54.36-.18.012-.336-.024-.336-.024s-.276-.12-.516-.24c-.24-.12-.54-.24-.816-.54-.6-.66-1.068-1.344-1.068-1.344s-.06-.096 0-.192c.06-.096.12-.12.18-.18.06.012.276-.24.396-.396.12-.156.18-.24.24-.36.06-.12.12-.24.06-.36-.516-1.2-.516-1.2z"/>
     </svg>
 );
 
@@ -564,10 +565,11 @@ const ApiSettings: React.FC = () => {
 };
 
 export const Settings: React.FC = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, isAdmin, login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [profileDetails, setProfileDetails] = useState<ProfileDetails>({});
+    const [showAdminModal, setShowAdminModal] = useState(false);
     
     const activeTab: SettingsTab = useMemo(() => {
         const hash = location.hash.substring(1);
@@ -605,11 +607,8 @@ export const Settings: React.FC = () => {
                     if (userDetails) setProfileDetails(userDetails);
                 }
             }
-        } else {
-            const savedUser = localStorage.getItem('currentUser');
-            if (!savedUser) navigate('/');
         }
-    }, [currentUser, navigate]);
+    }, [currentUser]);
 
     useEffect(() => {
         loadProfileData();
@@ -632,12 +631,64 @@ export const Settings: React.FC = () => {
                             return null;
                     }
                 })()}
+                
+                <div className="mt-16 bg-[var(--background-secondary)] p-6 rounded-xl border border-[var(--border-primary)] flex flex-col items-center justify-center text-center">
+                    <h3 className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-4">Advanced Options</h3>
+                    {!isAdmin ? (
+                        <button 
+                            onClick={() => setShowAdminModal(true)} 
+                            className="flex items-center gap-2 px-8 py-3 bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border-2 border-red-500/20 hover:border-red-500/50 text-red-600 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md"
+                        >
+                            <Shield className="w-5 h-5" /> Admin Access
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => navigate('/admin')} 
+                            className="flex items-center gap-2 px-8 py-3 bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border-2 border-green-500/20 hover:border-green-500/50 text-green-600 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md"
+                        >
+                            <Shield className="w-5 h-5" /> Go to Admin Dashboard
+                        </button>
+                    )}
+                    <p className="text-xs text-[var(--text-tertiary)] mt-3 max-w-sm">
+                        Restricted area for platform administrators only. Requires a secure PIN.
+                    </p>
+                </div>
+                {showAdminModal && <AdminLoginModal onClose={() => setShowAdminModal(false)} onSuccess={() => navigate('/admin')} />}
             </div>
         );
     };
 
     if (!currentUser) {
-        return null;
+        return (
+            <main className="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center min-h-screen bg-[var(--background-primary)]">
+                <div className="text-center space-y-6 max-w-md w-full bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] shadow-xl">
+                    <h1 className="text-3xl font-bold">Settings</h1>
+                    <p className="text-[var(--text-secondary)]">Please sign in to manage your account and application settings.</p>
+                    <button 
+                        onClick={() => navigate('/signup')} 
+                        className="w-full py-3 bg-[hsl(var(--accent-color))] text-white rounded-xl font-bold hover:brightness-90 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <LogIn className="w-5 h-5" /> Sign In
+                    </button>
+                </div>
+                
+                <div className="mt-8 w-full max-w-md flex flex-col items-center gap-4">
+                     <div className="flex items-center gap-4 w-full">
+                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                        <span className="text-xs text-[var(--text-tertiary)] uppercase tracking-widest font-bold">Administration</span>
+                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                     </div>
+                     
+                     <button 
+                        onClick={() => setShowAdminModal(true)} 
+                        className="flex items-center gap-2 px-8 py-3 bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] border-2 border-red-500/20 hover:border-red-500/50 text-red-500 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md w-full justify-center"
+                    >
+                        <Shield className="w-5 h-5" /> Admin Access (PIN)
+                    </button>
+                </div>
+                {showAdminModal && <AdminLoginModal onClose={() => setShowAdminModal(false)} onSuccess={() => navigate('/admin')} />}
+            </main>
+        );
     }
 
     return (

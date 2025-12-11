@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Video } from '../types';
@@ -7,10 +8,10 @@ import {
     ArrowLeft, Save, Loader2, CheckCircle, Scissors, MonitorPlay, 
     Play, Pause, Rewind, FastForward,
     Smartphone, Image as ImageIcon, Film, Palette, Newspaper, Download, Sparkles, ExternalLink,
-    MoveHorizontal, Type, Layout, Clock, AlertTriangle, ShieldCheck
+    MoveHorizontal, Type, Layout, Clock, AlertTriangle, ShieldCheck, Droplet
 } from 'lucide-react';
 
-type EditorTab = 'trim' | 'news' | 'shorts' | 'thumbnail' | 'intro' | 'end' | 'canva';
+type EditorTab = 'trim' | 'news' | 'shorts' | 'thumbnail' | 'intro' | 'end' | 'canva' | 'blur';
 
 const TABS: { id: EditorTab; label: string; icon: React.ElementType }[] = [
     { id: 'canva', label: 'Canva Highlight', icon: Palette },
@@ -20,6 +21,7 @@ const TABS: { id: EditorTab; label: string; icon: React.ElementType }[] = [
     { id: 'intro', label: 'Global Intro', icon: Film },
     { id: 'end', label: 'End Screen', icon: MonitorPlay },
     { id: 'trim', label: 'Trim', icon: Scissors },
+    { id: 'blur', label: 'Blur', icon: Droplet },
 ];
 
 const INTRO_TEMPLATES = [
@@ -361,6 +363,23 @@ export const VideoEditor: React.FC = () => {
                                 <li>Download the file to your device as PNG or MP4.</li>
                                 <li>Come back and upload it in the specific tab (Thumbnail, Intro).</li>
                             </ol>
+                        </div>
+                    </div>
+                );
+            case 'blur':
+                return (
+                    <div className="p-6 space-y-6 animate-in fade-in">
+                        <h3 className="font-bold text-lg flex items-center gap-2"><Droplet className="w-5 h-5"/> Blur Effects</h3>
+                        <p className="text-sm text-[var(--text-secondary)]">Apply privacy blurs to your video.</p>
+                        
+                        <div className="bg-[var(--background-tertiary)] p-6 rounded-xl border border-[var(--border-primary)] text-center">
+                            <p className="text-sm text-[var(--text-secondary)] mb-4">Launch the advanced blur editor to mask faces or objects.</p>
+                            <button 
+                                onClick={() => navigate('/blur')}
+                                className="px-5 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all shadow-md"
+                            >
+                                Open Blur Editor
+                            </button>
                         </div>
                     </div>
                 );

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, AlertTriangle, ShieldCheck, Check, X, ChevronsRight, Award, RotateCw, Home } from 'lucide-react';
+import { BookOpen, AlertTriangle, ShieldCheck, Check, X, ChevronsRight, Award, RotateCw, Home, Globe, Loader2 } from 'lucide-react';
+import { ALL_NATIVE_LANGUAGES } from '../constants';
+import { translateQuizQuestion } from '../services/gemini';
 
 type QuizQuestion = {
   id: number;
@@ -734,15 +736,39 @@ export const CopyrightSchool: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
+  
+  // Language Support
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [translatedQuestion, setTranslatedQuestion] = useState<QuizQuestion | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
-  const currentQuestion = QUIZ_QUESTIONS[currentQuestionIndex];
+  const staticQuestion = QUIZ_QUESTIONS[currentQuestionIndex];
+  const activeQuestion = (selectedLanguage === 'English') ? staticQuestion : (translatedQuestion || staticQuestion);
   const PASSING_SCORE = 80;
+
+  useEffect(() => {
+    const handleTranslation = async () => {
+        if (selectedLanguage === 'English') {
+            setTranslatedQuestion(null);
+            return;
+        }
+        
+        setIsTranslating(true);
+        const translated = await translateQuizQuestion(staticQuestion, selectedLanguage);
+        if (translated) {
+            setTranslatedQuestion(translated);
+        }
+        setIsTranslating(false);
+    };
+
+    handleTranslation();
+  }, [currentQuestionIndex, selectedLanguage, staticQuestion]);
 
   const handleAnswerSelect = (option: string) => {
     if (isAnswered) return;
     setSelectedAnswer(option);
     setIsAnswered(true);
-    if (option === currentQuestion.correctAnswer) {
+    if (option === activeQuestion.correctAnswer) {
       setScore(prev => prev + 1);
     }
   };
@@ -810,52 +836,61 @@ export const CopyrightSchool: React.FC = () => {
   );
 
   const renderQuizStep = () => (
-    <div className="bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)]">
-      <p className="text-sm font-bold text-[var(--text-secondary)] mb-2">Question {currentQuestionIndex + 1} of {QUIZ_QUESTIONS.length}</p>
-      <h2 className="text-xl font-bold mb-6">{currentQuestion.question}</h2>
+    <div className="bg-[var(--background-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] relative min-h-[400px]">
+      {isTranslating ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--background-secondary)]/50 backdrop-blur-sm rounded-2xl z-10">
+              <Loader2 className="w-10 h-10 animate-spin text-[hsl(var(--accent-color))]" />
+              <p className="mt-4 font-semibold text-[var(--text-primary)]">Translating with Gemini AI...</p>
+          </div>
+      ) : (
+          <>
+            <p className="text-sm font-bold text-[var(--text-secondary)] mb-2">Question {currentQuestionIndex + 1} of {QUIZ_QUESTIONS.length}</p>
+            <h2 className="text-xl font-bold mb-6">{activeQuestion.question}</h2>
 
-      <div className="space-y-3 mb-6">
-        {currentQuestion.options.map(option => {
-          const isCorrect = option === currentQuestion.correctAnswer;
-          const isSelected = option === selectedAnswer;
-          let buttonClass = 'w-full text-left p-4 rounded-lg border-2 transition-all font-medium disabled:cursor-not-allowed';
-          
-          if (isAnswered) {
-            if (isCorrect) {
-              buttonClass += ' bg-green-500/10 border-green-500 text-green-500';
-            } else if (isSelected && !isCorrect) {
-              buttonClass += ' bg-red-500/10 border-red-500 text-red-500';
-            } else {
-              buttonClass += ' border-[var(--border-primary)] text-[var(--text-secondary)]';
-            }
-          } else {
-            buttonClass += ' border-[var(--border-primary)] hover:border-[hsl(var(--accent-color))] hover:bg-[hsl(var(--accent-color))]/5';
-          }
+            <div className="space-y-3 mb-6">
+                {activeQuestion.options.map((option, idx) => {
+                const isCorrect = option === activeQuestion.correctAnswer;
+                const isSelected = option === selectedAnswer;
+                let buttonClass = 'w-full text-left p-4 rounded-lg border-2 transition-all font-medium disabled:cursor-not-allowed';
+                
+                if (isAnswered) {
+                    if (isCorrect) {
+                    buttonClass += ' bg-green-500/10 border-green-500 text-green-500';
+                    } else if (isSelected && !isCorrect) {
+                    buttonClass += ' bg-red-500/10 border-red-500 text-red-500';
+                    } else {
+                    buttonClass += ' border-[var(--border-primary)] text-[var(--text-secondary)]';
+                    }
+                } else {
+                    buttonClass += ' border-[var(--border-primary)] hover:border-[hsl(var(--accent-color))] hover:bg-[hsl(var(--accent-color))]/5';
+                }
 
-          return (
-            <button key={option} onClick={() => handleAnswerSelect(option)} disabled={isAnswered} className={buttonClass}>
-              {option}
-            </button>
-          );
-        })}
-      </div>
-      
-      {isAnswered && (
-        <div className="p-4 rounded-lg bg-[var(--background-primary)] border border-[var(--border-primary)] mb-6 animate-in fade-in">
-          <p className={`font-bold flex items-center gap-2 ${selectedAnswer === currentQuestion.correctAnswer ? 'text-green-500' : 'text-red-500'}`}>
-             {selectedAnswer === currentQuestion.correctAnswer ? <Check className="w-5 h-5"/> : <X className="w-5 h-5" />}
-             {selectedAnswer === currentQuestion.correctAnswer ? 'Correct!' : 'Incorrect'}
-          </p>
-          <p className="text-sm text-[var(--text-secondary)] mt-2">{currentQuestion.explanation}</p>
-        </div>
-      )}
+                return (
+                    <button key={idx} onClick={() => handleAnswerSelect(option)} disabled={isAnswered} className={buttonClass}>
+                    {option}
+                    </button>
+                );
+                })}
+            </div>
+            
+            {isAnswered && (
+                <div className="p-4 rounded-lg bg-[var(--background-primary)] border border-[var(--border-primary)] mb-6 animate-in fade-in">
+                <p className={`font-bold flex items-center gap-2 ${selectedAnswer === activeQuestion.correctAnswer ? 'text-green-500' : 'text-red-500'}`}>
+                    {selectedAnswer === activeQuestion.correctAnswer ? <Check className="w-5 h-5"/> : <X className="w-5 h-5" />}
+                    {selectedAnswer === activeQuestion.correctAnswer ? 'Correct!' : 'Incorrect'}
+                </p>
+                <p className="text-sm text-[var(--text-secondary)] mt-2">{activeQuestion.explanation}</p>
+                </div>
+            )}
 
-      {isAnswered && (
-        <div className="text-right">
-            <button onClick={handleNext} className="px-6 py-2 bg-[hsl(var(--accent-color))] text-white rounded-full font-bold hover:brightness-90 transition-all shadow-md">
-                {currentQuestionIndex < QUIZ_QUESTIONS.length - 1 ? 'Next Question' : 'Finish Quiz'}
-            </button>
-        </div>
+            {isAnswered && (
+                <div className="text-right">
+                    <button onClick={handleNext} className="px-6 py-2 bg-[hsl(var(--accent-color))] text-white rounded-full font-bold hover:brightness-90 transition-all shadow-md">
+                        {currentQuestionIndex < QUIZ_QUESTIONS.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                    </button>
+                </div>
+            )}
+          </>
       )}
     </div>
   );
@@ -901,12 +936,37 @@ export const CopyrightSchool: React.FC = () => {
   return (
     <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] p-6 md:p-12 overflow-y-auto">
       <div className="max-w-3xl mx-auto">
-        <header className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <BookOpen className="w-20 h-20 text-[hsl(var(--accent-color))] mx-auto mb-6" />
-            <h1 className="text-4xl font-bold mb-4">Copyright School</h1>
-            <p className="text-[var(--text-secondary)] text-lg">
-                Learn the essentials of copyright to keep your account in good standing.
-            </p>
+        <header className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-center md:text-left flex-1">
+                <div className="flex justify-center md:justify-start mb-4">
+                    <BookOpen className="w-16 h-16 text-[hsl(var(--accent-color))]" />
+                </div>
+                <h1 className="text-4xl font-bold mb-2">Copyright School</h1>
+                <p className="text-[var(--text-secondary)] text-lg">
+                    Learn the essentials of copyright to keep your account in good standing.
+                </p>
+            </div>
+            
+            <div className="relative group min-w-[200px]">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Globe className="w-4 h-4 text-[var(--text-tertiary)]" />
+                </div>
+                <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-sm font-medium focus:ring-2 focus:ring-[hsl(var(--accent-color))] outline-none appearance-none cursor-pointer"
+                >
+                    <option value="English">English (Original)</option>
+                    {ALL_NATIVE_LANGUAGES.filter(l => l !== 'English').map(lang => (
+                        <option key={lang} value={lang}>{lang}</option>
+                    ))}
+                </select>
+                {selectedLanguage !== 'English' && (
+                    <div className="absolute top-full mt-2 right-0 bg-[var(--background-secondary)] text-xs p-2 rounded border border-[var(--border-primary)] shadow-lg z-10 w-full text-center">
+                        <span className="flex items-center justify-center gap-1 text-[hsl(var(--accent-color))]"><Loader2 className="w-3 h-3 animate-spin" /> AI Translation Active</span>
+                    </div>
+                )}
+            </div>
         </header>
 
         <main className="animate-in fade-in slide-in-from-bottom-8 duration-500 delay-100">

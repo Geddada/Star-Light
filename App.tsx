@@ -53,6 +53,7 @@ import { ManageAdmins } from './pages/ManageAdmins';
 import { BrandedEmail } from './pages/BrandedEmail';
 import { CreateCommunity } from './pages/CreateCommunity';
 import { UserManagement } from './pages/UserManagement';
+import { ContentManagement } from './pages/ContentManagement';
 import { Thanks } from './pages/Thanks';
 import { ShortsAds } from './pages/ShortsAds';
 import { CreatorStudio } from './pages/CreatorStudio';
@@ -62,6 +63,8 @@ import { Business } from './pages/Business';
 import { AdCreationHub } from './pages/AdCreationHub';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { SplashScreen } from './components/SplashScreen';
+import { TestNewFeatures } from './pages/TestNewFeatures';
+import { BlurVideo } from './pages/BlurVideo';
 
 
 declare global {
@@ -91,12 +94,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   
   const isWatchPage = location.pathname.startsWith('/watch');
   const isEditPage = location.pathname.startsWith('/edit');
-  const isSignupPage = location.pathname === '/signup';
+  const isBlurPage = location.pathname.startsWith('/blur');
   const isShortsPage = location.pathname === '/shorts';
-  const noLayoutPages = ['/thanks', '/signup'];
+  // Add /lead-admin to pages without main layout
+  const noLayoutPages = ['/thanks', '/signup', '/lead-admin'];
 
   
-  if (noLayoutPages.includes(location.pathname) || isEditPage) {
+  if (noLayoutPages.includes(location.pathname) || isEditPage || isBlurPage) {
       return (
          <div className="flex flex-col h-screen max-h-screen bg-[var(--background-primary)] text-[var(--text-primary)] font-sans selection:bg-[hsl(var(--accent-color))] selection:text-white">
              <main className="flex-1 overflow-y-auto flex flex-col">
@@ -159,8 +163,10 @@ const App: React.FC = () => {
     if (showSplash) {
       // Start fade out after 2.5s
       const fadeTimer = setTimeout(() => {
-        setSplashOpacity('opacity-0');
-      }, 2500);
+        setSplashOpacity('opacity-100');
+        // Actually start fade out slightly before unmount
+        setTimeout(() => setSplashOpacity('opacity-0'), 2500);
+      }, 100); 
 
       // Unmount after 3s (2.5s wait + 0.5s transition)
       const unmountTimer = setTimeout(() => {
@@ -192,6 +198,16 @@ const App: React.FC = () => {
                   <VideoEditor />
                 </ProtectedRoute>
               } />
+              <Route path="/blur" element={
+                <ProtectedRoute>
+                  <BlurVideo />
+                </ProtectedRoute>
+              } />
+              <Route path="/labs" element={
+                <ProtectedRoute requirePremium={true}>
+                  <TestNewFeatures />
+                </ProtectedRoute>
+              } />
               <Route path="/studio" element={
                 <ProtectedRoute>
                   <CreatorStudio />
@@ -221,6 +237,7 @@ const App: React.FC = () => {
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/lead-admin" element={<Signup />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/copyright" element={<Copyright />} />
               <Route path="/copyright-strikes" element={<CopyrightStrikes />} />
@@ -283,6 +300,11 @@ const App: React.FC = () => {
               <Route path="/admin/user-management" element={
                 <ProtectedRoute requireAdmin={true}>
                   <UserManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/content" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <ContentManagement />
                 </ProtectedRoute>
               } />
               <Route path="/admin/ad-settings" element={

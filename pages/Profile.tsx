@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift, Users, Shield } from 'lucide-react';
+import { LogOut, UploadCloud, Video as VideoIcon, Camera, Settings, Film, User, Flag, Trash2, CheckCircle, ShieldAlert, Check, Clock, Megaphone, Gem, Gift } from 'lucide-react';
 import { Video as VideoType, Report, Playlist as PlaylistType, ProfileDetails, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Community } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { UploadModal } from '../components/UploadModal';
@@ -41,10 +41,9 @@ const ReportStatusBadge: React.FC<{ status: Report['status'] }> = ({ status }) =
 
 
 export const Profile: React.FC = () => {
-  const { currentUser, isPremium, isAdmin, logout, login } = useAuth();
+  const { currentUser, isPremium, isAdmin, logout } = useAuth();
   const [uploadedVideos, setUploadedVideos] = useState<VideoType[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
-  // FIX: Updated ad type in state to include ShortsAdCampaign.
   const [promotions, setPromotions] = useState<(AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[]>([]);
   const [adCredits, setAdCredits] = useState<{ skippable: number, unskippable: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +86,6 @@ export const Profile: React.FC = () => {
       // Load promotions and ad credits for premium/admin users
       if (isPremium || isAdmin) {
         const promotionsJson = localStorage.getItem('starlight_user_ads');
-        // FIX: Updated ad type in state to include ShortsAdCampaign.
         const allPromotions: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = promotionsJson ? JSON.parse(promotionsJson) : [];
         const userPromotions = allPromotions.filter(p => p.communityName === currentUser.name);
         setPromotions(userPromotions);
@@ -195,7 +193,6 @@ export const Profile: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this ad promotion?")) {
         const userAdsJson = localStorage.getItem('starlight_user_ads');
         if (userAdsJson) {
-            // FIX: Updated ad type in state to include ShortsAdCampaign.
             let userAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = JSON.parse(userAdsJson);
             userAds = userAds.filter(ad => ad.id !== campaignId);
             localStorage.setItem('starlight_user_ads', JSON.stringify(userAds));
@@ -210,20 +207,6 @@ export const Profile: React.FC = () => {
     // In a real app, you would upload to a server and get back a URL.
     if (currentUser) {
       alert(`In a real app, you'd upload a new photo for ${currentUser.name}!`);
-    }
-  };
-
-  const handleAdminLogin = () => {
-    if (!currentUser) return;
-    const pin = window.prompt("Enter Admin PIN (Hint: 1234):");
-    if (pin === "1234") {
-      login({
-        name: "Admin",
-        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
-        email: "admin@starlight.app"
-      });
-    } else if (pin !== null) {
-        alert("Incorrect PIN. Access Denied.");
     }
   };
 
@@ -275,16 +258,6 @@ export const Profile: React.FC = () => {
                     <p className="text-[var(--text-secondary)] text-sm mt-1">@{currentUser.name.toLowerCase().replace(/\s/g, '')} • {uploadedVideos.length} videos</p>
                 </div>
                 <div className="flex items-center gap-3 mt-4 sm:mt-0 flex-wrap">
-                    {!isAdmin && (
-                        <button
-                            onClick={handleAdminLogin}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors flex items-center gap-2 w-fit text-sm font-semibold shadow-md"
-                            aria-label="Admin Login"
-                        >
-                            <Shield className="w-4 h-4" />
-                            Admin Login
-                        </button>
-                    )}
                     <button
                         onClick={() => {
                           setEditingVideo(undefined);

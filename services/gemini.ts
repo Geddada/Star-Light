@@ -1307,3 +1307,42 @@ export const generateVideoSummary = async (title: string, description: string): 
         return ["Could not generate summary."];
     }
 };
+
+export const translateQuizQuestion = async (questionData: any, targetLanguage: string): Promise<any> => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const prompt = `Translate the following quiz question object into "${targetLanguage}".
+        Return a valid JSON object with the same structure (id, question, options, correctAnswer, explanation).
+        CRITICAL: The translated 'correctAnswer' MUST effectively match one of the translated 'options'.
+        
+        Original JSON: ${JSON.stringify(questionData)}
+        
+        Do not use markdown formatting. Return raw JSON only.`;
+
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        id: { type: Type.INTEGER },
+                        question: { type: Type.STRING },
+                        options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        correctAnswer: { type: Type.STRING },
+                        explanation: { type: Type.STRING }
+                    },
+                    required: ["id", "question", "options", "correctAnswer", "explanation"]
+                }
+            }
+        });
+
+        const text = response.text;
+        if (!text) throw new Error("No translation returned");
+        return JSON.parse(cleanJson(text));
+    } catch (error) {
+        console.error("Translation Error", error);
+        return questionData; // Fallback to original
+    }
+};

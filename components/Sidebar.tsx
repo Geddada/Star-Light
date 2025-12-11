@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Clock, ThumbsUp, Film, Settings, Shield, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Palette } from 'lucide-react';
+import { Home, Clock, ThumbsUp, Film, Settings, Shield, ListVideo, BarChart2, Gem, UserPlus, ShieldAlert, Flag, LayoutDashboard, Tv2, Users, ChevronDown, Activity, User, Lock, KeyRound, UserX, Video, Palette, FileVideo, Beaker } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Playlist, Community } from '../types';
 import { TvConnectModal } from '../components/TvConnectModal';
-// FIX: Import SUBSCRIPTION_KEY to resolve the missing member error.
 import { SUBSCRIPTION_KEY } from '../constants';
 
 interface SidebarProps {
@@ -67,7 +66,6 @@ const SidebarSubItem: React.FC<{
 
 
 const CommunityAvatarIcon: React.FC<{ src?: string; name: string, className?: string }> = ({ src, name, className }) => {
-    // FIX: Use src to display an image if available, otherwise default to the Users icon.
     if (src) {
         return <img src={src} alt={name} className={`${className} rounded-full object-cover`} />;
     }
@@ -77,7 +75,7 @@ const CommunityAvatarIcon: React.FC<{ src?: string; name: string, className?: st
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, currentUser, login, isPremium } = useAuth();
+  const { isAdmin, currentUser, isPremium } = useAuth();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [subscribedCommunities, setSubscribedCommunities] = useState<Community[]>([]);
   const [showTvModal, setShowTvModal] = useState(false);
@@ -115,29 +113,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     };
   }, [loadData]);
 
-
-  const handleAdminLogin = () => {
-    const pin = window.prompt("Enter Admin PIN (Hint: 1234):");
-    if (pin === "1234") {
-        login({
-          name: "Admin",
-          avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=AdminStarlight`,
-          email: "admin@starlight.app"
-        });
-    } else if (pin !== null) {
-        alert("Incorrect PIN. Access Denied.");
-    }
-  };
-
-  const handlePremiumLogin = () => {
-    login({
-      name: "Premium User",
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=PremiumStarlight`,
-      email: "premium@starlight.app",
-      isPremium: true
-    });
-  };
-
   return (
     <>
       <div className={`h-full flex flex-col ${isOpen ? 'px-3 py-4' : 'px-2 py-2'}`}>
@@ -161,6 +136,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                   <SidebarItem icon={Tv2} label="Watch on TV" isOpen={isOpen} onClick={() => setShowTvModal(true)} />
                   <SidebarItem icon={Flag} label="My Reports" isActive={location.pathname === '/my-reports'} isOpen={isOpen} onClick={() => navigate('/my-reports')} />
                   {!isPremium && <SidebarItem icon={Gem} label="Starlight Premium" isActive={location.pathname === '/premium'} isOpen={isOpen} onClick={() => navigate('/premium')} />}
+                  {(isPremium || isAdmin) && (
+                    <SidebarItem icon={Beaker} label="Labs" isActive={location.pathname === '/labs'} isOpen={isOpen} onClick={() => navigate('/labs')} />
+                  )}
                   <SidebarItem icon={UserPlus} label="Invite Friends" isActive={location.pathname === '/invite'} isOpen={isOpen} onClick={() => navigate('/invite')} />
                   
 
@@ -171,7 +149,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                           {subscribedCommunities.slice(0, 7).map(community => (
                               <SidebarItem 
                                   key={community.id} 
-                                  // FIX: The 'Community' type does not have an 'avatar' property. Generate the avatar URL from the community name.
                                   icon={(props) => <CommunityAvatarIcon {...props} src={community.avatar || `https://picsum.photos/seed/${encodeURIComponent(community.name)}/64/64`} name={community.name} />}
                                   label={community.name} 
                                   isActive={false}
@@ -196,11 +173,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                       <>
                         <h3 className="px-4 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Admin Tools</h3>
                         <SidebarItem icon={LayoutDashboard} label="Admin Dashboard" isActive={location.pathname === '/admin'} isOpen={isOpen} onClick={() => navigate('/admin')} />
-                        <SidebarItem icon={Shield} label="Manage Admins" isActive={location.pathname === '/admin/manage'} isOpen={isOpen} onClick={() => navigate('/admin/manage')} />
-                        <SidebarItem icon={Users} label="User Management" isActive={location.pathname === '/admin/user-management'} isOpen={isOpen} onClick={() => navigate('/admin/user-management')} />
-                        <SidebarItem icon={Activity} label="Admin Activities" isActive={location.pathname === '/admin/activities'} isOpen={isOpen} onClick={() => navigate('/admin/activities')} />
+                        <SidebarItem icon={Users} label="Users & Premium" isActive={location.pathname === '/admin/user-management'} isOpen={isOpen} onClick={() => navigate('/admin/user-management')} />
+                        <SidebarItem icon={FileVideo} label="Content Management" isActive={location.pathname === '/admin/content'} isOpen={isOpen} onClick={() => navigate('/admin/content')} />
                         <SidebarItem icon={Users} label="Manage Communities" isActive={location.pathname === '/community'} isOpen={isOpen} onClick={() => navigate('/community')} />
-                        
+                        <SidebarItem icon={Shield} label="Manage Admins" isActive={location.pathname === '/admin/manage'} isOpen={isOpen} onClick={() => navigate('/admin/manage')} />
+                        <SidebarItem icon={Activity} label="Admin Activities" isActive={location.pathname === '/admin/activities'} isOpen={isOpen} onClick={() => navigate('/admin/activities')} />
                       </>
                   )}
                   <SidebarItem icon={Settings} label="Settings" isActive={onSettingsPage} isOpen={isOpen} onClick={() => navigate('/settings')} />
@@ -217,18 +194,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             </>
           )}
         </div>
-
-        {!isAdmin && (
-          <div className="hidden lg:block mt-auto pt-4 border-t border-[var(--border-primary)]/50 space-y-2">
-             <div 
-               onClick={handleAdminLogin} 
-               className={`flex items-center rounded-lg cursor-pointer p-3 transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-100 ${isOpen ? 'justify-start' : 'justify-center'}`}
-             >
-                <Shield className="w-5 h-5" />
-                {isOpen && <span className="ml-4 text-sm font-bold">Admin Access</span>}
-             </div>
-          </div>
-        )}
       </div>
       {showTvModal && <TvConnectModal onClose={() => setShowTvModal(false)} />}
     </>
