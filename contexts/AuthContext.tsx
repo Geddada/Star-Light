@@ -10,7 +10,7 @@ interface AuthContextType {
   currentUser: CurrentUser | null;
   isAdmin: boolean;
   isPremium: boolean;
-  login: (user: CurrentUser, shouldNavigate?: boolean) => void;
+  login: (user: CurrentUser, shouldNavigate?: boolean, remember?: boolean) => void;
   logout: () => void;
   upgradeToPremium: () => void;
   deleteAccount: () => void;
@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const gsiInitialized = useRef(false);
 
-  const login = useCallback((user: CurrentUser, shouldNavigate = true) => {
+  const login = useCallback((user: CurrentUser, shouldNavigate = true, remember = true) => {
     // Check for admin-set blocks before proceeding with login
     const adminBlockedUsersJSON = localStorage.getItem(ADMIN_BLOCKED_USERS_KEY);
     const adminBlockedUsers: any[] = adminBlockedUsersJSON ? JSON.parse(adminBlockedUsersJSON) : [];
@@ -87,7 +87,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     setIsAdmin(isNowAdmin);
     setIsPremium(isNowPremium);
-    localStorage.setItem('currentUser', JSON.stringify(userToLogin));
+
+    // Handle Persistence
+    const storage = remember ? localStorage : sessionStorage;
+    
+    // Clear from the other storage to avoid conflicts
+    if (remember) {
+        sessionStorage.removeItem('currentUser');
+    } else {
+        localStorage.removeItem('currentUser');
+    }
+
+    storage.setItem('currentUser', JSON.stringify(userToLogin));
+    
+    // Global lists always go to local storage to act as the "database"
     localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
 
     if (isNowPremium && userToLogin.email) {
@@ -109,16 +122,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loginRef.current = login;
   }, [login]);
 
-  // Load user from localStorage on initial render
+  // Load user from localStorage or sessionStorage on initial render
   useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
+    let savedUser = localStorage.getItem('currentUser');
+    if (!savedUser) {
+        savedUser = sessionStorage.getItem('currentUser');
+    }
+
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
         loginRef.current(user, false); // Don't navigate on initial load
       } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
+        console.error("Failed to parse user from storage", e);
         localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('currentUser');
       }
     }
   }, []);
@@ -135,6 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAdmin(false);
     setIsPremium(false);
     localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('currentUser');
     navigate('/');
   };
   
@@ -143,7 +162,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const updatedUser = { ...currentUser, isPremium: true };
         setCurrentUser(updatedUser);
         setIsPremium(true);
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        // Update in whichever storage it was in
+        if (sessionStorage.getItem('currentUser')) {
+            sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        } else {
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
         
         // Grant ad credits on upgrade
         if (currentUser.email) {

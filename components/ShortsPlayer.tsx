@@ -166,7 +166,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
                     </button>
                 </div>
                 <div className="pointer-events-auto">
-                    <p className="text-white text-sm line-clamp-2 drop-shadow-md mb-2">{video.description} <span className="font-bold text-white/80">#shorts #starlight</span></p>
+                    <p className="text-white text-sm line-clamp-2 drop-shadow-md mb-2 hidden md:block">{video.description} <span className="font-bold text-white/80">#shorts #starlight</span></p>
                     <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
                         <Music className="w-3 h-3" />
                         <span className="animate-pulse">Original Sound - {video.uploaderName}</span>
