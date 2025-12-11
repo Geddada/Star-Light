@@ -233,7 +233,7 @@ export const Watch: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 md:gap-6 p-0 md:p-6 max-w-[1800px] mx-auto w-full">
+    <div className="flex flex-col lg:flex-row gap-0 lg:gap-6 p-0 lg:p-6 max-w-[1800px] mx-auto w-full">
         {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoUrl={window.location.href} videoTitle={video.title} currentTime={currentTime} />}
         {showSaveModal && <SaveToPlaylistModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} video={video} />}
         {showReportModal && <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} video={video} />}
@@ -242,7 +242,7 @@ export const Watch: React.FC = () => {
         {/* Video Player */}
         <div 
             ref={playerContainerRef}
-            className="relative aspect-video bg-black md:rounded-xl overflow-hidden group w-full"
+            className="relative aspect-video bg-black lg:rounded-xl overflow-hidden group w-full"
             onMouseMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
             onClick={() => setShowControls(true)}
@@ -278,16 +278,16 @@ export const Watch: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 md:gap-3">
-                        <button onClick={togglePlay} className="p-2 md:p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105">
+                        <button onClick={togglePlay} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm group-hover:scale-105">
                             {isPlaying ? <Pause className="w-5 h-5 md:w-3.5 md:h-3.5 fill-current" /> : <Play className="w-5 h-5 md:w-3.5 md:h-3.5 fill-current ml-0.5" />}
                         </button>
                         
-                        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="p-2 md:p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm w-9 h-9 md:w-7 md:h-7 flex items-center justify-center group-hover:scale-105">
+                        <button onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm w-9 h-9 md:w-7 md:h-7 flex items-center justify-center group-hover:scale-105">
                             <span className="text-[10px] md:text-[9px] font-bold rotate-12">+10</span>
                         </button>
 
                         <div className="flex items-center gap-2 group/volume hidden sm:flex">
-                            <button onClick={toggleMute} className="p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105">
+                            <button onClick={toggleMute} className="p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm group-hover:scale-105">
                                 {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                             </button>
                             <input 
@@ -301,14 +301,14 @@ export const Watch: React.FC = () => {
                             />
                         </div>
 
-                        <span className="text-white text-xs font-medium ml-1">
+                        <span className="text-white text-xs font-medium ml-1 bg-black/40 px-2 py-0.5 rounded">
                             {formatTime(currentTime)} / {formatTime(duration)}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-2">
                         <div className="relative">
-                            <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="p-2 md:p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105" title="Playback speed">
+                            <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm group-hover:scale-105" title="Playback speed">
                                 <Settings className={`w-5 h-5 md:w-3.5 md:h-3.5 ${showSpeedMenu ? 'rotate-90' : ''} transition-transform`}/>
                                 {playbackRate !== 1 && <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full">{playbackRate}x</span>}
                             </button>
@@ -333,10 +333,10 @@ export const Watch: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        <button onClick={togglePiP} className="p-2 md:p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm hidden sm:block group-hover:scale-105" title="Picture in picture">
+                        <button onClick={togglePiP} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm hidden sm:block group-hover:scale-105" title="Picture in picture">
                             <PictureInPicture className="w-5 h-5 md:w-3.5 md:h-3.5"/>
                         </button>
-                        <button onClick={toggleFullscreen} className="p-2 md:p-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all text-white shadow-sm group-hover:scale-105" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                        <button onClick={toggleFullscreen} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm group-hover:scale-105" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
                             {isFullscreen ? <Minimize className="w-5 h-5 md:w-3.5 md:h-3.5"/> : <Maximize className="w-5 h-5 md:w-3.5 md:h-3.5"/>}
                         </button>
                     </div>
@@ -345,7 +345,7 @@ export const Watch: React.FC = () => {
         </div>
 
         {/* Video Info */}
-        <div className="p-4 md:p-0 md:mt-4">
+        <div className="p-4 lg:p-0 lg:mt-4">
             <div className="flex items-start gap-2">
                 <h1 className="text-lg md:text-2xl font-bold text-[var(--text-primary)] line-clamp-2 flex-1">{video.title}</h1>
                 <button 
@@ -378,7 +378,7 @@ export const Watch: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <div className="flex items-center bg-transparent md:bg-[var(--background-secondary)] rounded-full h-8 md:h-9 flex-shrink-0 border border-[var(--border-primary)] md:border-transparent">
+                    <div className="flex items-center bg-[var(--background-secondary)] rounded-full h-8 md:h-9 flex-shrink-0 border border-[var(--border-primary)]">
                         <button className="flex items-center gap-2 px-3 md:px-4 h-full hover:bg-[var(--background-tertiary)] rounded-l-full border-r border-[var(--border-primary)] transition-colors">
                             <ThumbsUp className="w-4 h-4 md:w-4 md:h-4" />
                             <span className="text-xs md:text-sm font-semibold">45K</span>
@@ -387,16 +387,16 @@ export const Watch: React.FC = () => {
                             <ThumbsDown className="w-4 h-4 md:w-4 md:h-4" />
                         </button>
                     </div>
-                    <button onClick={() => setShowShareModal(true)} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-transparent md:bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 border border-[var(--border-primary)] md:border-transparent">
+                    <button onClick={() => setShowShareModal(true)} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 border border-[var(--border-primary)]">
                         <Share2 className="w-4 h-4" /> Share
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-transparent md:bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 hidden sm:flex border border-[var(--border-primary)] md:border-transparent">
+                    <button className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 hidden sm:flex border border-[var(--border-primary)]">
                         <Download className="w-4 h-4" /> Download
                     </button>
-                    <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-transparent md:bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 border border-[var(--border-primary)] md:border-transparent">
+                    <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-xs md:text-sm font-semibold flex-shrink-0 border border-[var(--border-primary)]">
                         <ListPlus className="w-4 h-4" /> Save
                     </button>
-                    <button onClick={() => setShowReportModal(true)} className="p-2 md:p-2.5 bg-transparent md:bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors flex-shrink-0 border border-[var(--border-primary)] md:border-transparent">
+                    <button onClick={() => setShowReportModal(true)} className="p-2 md:p-2.5 bg-[var(--background-secondary)] rounded-full hover:bg-[var(--background-tertiary)] transition-colors flex-shrink-0 border border-[var(--border-primary)]">
                         <MoreHorizontal className="w-4 h-4" />
                     </button>
                 </div>
@@ -407,8 +407,7 @@ export const Watch: React.FC = () => {
                     <span>{video.views}</span>
                     <span>{video.uploadDate || video.uploadTime}</span>
                 </div>
-                <p className="text-[var(--text-primary)] whitespace-pre-wrap text-xs md:text-sm hidden md:block">{video.description}</p>
-                <button className="mt-2 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hidden md:block">Show less</button>
+                <p className="text-[var(--text-primary)] whitespace-pre-wrap text-xs md:text-sm">{video.description}</p>
             </div>
 
             <div className="mt-6">
@@ -460,7 +459,7 @@ export const Watch: React.FC = () => {
       </div>
 
       {/* Sidebar Recommendations */}
-      <div className="lg:w-[400px] flex-shrink-0 p-4 md:p-0">
+      <div className="lg:w-[400px] flex-shrink-0 p-4 lg:p-0">
         <div className="space-y-4">
             <h2 className="font-bold text-lg px-1">Sponsored</h2>
             <SidebarAd ad={ad} />

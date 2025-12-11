@@ -316,23 +316,23 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
             <div className="flex sm:hidden items-center justify-between gap-3 pb-1 -mt-1">
                 <div className="flex items-center gap-3">
                     {onEdit && (
-                        <button onClick={handleEditClick} className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Edit">
+                        <button onClick={handleEditClick} className="p-2 bg-[var(--background-tertiary)] rounded-full text-[var(--text-secondary)] border border-[var(--border-primary)]" aria-label="Edit">
                             <Edit2 className="w-4 h-4" />
                         </button>
                     )}
                     {onPromote && (
-                        <button onClick={(e) => { e.stopPropagation(); onPromote(video); }} className="p-1.5 text-[var(--text-tertiary)] hover:text-green-500 transition-colors" aria-label="Promote">
+                        <button onClick={(e) => { e.stopPropagation(); onPromote(video); }} className="p-2 bg-[var(--background-tertiary)] rounded-full text-[var(--text-secondary)] hover:text-green-500 border border-[var(--border-primary)]" aria-label="Promote">
                             <Megaphone className="w-4 h-4" />
                         </button>
                     )}
                     {onDelete && (
-                        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1.5 text-[var(--text-tertiary)] hover:text-red-500 transition-colors" aria-label="Delete">
+                        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 bg-[var(--background-tertiary)] rounded-full text-[var(--text-secondary)] hover:text-red-500 border border-[var(--border-primary)]" aria-label="Delete">
                             <Trash2 className="w-4 h-4" />
                         </button>
                     )}
                 </div>
                 {!compact && (
-                    <button onClick={handleToggleWatchLater} className={`p-1.5 transition-colors ${isInWatchLater ? 'text-[hsl(var(--accent-color))]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}>
+                    <button onClick={handleToggleWatchLater} className={`p-2 bg-[var(--background-tertiary)] rounded-full border border-[var(--border-primary)] transition-colors ${isInWatchLater ? 'text-[hsl(var(--accent-color))]' : 'text-[var(--text-secondary)]'}`}>
                        {isInWatchLater ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                     </button>
                 )}

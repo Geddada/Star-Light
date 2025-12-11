@@ -1,7 +1,7 @@
 
 import React from 'react';
 // FIX: Import the 'FileClock' icon from lucide-react.
-import { ScrollText, ShieldCheck, AlertCircle, Scale, FileText, User, XCircle, ShieldOff, FileClock, Gavel, FileShield } from 'lucide-react';
+import { ScrollText, ShieldCheck, AlertCircle, Scale, FileText, User, XCircle, ShieldOff, FileClock, Gavel, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PolicySection: React.FC<{ icon: React.ElementType, title: string, children: React.ReactNode, colorClass?: string }> = ({ icon: Icon, title, children, colorClass = "text-[hsl(var(--accent-color))]" }) => {
@@ -103,7 +103,7 @@ export const Terms: React.FC = () => {
             </p>
           </PolicySection>
 
-          <PolicySection icon={FileShield} title="9. Indemnification" colorClass="text-blue-500">
+          <PolicySection icon={Shield} title="9. Indemnification" colorClass="text-blue-500">
             <p>
                 You agree to defend, indemnify and hold harmless Starlight and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, by you or any person using your account and password; b) a breach of these Terms, or c) Content posted on the Service.
             </p>

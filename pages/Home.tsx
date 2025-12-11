@@ -240,7 +240,7 @@ export const Home: React.FC = () => {
         <div className="relative">
           <div
             ref={scrollContainerRef}
-            className="w-full flex items-center px-4 py-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+            className="w-full flex items-center px-4 py-1 md:py-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {CATEGORIES.map((cat) => (
               <button
@@ -285,7 +285,7 @@ export const Home: React.FC = () => {
 
         {/* Row 2: Subcategories (Conditional) */}
         {activeCategory && activeCategory.id !== 'all' && activeCategory.subCategories && (
-          <div className="relative border-t border-[var(--border-primary)]/30 pt-2 md:pt-2 pb-2 md:pb-0">
+          <div className="relative border-t border-[var(--border-primary)]/30 pt-1 md:pt-2 pb-1 md:pb-0">
             <div
               ref={subCategoryScrollContainerRef}
               className="w-full flex items-center px-4 pb-1 md:pb-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
