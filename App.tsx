@@ -65,6 +65,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { SplashScreen } from './components/SplashScreen';
 import { TestNewFeatures } from './pages/TestNewFeatures';
 import { BlurVideo } from './pages/BlurVideo';
+import { CookieConsent } from './components/CookieConsent';
 
 
 declare global {
@@ -324,6 +325,7 @@ const App: React.FC = () => {
               <Route path="/access-denied" element={<AccessDenied />} />
             </Routes>
           </Layout>
+          <CookieConsent />
         </AuthProvider>
       </HashRouter>
     </ThemeProvider>

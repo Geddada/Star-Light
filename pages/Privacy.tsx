@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { 
     Shield, Database, Users, ServerCrash, DollarSign, Info, Cog, Share2, 
-    UserCheck, Smile, FileClock, Mail 
+    UserCheck, Smile, FileClock, Mail, Cookie
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -83,11 +84,16 @@ export const Privacy: React.FC = () => {
             <p><strong>The easiest way to erase all your data is to clear your browser's cache and site data for this application.</strong> This action will completely reset the app to its default state, log you out, and delete all stored history, settings, and uploads.</p>
           </PolicySection>
 
-           <PolicySection icon={Smile} title="6. Children's Privacy">
+           <PolicySection icon={Cookie} title="6. Cookies and Tracking Technologies">
+            <p>We use cookies and similar tracking technologies to track the activity on our Service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.</p>
+            <p>We use local storage cookies to persist your session state, preferences (like dark mode), and locally saved content. These are essential for the application to function correctly as a client-side app.</p>
+          </PolicySection>
+
+           <PolicySection icon={Smile} title="7. Children's Privacy">
             <p>Starlight is a technical demonstration and is not intended for use by anyone under the age of 13. We do not knowingly collect any data from children because we do not collect data from anyone on a central server.</p>
           </PolicySection>
 
-           <PolicySection icon={FileClock} title="7. Changes to This Policy">
+           <PolicySection icon={FileClock} title="8. Changes to This Policy">
             <p>We may update this Privacy Policy from time to time to reflect changes in functionality or for other operational, legal, or regulatory reasons. We will notify you of any changes by posting the new policy on this page.</p>
           </PolicySection>
 

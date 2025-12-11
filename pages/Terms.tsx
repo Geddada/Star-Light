@@ -1,6 +1,7 @@
+
 import React from 'react';
 // FIX: Import the 'FileClock' icon from lucide-react.
-import { ScrollText, ShieldCheck, AlertCircle, Scale, FileText, User, XCircle, ShieldOff, FileClock } from 'lucide-react';
+import { ScrollText, ShieldCheck, AlertCircle, Scale, FileText, User, XCircle, ShieldOff, FileClock, Gavel, FileShield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PolicySection: React.FC<{ icon: React.ElementType, title: string, children: React.ReactNode, colorClass?: string }> = ({ icon: Icon, title, children, colorClass = "text-[hsl(var(--accent-color))]" }) => {
@@ -99,6 +100,18 @@ export const Terms: React.FC = () => {
           <PolicySection icon={FileClock} title="8. Changes to Terms">
             <p>
                 We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of changes by posting the new Terms on this page. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
+            </p>
+          </PolicySection>
+
+          <PolicySection icon={FileShield} title="9. Indemnification" colorClass="text-blue-500">
+            <p>
+                You agree to defend, indemnify and hold harmless Starlight and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, by you or any person using your account and password; b) a breach of these Terms, or c) Content posted on the Service.
+            </p>
+          </PolicySection>
+
+          <PolicySection icon={Gavel} title="10. Governing Law" colorClass="text-indigo-500">
+            <p>
+                These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the Service operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.
             </p>
           </PolicySection>
 
