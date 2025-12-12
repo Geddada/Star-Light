@@ -5,6 +5,15 @@ import { User as CurrentUser, Video, AdCampaign, UnskippableAdCampaign, ShortsAd
 
 const ADMIN_EMAIL = 'admin@starlight.app';
 const ADMIN_BLOCKED_USERS_KEY = 'starlight_admin_blocked_users';
+const ADMINS_STORAGE_KEY = 'starlight_admins';
+
+// Default admins matching the mocks in ManageAdmins.tsx to ensure they work out-of-the-box
+const DEFAULT_ADMIN_EMAILS = [
+  'admin@starlight.app',
+  'priya.s@starlight.app',
+  'john.s@starlight.app',
+  'yuki.t@starlight.app'
+];
 
 interface AuthContextType {
   currentUser: CurrentUser | null;
@@ -81,10 +90,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         allUsers.push(userToLogin);
     }
     
-    setCurrentUser(userToLogin);
-    const isNowAdmin = userToLogin.email === ADMIN_EMAIL;
+    // Determine Admin Status
+    let isNowAdmin = false;
+    
+    // 1. Check against hardcoded lead admin
+    if (userToLogin.email === ADMIN_EMAIL) {
+        isNowAdmin = true;
+    } else {
+        // 2. Check against localStorage list (dynamic admins added via ManageAdmins)
+        const adminsJson = localStorage.getItem(ADMINS_STORAGE_KEY);
+        if (adminsJson) {
+            const adminsList = JSON.parse(adminsJson);
+            isNowAdmin = adminsList.some((a: any) => a.email === userToLogin.email);
+        } else {
+            // 3. Fallback to default mock list if storage not initialized yet
+            isNowAdmin = DEFAULT_ADMIN_EMAILS.includes(userToLogin.email || '');
+        }
+    }
+
     const isNowPremium = userToLogin.isPremium || isNowAdmin;
     
+    setCurrentUser(userToLogin);
     setIsAdmin(isNowAdmin);
     setIsPremium(isNowPremium);
 
