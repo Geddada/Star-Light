@@ -327,7 +327,7 @@ export const VideoEditor: React.FC = () => {
                                         {/* Mock layout visualization */}
                                         <div className={`absolute inset-2 grid gap-1 ${template.layout} h-full`}>
                                             <div className="bg-[var(--border-primary)] rounded-sm opacity-50 w-full h-full"></div>
-                                            {template.id !== '1v' && <div className={`bg-[var(--border-primary)] rounded-sm opacity-50 w-full h-full ${template.id === '1v1s' ? 'rounded-full aspect-square w-auto h-auto place-self-center' : ''}`}></div>}
+                                            {template.id !== '1v' && <div className={`bg-[var(--border-primary)] rounded-sm opacity-50 w-full h-full ${template.id === '1v1s' ? 'rounded-full aspect-square w-24 h-24 place-self-center' : ''}`}></div>}
                                         </div>
                                     </div>
                                     <span className="text-xs font-semibold">{template.name}</span>
@@ -470,7 +470,7 @@ export const VideoEditor: React.FC = () => {
                             )}
 
                             {/* Controls */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 bg-black/60 backdrop-blur-md rounded-full shadow-lg opacity-0 hover:opacity-100 transition-opacity z-30">
+                            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 bg-black/60 backdrop-blur-md rounded-full shadow-lg z-30 transition-opacity duration-300 ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                                 <button className="text-white p-1 hover:text-[hsl(var(--accent-color))] transition-colors"><Rewind className="w-5 h-5"/></button>
                                 <button onClick={() => videoRef.current?.paused ? videoRef.current?.play() : videoRef.current?.pause()} className="text-white p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
                                     {isPlaying ? <Pause className="w-6 h-6"/> : <Play className="w-6 h-6"/>}

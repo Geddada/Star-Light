@@ -259,9 +259,9 @@ export const Watch: React.FC = () => {
             />
             
             {/* Controls Overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'} pointer-events-none`}>
                 {/* Progress Bar */}
-                <div className="group/progress relative h-1.5 md:h-1 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-2 transition-all">
+                <div className={`group/progress relative h-1.5 md:h-1 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-2 transition-all ${showControls ? 'pointer-events-auto' : ''}`}>
                     <div 
                         className="absolute top-0 left-0 h-full bg-red-600 rounded-full"
                         style={{ width: `${(currentTime / duration) * 100}%` }}
@@ -276,7 +276,7 @@ export const Watch: React.FC = () => {
                     />
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className={`flex items-center justify-between ${showControls ? 'pointer-events-auto' : ''}`}>
                     <div className="flex items-center gap-4 md:gap-3">
                         <button onClick={togglePlay} className="p-2 md:p-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 hover:bg-black/80 transition-all text-white shadow-sm group-hover:scale-105">
                             {isPlaying ? <Pause className="w-5 h-5 md:w-3.5 md:h-3.5 fill-current" /> : <Play className="w-5 h-5 md:w-3.5 md:h-3.5 fill-current ml-0.5" />}

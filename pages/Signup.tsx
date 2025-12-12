@@ -184,7 +184,17 @@ export const Signup: React.FC = () => {
       email: loginForm.email,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${loginForm.email}`
     };
-    login(mockUser);
+    // Fix: Pass rememberMe state
+    login(mockUser, true, loginForm.rememberMe);
+  };
+
+  const handleForgotPassword = () => {
+      if (!loginForm.email) {
+          alert("Please enter your email address first to reset your password.");
+          return;
+      }
+      // Simulate sending email
+      alert(`A password reset link has been sent to ${loginForm.email}. Check your inbox!`);
   };
 
   const handleSendMobileOtp = () => {
@@ -532,7 +542,7 @@ export const Signup: React.FC = () => {
                 <input id="rememberMe" type="checkbox" checked={loginForm.rememberMe} onChange={e => setLoginForm({...loginForm, rememberMe: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>
                 <span className="text-sm text-[var(--text-secondary)]">Remember me</span>
             </label>
-            <button type="button" className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot password?</button>
+            <button type="button" onClick={handleForgotPassword} className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot password?</button>
             </div>
 
             <button type="submit" disabled={loadingProvider !== null} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
