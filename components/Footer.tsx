@@ -59,6 +59,7 @@ export const Footer: React.FC = () => {
             <button onClick={() => navigateTo('/developers')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Developers</button>
             <button onClick={() => navigateTo('/terms')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Terms</button>
             <button onClick={() => navigateTo('/privacy')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Privacy Policy</button>
+            <button onClick={() => navigateTo('/feedback')} className="hover:underline hover:text-[var(--text-primary)] transition-colors">Send Feedback</button>
             <button onClick={() => navigateTo('/how-it-works')} className="hover:underline hover:text-[var(--text-primary)] transition-colors flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-blue-500" />
               <span>Powered by AI</span>

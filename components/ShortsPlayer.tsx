@@ -91,7 +91,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
 
   return (
     <div className="relative w-full h-full bg-black flex justify-center items-center select-none">
-        {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoUrl={window.location.href} videoTitle={video.title} />}
+        {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoId={video.id} videoTitle={video.title} />}
         
         {/* Video Container - Full width/height */}
         <div className="relative w-full h-full" onClick={togglePlay}>

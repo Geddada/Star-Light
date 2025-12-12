@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
@@ -66,6 +66,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { TestNewFeatures } from './pages/TestNewFeatures';
 import { BlurVideo } from './pages/BlurVideo';
 import { CookieConsent } from './components/CookieConsent';
+import { Feedback } from './pages/Feedback';
 
 
 declare global {
@@ -88,6 +89,11 @@ declare global {
     aistudio?: AIStudio;
   }
 }
+
+const ShortLinkRedirect: React.FC = () => {
+  const { videoId } = useParams<{ videoId: string }>();
+  return <Navigate to={`/watch/${videoId}`} replace />;
+};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -189,6 +195,7 @@ const App: React.FC = () => {
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/s/:videoId" element={<ShortLinkRedirect />} />
               <Route path="/live" element={
                 <ProtectedRoute requirePremium={true}>
                   <Live />
@@ -240,6 +247,7 @@ const App: React.FC = () => {
               <Route path="/signup" element={<Signup />} />
               <Route path="/lead-admin" element={<Signup />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/feedback" element={<Feedback />} />
               <Route path="/copyright" element={<Copyright />} />
               <Route path="/copyright-strikes" element={<CopyrightStrikes />} />
               <Route path="/copyright-school" element={<CopyrightSchool />} />

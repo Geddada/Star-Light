@@ -234,7 +234,7 @@ export const Watch: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-0 lg:gap-6 p-0 lg:p-6 max-w-[1800px] mx-auto w-full">
-        {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoUrl={window.location.href} videoTitle={video.title} currentTime={currentTime} />}
+        {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoId={video.id} videoTitle={video.title} currentTime={currentTime} />}
         {showSaveModal && <SaveToPlaylistModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} video={video} />}
         {showReportModal && <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} video={video} />}
 

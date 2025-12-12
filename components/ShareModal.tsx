@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react';
-import { X, Copy, Check, Facebook, Twitter, Linkedin, Mail, MessageCircle } from 'lucide-react';
+import { X, Copy, Check, Facebook, Twitter, Linkedin, Mail, MessageCircle, Link } from 'lucide-react';
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
-  videoUrl: string;
+  videoId: string;
   videoTitle: string;
   currentTime?: number;
 }
 
-export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, videoUrl, videoTitle, currentTime = 0 }) => {
+export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, videoId, videoTitle, currentTime = 0 }) => {
   const [copied, setCopied] = useState(false);
   const [startAt, setStartAt] = useState(false);
   
@@ -25,20 +26,15 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, videoUr
   
   const timeString = formatTime(currentTime);
   
+  // Construct the short link
+  const baseUrl = window.location.href.split('#')[0];
+  const shortUrl = `${baseUrl}#/s/${videoId}`;
+  
   const generateUrlWithTimestamp = () => {
-    try {
-      // Use the URL API for robust parameter handling. It correctly places search params before the hash.
-      const url = new URL(videoUrl);
-      url.searchParams.set('t', String(Math.floor(currentTime)));
-      return url.href;
-    } catch (e) {
-      console.error("Could not parse URL for timestamping, using fallback.", e);
-      // Basic fallback for safety, though unlikely with window.location.href
-      return `${videoUrl}?t=${Math.floor(currentTime)}`;
-    }
+      return `${shortUrl}?t=${Math.floor(currentTime)}`;
   };
   
-  const finalUrl = startAt ? generateUrlWithTimestamp() : videoUrl;
+  const finalUrl = startAt ? generateUrlWithTimestamp() : shortUrl;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(finalUrl);
@@ -65,6 +61,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, videoUr
         </div>
         
         <div className="p-6 flex flex-col gap-8">
+            {/* Short Link Badge */}
+            <div className="flex items-center gap-2 text-xs font-semibold text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full w-fit">
+                <Link className="w-3.5 h-3.5" />
+                <span>Short Link Generated</span>
+            </div>
+
             {/* Social Icons */}
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar justify-start sm:justify-between">
                 {shareLinks.map((link) => (
