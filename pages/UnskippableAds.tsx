@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUnskippableAdCampaigns } from '../services/gemini';
@@ -105,4 +104,76 @@ export const UnskippableAds: React.FC = () => {
       {activeTab === 'campaigns' ? (
          loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-[var(--background-secondary)] rounded-xl p-4 animate-pulse">
+                  <div className="aspect-video bg-[var(--background-tertiary)] rounded-lg"></div>
+                  <div className="h-5 bg-[var(--background-tertiary)] rounded-md mt-4 w-3/4"></div>
+                  <div className="h-4 bg-[var(--background-tertiary)] rounded-md mt-2 w-1/4"></div>
+                  <div className="flex justify-between mt-4 border-t border-[var(--border-primary)] pt-4">
+                    <div className="h-8 bg-[var(--background-tertiary)] rounded w-1/4"></div>
+                    <div className="h-8 bg-[var(--background-tertiary)] rounded w-1/4"></div>
+                    <div className="h-8 bg-[var(--background-tertiary)] rounded w-1/4"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {campaigns.map(campaign => (
+                <CampaignCard key={campaign.id} campaign={campaign} />
+              ))}
+            </div>
+          )
+      ) : (
+          <PaymentGateway />
+      )}
+      
+      {showChooseAdModal && (
+          <ChooseAdTypeModal 
+              onClose={() => setShowChooseAdModal(false)}
+              onSelectSkippable={() => {
+                  setShowChooseAdModal(false);
+                  setShowSkippableModal(true);
+              }}
+              onSelectUnskippable={() => {
+                  setShowChooseAdModal(false);
+                  setShowUnskippableModal(true);
+              }}
+              onSelectShortsAd={() => {
+                  setShowChooseAdModal(false);
+                  setShowShortsAdModal(true);
+              }}
+              onSelectAIAssistant={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/ai-ad-assistant');
+              }}
+              onSelectCinematicAd={() => {
+                  setShowChooseAdModal(false);
+                  navigate('/cinematic-ad-creator');
+              }}
+          />
+      )}
+      
+      {showSkippableModal && (
+          <CreateAdModal 
+              onClose={() => setShowSkippableModal(false)}
+              onSuccess={handleCreateSkippableSuccess}
+          />
+      )}
+
+      {showUnskippableModal && (
+          <CreateUnskippableAdModal 
+              onClose={() => setShowUnskippableModal(false)}
+              onSuccess={handleCreateUnskippableSuccess}
+          />
+      )}
+
+      {showShortsAdModal && (
+        <CreateShortsAdModal 
+          onClose={() => setShowShortsAdModal(false)}
+          onSuccess={handleCreateShortsSuccess}
+        />
+      )}
+    </div>
+  );
+};
