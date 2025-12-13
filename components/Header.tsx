@@ -489,9 +489,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                   <a href="https://www.google.co.in/inputtools/try/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <Keyboard className="w-4 h-4" /> Typing Tools
                   </a>
-                  <button onClick={() => { navigate('/studio'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <MonitorPlay className="w-4 h-4 text-yellow-500" /> News Studio
-                  </button>
               </div>
             )}
           </div>
