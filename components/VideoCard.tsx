@@ -174,8 +174,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
         {/* Thumbnail Container */}
         <div className={`relative flex-shrink-0 ${compact ? 'w-36 sm:w-44 aspect-video' : 'w-full aspect-video'} rounded-xl overflow-hidden bg-[var(--background-secondary)] shadow-md transition-all duration-500 ${!compact && 'group-hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] group-hover:ring-1 group-hover:ring-[hsl(var(--accent-color))]/50'}`}>
           
+          {/* Logo Top Left - Desktop Only */}
+          {!compact && (
+            <div className="absolute top-2 left-2 z-40 flex items-center gap-1 opacity-90 pointer-events-none drop-shadow-md">
+                <Logo className="w-4 h-4 text-white" />
+                <span className="text-white font-bold text-xs tracking-tighter shadow-black drop-shadow-sm font-sans">StarLight</span>
+            </div>
+          )}
+
+          {/* Community Top Right - Desktop Only */}
+          {!compact && video.communityName && (
+            <div className="absolute top-2 right-2 z-40 pointer-events-none">
+                 <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-md bg-black/40 px-2 py-0.5 rounded-sm backdrop-blur-sm border border-white/10">
+                    {video.communityName}
+                 </span>
+            </div>
+          )}
+
           {/* Overlay Buttons - Desktop: Absolute Top Right | Mobile: Hidden here, shown below */}
-          <div className="absolute top-2 right-2 z-30 hidden sm:flex items-center gap-1 sm:gap-2">
+          <div className="absolute top-10 right-2 z-30 hidden sm:flex items-center gap-1 sm:gap-2">
             {!compact && currentUser && (
                 <div className="relative">
                     <button
@@ -256,7 +273,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
               <button
                 onClick={handleToggleWatchLater}
                 title={isInWatchLater ? "Added to Watch Later" : "Watch Later"}
-                className="absolute top-2 left-2 z-30 p-1.5 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
+                className="absolute top-10 left-2 z-30 p-1.5 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
               >
                 {isInWatchLater ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
               </button>
@@ -267,7 +284,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
           <img 
             src={video.thumbnailUrl} 
             alt={video.title}
-            className={`w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
+            className={`w-full h-full object-cover transition-opacity duration-500 z-0 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
             loading="lazy"
           />
           
@@ -276,7 +293,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
               <video
                   ref={videoRef}
                   src={videoSrc}
-                  className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-300"
+                  className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-300 z-10"
                   autoPlay
                   muted
                   loop
@@ -290,9 +307,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
           </div>
 
           {/* Hover Overlay (Cinematic) */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 z-20 pointer-events-none ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
                {!compact && (
-                 <div className="absolute bottom-0 left-0 w-full p-3 hidden sm:block">
+                 <div className="absolute bottom-0 left-0 w-full p-3 hidden sm:block pointer-events-auto">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
                            <Play className={`w-3 h-3 fill-current ${isPlaying ? 'hidden' : 'block'}`} />
@@ -306,9 +323,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
                )}
           </div>
           
-          {/* Progress Bar (Simulated) */}
+          {/* Loading Progress Bar (Before Play) */}
           {isHovered && !compact && !isPlaying && (
-               <div className="absolute bottom-0 left-0 h-1 bg-red-600 z-30 animate-[width_2s_ease-out_forwards]" style={{ width: '0%' }}></div>
+               <div className="absolute bottom-0 left-0 h-1 bg-white/50 z-40 animate-[width_800ms_ease-out_forwards]" style={{ width: '0%' }}></div>
+          )}
+
+          {/* Playing Progress Bar (5s white) */}
+          {isPlaying && !compact && (
+               <div className="absolute bottom-0 left-0 h-1 bg-white z-40 animate-[width_5s_linear_forwards]" style={{ width: '0%' }}></div>
           )}
         </div>
 

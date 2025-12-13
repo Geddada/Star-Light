@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { searchVideos, getAdForSlot } from '../services/gemini';
@@ -7,6 +6,7 @@ import { Video, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, isAd } from
 import { Clock, Check, Edit2 } from 'lucide-react';
 import { UploadModal } from '../components/UploadModal';
 import { InFeedAdCard } from '../components/InFeedAdCard'; // Import InFeedAdCard
+import { Logo } from '../components/Logo';
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -45,7 +45,7 @@ const WatchLaterButton: React.FC<{ video: Video }> = ({ video }) => {
         <button
             onClick={handleToggleWatchLater}
             title={isInWatchLater ? "Added to Watch Later" : "Watch Later"}
-            className="absolute top-2 left-2 z-10 p-1.5 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
+            className="absolute top-10 left-2 z-30 p-1.5 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
         >
             {isInWatchLater ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
         </button>
@@ -146,7 +146,21 @@ export const Search: React.FC = () => {
                     onClick={() => navigate(`/watch/${video.id}`, { state: { video } })}
                   >
                     <div className="relative w-full md:w-[360px] flex-shrink-0 aspect-video rounded-xl overflow-hidden bg-[var(--background-secondary)]">
-                      <div className="absolute top-2 right-14 z-30">
+                      
+                      {/* Logo Top Left */}
+                      <div className="absolute top-2 left-2 z-20 flex items-center gap-1 opacity-90 pointer-events-none drop-shadow-md">
+                        <Logo className="w-4 h-4 text-white" />
+                        <span className="font-bold text-white text-base drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight font-sans">StarLight</span>
+                      </div>
+
+                      {/* Community Top Right */}
+                      <div className="absolute top-2 right-2 z-20 pointer-events-none">
+                         <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-md bg-black/40 px-2 py-0.5 rounded-sm backdrop-blur-sm border border-white/10">
+                            {video.communityName}
+                         </span>
+                      </div>
+
+                      <div className="absolute top-10 right-2 z-30">
                           <button
                             onClick={(e) => { e.stopPropagation(); handleEdit(video); }}
                             className="p-2 bg-black/60 backdrop-blur-sm rounded-full text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
@@ -156,18 +170,7 @@ export const Search: React.FC = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
                       </div>
-                      <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-                        <span className="font-bold text-white text-base drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight">StarLight</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          className="w-6 h-6 text-red-500 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                      </div>
+                      
                       <img 
                         src={video.thumbnailUrl} 
                         alt={video.title}

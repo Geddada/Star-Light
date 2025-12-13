@@ -306,9 +306,12 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           </div>
         )}
 
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate('/')}>
-            <Logo className="w-7 h-7 text-[var(--text-primary)]" />
-            <span className="font-bold text-lg tracking-tighter text-blue-900 font-sans">StarLight</span>
+        <div 
+            className="flex items-center gap-2 cursor-pointer bg-[hsl(var(--accent-color))] px-3 py-1.5 rounded-lg shadow-sm" 
+            onClick={() => navigate('/')}
+        >
+            <Logo className="w-6 h-6 text-white" />
+            <span className="font-bold text-lg tracking-tighter text-white font-sans">StarLight</span>
         </div>
         
         <div className="flex items-center gap-1">
@@ -378,11 +381,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           </button>
           
           <div 
-            className="flex items-center gap-1 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group bg-[hsl(var(--accent-color))] px-4 py-2 rounded-xl shadow-md hover:brightness-110 transition-all"
             onClick={() => navigate('/')}
           >
-            <Logo className="w-8 h-8 text-[var(--text-primary)] group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xl text-blue-900 tracking-tighter hidden sm:block font-sans">StarLight</span>
+            <Logo className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xl text-white tracking-tighter hidden sm:block font-sans">StarLight</span>
           </div>
       </div>
 
