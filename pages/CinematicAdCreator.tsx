@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateVideo, generateThumbnail } from '../services/gemini';
@@ -116,15 +115,15 @@ export const CinematicAdCreator: React.FC = () => {
         setIsLaunching(true);
 
         const newCampaign: AdCampaign = {
-            id: `user-cinematic-ad-${currentUser.email}-${Date.now()}`,
-            title: campaignTitle,
-            status: 'In Review',
-            views: '0',
-            ctr: '0.00%',
-            spend: '$0',
-            thumbnailUrl: thumbnailUrl,
-            category: 'Cinematic Ad',
-            communityName: currentUser.name,
+          id: `user-cinematic-ad-${currentUser.email}-${Date.now()}`,
+          title: campaignTitle,
+          status: 'In Review',
+          views: '0',
+          ctr: '0.00%',
+          spend: '$0',
+          thumbnailUrl: thumbnailUrl,
+          category: 'Cinematic Ad',
+          communityName: currentUser.name,
         };
         
         const userAdsJson = localStorage.getItem(USER_ADS_KEY);
@@ -212,9 +211,11 @@ export const CinematicAdCreator: React.FC = () => {
                         <div className="aspect-video bg-black rounded-lg relative">
                             <video src={generatedVideoUrl!} controls autoPlay className="w-full h-full rounded-lg"/>
                             {/* Logo Overlay */}
-                            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 pointer-events-none opacity-80">
-                                <Logo className="w-6 h-6 text-white drop-shadow-md" />
-                                <span className="font-bold text-white text-sm tracking-tighter drop-shadow-md">StarLight</span>
+                            <div className="absolute top-4 left-4 z-10 pointer-events-none opacity-80">
+                                <div className="flex items-center gap-2 bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
+                                    <Logo className="w-6 h-6 text-white drop-shadow-md" />
+                                    <span className="font-bold text-white text-sm tracking-tighter drop-shadow-md">StarLight</span>
+                                </div>
                             </div>
                         </div>
                         <a href={generatedVideoUrl!} download={`${campaignTitle.slice(0, 30)}.mp4`} className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg font-semibold text-sm">

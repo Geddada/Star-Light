@@ -107,9 +107,11 @@ export const CreatorStudio: React.FC = () => {
                         </div>
 
                         {/* Logo */}
-                        <div className="absolute top-4 left-4 flex items-center gap-2">
-                            <Logo className="w-6 h-6 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
-                            <span className="font-bold text-white text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight">StarLight</span>
+                        <div className="absolute top-4 left-4">
+                            <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
+                                <Logo className="w-6 h-6 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+                                <span className="font-bold text-white text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight">StarLight</span>
+                            </div>
                         </div>
 
                         {/* Lower Third */}

@@ -136,6 +136,123 @@
           animation: scroll-left 400s linear infinite;
           width: max-content;
       }
+
+      /* --- Cinematic Text & Graphics --- */
+      .cinematic-bg {
+        background: radial-gradient(circle at center, #1e293b 0%, #000000 100%);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .cinematic-bg::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: repeating-conic-gradient(
+          from 0deg,
+          transparent 0deg,
+          rgba(37, 99, 235, 0.05) 10deg,
+          transparent 20deg
+        );
+        animation: cinematic-spin 20s linear infinite;
+      }
+      
+      /* Scanlines */
+      .cinematic-bg::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      @keyframes cinematic-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .cinematic-text {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: white;
+        text-shadow: 
+          0 0 10px rgba(37, 99, 235, 0.8),
+          0 0 20px rgba(37, 99, 235, 0.6),
+          0 0 40px rgba(37, 99, 235, 0.4);
+        animation: text-flicker 3s infinite alternate;
+      }
+
+      @keyframes text-flicker {
+        0% { opacity: 0.8; text-shadow: 0 0 10px rgba(37, 99, 235, 0.8); }
+        100% { opacity: 1; text-shadow: 0 0 20px rgba(37, 99, 235, 1), 0 0 40px rgba(37, 99, 235, 0.6); }
+      }
+
+      /* Glitch Effect */
+      .glitch {
+        position: relative;
+      }
+      .glitch::before,
+      .glitch::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #02061700;
+        opacity: 0.8;
+      }
+      .glitch::before {
+        left: 2px;
+        text-shadow: -2px 0 #ff00c1;
+        clip: rect(44px, 450px, 56px, 0);
+        animation: glitch-anim-1 5s infinite linear alternate-reverse;
+      }
+      .glitch::after {
+        left: -2px;
+        text-shadow: -2px 0 #00fff9;
+        clip: rect(44px, 450px, 56px, 0);
+        animation: glitch-anim-2 5s infinite linear alternate-reverse;
+      }
+
+      @keyframes glitch-anim-1 {
+        0% { clip: rect(20px, 9999px, 15px, 0); }
+        20% { clip: rect(60px, 9999px, 80px, 0); }
+        40% { clip: rect(10px, 9999px, 85px, 0); }
+        60% { clip: rect(30px, 9999px, 10px, 0); }
+        80% { clip: rect(80px, 9999px, 5px, 0); }
+        100% { clip: rect(50px, 9999px, 40px, 0); }
+      }
+      @keyframes glitch-anim-2 {
+        0% { clip: rect(25px, 9999px, 90px, 0); }
+        20% { clip: rect(10px, 9999px, 10px, 0); }
+        40% { clip: rect(80px, 9999px, 50px, 0); }
+        60% { clip: rect(10px, 9999px, 30px, 0); }
+        80% { clip: rect(50px, 9999px, 95px, 0); }
+        100% { clip: rect(35px, 9999px, 25px, 0); }
+      }
+
+      /* Audio Visualizer Bars */
+      .visualizer-bar {
+        width: 6px;
+        background: var(--accent-color);
+        animation: equalizer 0.8s ease-in-out infinite;
+        border-radius: 99px;
+      }
+      @keyframes equalizer {
+        0% { height: 20%; }
+        50% { height: 100%; }
+        100% { height: 20%; }
+      }
     </style>
   <script type="importmap">
 {
@@ -154,13 +271,7 @@
   <body class="overflow-hidden bg-[var(--background-primary)] selection:bg-[hsl(var(--accent-color))] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-    <!-- Google Identity Services (GIS) Library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- 
-      IMPORTANT: To enable Google Sign-In, you must replace 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'
-      with your actual Google Cloud project's OAuth 2.0 Client ID in 'contexts/AuthContext.tsx'.
-      You can create one here: https://console.cloud.google.com/apis/credentials
-    -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

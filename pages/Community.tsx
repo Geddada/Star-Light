@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Community as CommunityType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -62,7 +59,6 @@ export const Community: React.FC = () => {
                     id: `comm-mock-${i}`,
                     ownerEmail: 'system@starlight.app',
                     memberCount: Math.floor(Math.random() * 500000) + 1000,
-                    // FIX: Add avatar to mock communities
                     avatar: `https://picsum.photos/seed/${encodeURIComponent(c.name!)}/64/64`,
                 } as CommunityType));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(initialCommunities));

@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Video, CATEGORIES, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, isAd } from '../types';
@@ -10,6 +9,8 @@ import { Film, ChevronLeft, ChevronRight } from 'lucide-react';
 import { UploadModal } from '../components/UploadModal';
 import { SidebarAd } from '../components/SidebarAd';
 import { InFeedAdCard } from '../components/InFeedAdCard';
+import { TrendingWidget } from '../components/TrendingWidget';
+import { PollWidget } from '../components/PollWidget';
 
 export const Home: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -120,10 +121,19 @@ export const Home: React.FC = () => {
   }, [loadUploadedVideos]);
 
   const allContent = useMemo(() => {
-    const combined: (Video | AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = [...uploadedVideos, ...aiVideos];
+    // We add a 'poll' item type to the array which we'll render differently
+    const combined: any[] = [...uploadedVideos, ...aiVideos];
+    
+    // Inject Ad at index 4
     if (inFeedAd && combined.length > 4) {
         combined.splice(4, 0, inFeedAd);
     }
+    
+    // Inject Poll Widget at index 2 (high visibility)
+    if (combined.length > 2) {
+        combined.splice(2, 0, { type: 'poll', id: 'community-poll-1' });
+    }
+    
     return combined;
   }, [uploadedVideos, aiVideos, inFeedAd]);
 
@@ -421,19 +431,28 @@ export const Home: React.FC = () => {
                 ? Array.from({ length: 12 }).map((_, i) => (
                     <VideoCard key={i} isLoading={true} />
                   ))
-                : allContent.map((item) => (
-                    isAd(item)
-                      ? <InFeedAdCard key={item.id} campaign={item} />
-                      : <VideoCard key={(item as Video).id} video={item as Video} onEdit={handleEdit} />
-                  ))}
+                : allContent.map((item) => {
+                    if (item.type === 'poll') {
+                        return <PollWidget key={item.id} />;
+                    }
+                    if (isAd(item)) {
+                      return <InFeedAdCard key={item.id} campaign={item} />;
+                    } 
+                    return <VideoCard key={(item as Video).id} video={item as Video} onEdit={handleEdit} />;
+                  })}
             </div>
           </div>
         </div>
 
-        <aside className="w-full xl:w-[400px] xl:flex-shrink-0 p-6 border-t xl:border-t-0 xl:border-l border-[var(--border-primary)]">
-            <div className="xl:sticky top-20">
-                <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 uppercase tracking-wider">Sponsored</h2>
-                <SidebarAd ad={homePageAd} />
+        <aside className="w-full xl:w-[400px] xl:flex-shrink-0 p-6 border-t xl:border-t-0 xl:border-l border-[var(--border-primary)] space-y-6">
+            <div className="xl:sticky top-20 space-y-6">
+                <div>
+                    <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 uppercase tracking-wider">Sponsored</h2>
+                    <SidebarAd ad={homePageAd} />
+                </div>
+                <div>
+                    <TrendingWidget />
+                </div>
             </div>
         </aside>
       </div>

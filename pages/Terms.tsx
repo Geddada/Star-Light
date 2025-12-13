@@ -1,6 +1,4 @@
-
 import React from 'react';
-// FIX: Import the 'FileClock' icon from lucide-react.
 import { ScrollText, ShieldCheck, AlertCircle, Scale, FileText, User, XCircle, ShieldOff, FileClock, Gavel, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

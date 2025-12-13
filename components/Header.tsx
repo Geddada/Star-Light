@@ -98,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showTvModal, setShowTvModal] = useState(false);
   const [uploadModalConfig, setUploadModalConfig] = useState<{
-    initialStep: 'initial' | 'recording' | 'details';
+    initialStep: 'initial' | 'recording' | 'details' | 'canva_import';
     isShorts: boolean;
     uploadType: 'video' | 'image';
   }>({ initialStep: 'initial', isShorts: false, uploadType: 'video' });
@@ -211,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     }, 2000);
   };
 
-  const openUploadModal = (initialStep: 'initial' | 'recording' | 'details' = 'initial', isShorts = false, uploadType: 'video' | 'image' = 'video') => {
+  const openUploadModal = (initialStep: 'initial' | 'recording' | 'details' | 'canva_import' = 'initial', isShorts = false, uploadType: 'video' | 'image' = 'video') => {
     setUploadModalConfig({ initialStep, isShorts, uploadType });
     setShowUploadModal(true);
   };
@@ -477,13 +477,18 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                       <Camera className="w-4 h-4" /> Record a Short
                   </button>
                   <div className="h-px bg-[var(--border-primary)] my-1"></div>
+                  <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Canva Integration</div>
+                  <button onClick={() => { openUploadModal('canva_import', false, 'video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Palette className="w-4 h-4 text-[#7D2AE8]" /> Design Video
+                  </button>
+                  <button onClick={() => { openUploadModal('canva_import', true, 'video'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Smartphone className="w-4 h-4 text-[#7D2AE8]" /> Design Short
+                  </button>
+                  <div className="h-px bg-[var(--border-primary)] my-1"></div>
                   <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Tools</div>
-                  <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Palette className="w-4 h-4 text-[#7D2AE8]" /> Canva Design Tool
-                  </a>
                   <a href="https://www.google.co.in/inputtools/try/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <Keyboard className="w-4 h-4" /> Typing Tools
-                  </button>
+                  </a>
                   <button onClick={() => { navigate('/studio'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
                       <MonitorPlay className="w-4 h-4 text-yellow-500" /> News Studio
                   </button>

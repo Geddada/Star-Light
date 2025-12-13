@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Video } from '../types';
 import { 
@@ -21,6 +22,8 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
   const [isMuted, setIsMuted] = useState(false); // Default unmuted for better UX if possible, but browsers block auto-audio
   const [isLiked, setIsLiked] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   
   // Controls visibility state
   const [showControls, setShowControls] = useState(true);
@@ -122,6 +125,20 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
       setIsLiked(!isLiked);
   };
 
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleMetadataLoaded = () => {
+    if (videoRef.current) {
+        setDuration(videoRef.current.duration);
+    }
+  };
+
+  const showOverlay = currentTime < 5 || (duration > 0 && duration - currentTime <= 5);
+
   return (
     <div className="relative w-full h-full bg-black flex justify-center items-center select-none">
         {showShareModal && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} videoId={video.id} videoTitle={video.title} />}
@@ -135,7 +152,25 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
                 loop
                 playsInline
                 muted={isMuted}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleMetadataLoaded}
             />
+            
+            {/* Branding Overlays */}
+            <div className={`absolute top-4 left-4 z-20 transition-opacity duration-500 pointer-events-none ${showOverlay ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex items-center gap-2 bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
+                    <Logo className="w-5 h-5 text-white drop-shadow-md" />
+                    <span className="text-white font-bold text-sm tracking-tight drop-shadow-md shadow-black font-sans">StarLight</span>
+                </div>
+            </div>
+
+            {video.communityName && (
+                <div className={`absolute top-4 right-4 z-20 transition-opacity duration-500 pointer-events-none ${showOverlay ? 'opacity-100' : 'opacity-0'}`}>
+                     <span className="text-white text-sm font-bold tracking-tight drop-shadow-md bg-black/40 px-2.5 py-1 rounded-sm backdrop-blur-md border border-white/10 font-sans">
+                        {video.communityName}
+                     </span>
+                </div>
+            )}
             
             {!isPlaying && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
@@ -188,6 +223,19 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
                 <div className="pointer-events-auto w-[85%]">
                     <p className="text-white text-[10px] sm:text-sm line-clamp-2 drop-shadow-md mb-2 sm:mb-3 font-medium">{video.description} <span className="font-bold text-white/80">#shorts #starlight</span></p>
                     <div className="flex items-center gap-2 text-white/90 text-[9px] sm:text-xs font-bold">
+                        <div className="flex items-end gap-0.5 h-3 mb-0.5">
+                             {[...Array(4)].map((_, i) => (
+                                 <div 
+                                    key={i} 
+                                    className="w-0.5 bg-white rounded-full animate-bounce" 
+                                    style={{ 
+                                        height: isPlaying ? '100%' : '20%', 
+                                        animationDuration: `${0.5 + i * 0.1}s`,
+                                        animationPlayState: isPlaying ? 'running' : 'paused'
+                                    }}
+                                 ></div>
+                             ))}
+                        </div>
                         <Music className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="animate-pulse">Original Sound - {video.uploaderName}</span>
                     </div>

@@ -1,144 +1,102 @@
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Music, Gamepad2, Newspaper, Trophy, Lightbulb, Compass } from 'lucide-react';
-import { Video } from '../types';
-import { fetchVideos } from '../services/gemini';
-import { VideoCard } from '../components/VideoCard';
-import { UploadModal } from '../components/UploadModal';
-
-const DESTINATIONS = [
-  { id: 'trending', label: 'Trending', icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
-  { id: 'music', label: 'Music', icon: Music, color: 'text-teal-500', bg: 'bg-teal-500/10' },
-  { id: 'gaming', label: 'Gaming', icon: Gamepad2, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-  { id: 'news', label: 'News', icon: Newspaper, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { id: 'sports', label: 'Sports', icon: Trophy, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { id: 'learning', label: 'Learning', icon: Lightbulb, color: 'text-green-500', bg: 'bg-green-500/10' },
-];
+import { Compass, Hash, ArrowRight, Layers, Tag } from 'lucide-react';
+import { CATEGORIES } from '../types';
 
 export const Explore: React.FC = () => {
   const navigate = useNavigate();
-  const [trendingVideos, setTrendingVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeDestination, setActiveDestination] = useState('trending');
-  
-  // Reuse existing modal logic
-  const [editingVideo, setEditingVideo] = useState<Video | undefined>(undefined);
-  const [showUploadModal, setShowUploadModal] = useState(false);
 
-  useEffect(() => {
-    const loadContent = async () => {
-      setLoading(true);
-      // Map destination IDs to the categories your Gemini service likely understands
-      const categoryMap: Record<string, string> = {
-        'trending': 'Viral Trends',
-        'music': 'Music',
-        'gaming': 'Gaming',
-        'news': 'News',
-        'sports': 'Sports',
-        'learning': 'Education'
-      };
-      
-      const category = categoryMap[activeDestination] || 'All';
-      const data = await fetchVideos(category);
-      
-      // Simulate "Trending" by sorting by views (parsing "1.2M views" to numbers roughly)
-      if (activeDestination === 'trending') {
-         data.sort((a, b) => {
-             const parseViews = (str: string) => {
-                 const num = parseFloat(str);
-                 if (str.includes('M')) return num * 1000000;
-                 if (str.includes('K')) return num * 1000;
-                 return num;
-             };
-             return parseViews(b.views) - parseViews(a.views);
-         });
-      }
-      
-      setTrendingVideos(data);
-      setLoading(false);
-    };
-    
-    loadContent();
-  }, [activeDestination]);
-
-  const handleEdit = (video: Video) => {
-    setEditingVideo(video);
-    setShowUploadModal(true);
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/?category=${categoryId}`);
   };
 
-  const handleUploadSuccess = () => {
-    setShowUploadModal(false);
-    setEditingVideo(undefined);
-    // Reload logic if needed
+  const handleSubCategoryClick = (categoryId: string, subCategoryId: string) => {
+    navigate(`/?category=${categoryId}&subcategory=${subCategoryId}`);
   };
+
+  // Filter out the 'All' category for the directory view as it's redundant here
+  const directoryCategories = CATEGORIES.filter(c => c.id !== 'all');
 
   return (
-    <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] overflow-y-auto">
-      {showUploadModal && (
-        <UploadModal
-          onClose={() => setShowUploadModal(false)}
-          onUploadSuccess={handleUploadSuccess}
-          videoToEdit={editingVideo}
-        />
-      )}
-      
-      <div className="max-w-[1200px] mx-auto p-4 sm:p-6">
-        {/* Destinations Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-8">
-          {DESTINATIONS.map((dest) => (
-            <button
-              key={dest.id}
-              onClick={() => setActiveDestination(dest.id)}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 border border-transparent ${
-                activeDestination === dest.id 
-                  ? 'bg-[var(--background-secondary)] shadow-md border-[var(--border-primary)] scale-105' 
-                  : 'bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)]'
-              }`}
-            >
-              <div className={`p-3 rounded-full mb-2 ${dest.bg} ${dest.color}`}>
-                <dest.icon className="w-6 h-6" />
-              </div>
-              <span className="font-semibold text-sm">{dest.label}</span>
-            </button>
-          ))}
+    <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] overflow-y-auto p-6 md:p-8 custom-scrollbar">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 shadow-lg border border-white/10">
+                <Compass className="w-10 h-10 text-[hsl(var(--accent-color))]" />
+            </div>
+            <div>
+                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--accent-color))] to-purple-500">
+                    Explore
+                </h1>
+                <p className="text-[var(--text-secondary)] mt-1 text-lg">
+                    Discover content by topic and interest.
+                </p>
+            </div>
+          </div>
         </div>
 
-        {/* Content Section */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-             {activeDestination === 'trending' ? <Flame className="w-6 h-6 text-red-500" /> : <Compass className="w-6 h-6" />}
-             {DESTINATIONS.find(d => d.id === activeDestination)?.label} Videos
-          </h2>
-
-          <div className="flex flex-col gap-4">
-            {loading ? (
-               Array.from({ length: 5 }).map((_, i) => (
-                 <div key={i} className="flex gap-4 animate-pulse">
-                    <div className="w-40 sm:w-60 aspect-video bg-[var(--background-secondary)] rounded-xl flex-shrink-0" />
-                    <div className="flex-1 space-y-2 py-2">
-                       <div className="h-5 bg-[var(--background-secondary)] w-3/4 rounded" />
-                       <div className="h-4 bg-[var(--background-secondary)] w-1/2 rounded" />
-                       <div className="h-8 bg-[var(--background-secondary)] w-10 rounded-full mt-2" />
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {directoryCategories.map((category, index) => (
+            <div 
+              key={category.id}
+              className="bg-[var(--background-secondary)] rounded-2xl border border-[var(--border-primary)] hover:border-[hsl(var(--accent-color))] transition-all duration-300 hover:shadow-xl group flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-bottom-8"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              {/* Card Header */}
+              <div 
+                className="p-5 border-b border-[var(--border-primary)] bg-[var(--background-tertiary)]/30 flex justify-between items-center cursor-pointer"
+                onClick={() => handleCategoryClick(category.id)}
+              >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[hsl(var(--accent-color))]/10 rounded-lg text-[hsl(var(--accent-color))]">
+                        <Layers className="w-5 h-5" />
                     </div>
-                 </div>
-               ))
-            ) : (
-              trendingVideos.map((video, index) => (
-                <div key={video.id} className="flex gap-4">
-                   {/* Only show rank numbers for the Trending tab */}
-                   {activeDestination === 'trending' && (
-                       <span className="hidden sm:flex text-sm text-[var(--text-tertiary)] font-bold w-6 pt-1 justify-center shrink-0">
-                          {index + 1}
-                       </span>
-                   )}
-                   <div className="flex-1 min-w-0">
-                      <VideoCard video={video} compact onEdit={handleEdit} />
-                   </div>
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-[hsl(var(--accent-color))] transition-colors">
+                        {category.name}
+                    </h2>
                 </div>
-              ))
-            )}
-          </div>
+                <ArrowRight className="w-5 h-5 text-[var(--text-tertiary)] group-hover:translate-x-1 transition-transform" />
+              </div>
+
+              {/* Sub-categories List */}
+              <div className="p-5 flex-1">
+                {category.subCategories && category.subCategories.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                        {category.subCategories.map((sub) => (
+                            <button
+                                key={sub.id}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSubCategoryClick(category.id, sub.id);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[var(--background-primary)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[hsl(var(--accent-color))] hover:text-white hover:border-[hsl(var(--accent-color))] transition-all duration-200"
+                            >
+                                <Hash className="w-3 h-3 opacity-50" />
+                                {sub.name}
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="h-full flex items-center justify-center text-[var(--text-tertiary)] italic text-sm">
+                        <Tag className="w-4 h-4 mr-2" /> No sub-topics available
+                    </div>
+                )}
+              </div>
+              
+              {/* Footer Action */}
+              <div 
+                className="px-5 py-3 bg-[var(--background-tertiary)]/10 text-center border-t border-[var(--border-primary)] cursor-pointer hover:bg-[var(--background-tertiary)]/30 transition-colors"
+                onClick={() => handleCategoryClick(category.id)}
+              >
+                  <span className="text-xs font-bold text-[hsl(var(--accent-color))] uppercase tracking-wider">
+                      Browse All {category.name}
+                  </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

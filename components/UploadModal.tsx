@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
-import { X, UploadCloud, Video, Image as ImageIcon, Sparkles, RefreshCw, Loader2, Save, Folder, Tag, ArrowLeft, Camera, Users, Upload, Newspaper, ChevronDown, Tv, FileVideo, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
+import { X, UploadCloud, Video, Image as ImageIcon, Sparkles, RefreshCw, Loader2, Save, Folder, Tag, ArrowLeft, Camera, Users, Upload, Newspaper, ChevronDown, Tv, FileVideo, CheckCircle, ArrowRight, AlertTriangle, Palette, ExternalLink, Link } from 'lucide-react';
 import { Video as VideoType, CATEGORIES, Community } from '../types';
 import { generateThumbnail, generateVideoMetadata } from '../services/gemini';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +13,7 @@ interface UploadModalProps {
   onUploadSuccess: () => void;
   videoToEdit?: VideoType;
   isShortsDefault?: boolean;
-  initialStep?: 'initial' | 'recording' | 'details';
+  initialStep?: 'initial' | 'recording' | 'details' | 'canva_import';
   preselectedCommunity?: Community | null;
   uploadType?: 'video' | 'image';
   flow?: 'simple' | 'detailed';
@@ -42,7 +42,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   
-  const [uploadStep, setUploadStep] = useState<'initial' | 'recording' | 'details' | 'video-preview'>('initial');
+  const [uploadStep, setUploadStep] = useState<'initial' | 'recording' | 'details' | 'video-preview' | 'canva_import'>('initial');
   const [detailsSubStep, setDetailsSubStep] = useState(1); // 1: Assets, 2: Metadata
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
@@ -55,6 +55,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isGeneratingText, setIsGeneratingText] = useState(false);
+  
+  // Canva specific state
+  const [canvaLink, setCanvaLink] = useState('');
+  const [isImportingCanva, setIsImportingCanva] = useState(false);
 
   useEffect(() => {
     const communitiesJson = localStorage.getItem('starlight_communities');
@@ -204,6 +208,34 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
 
+  const handleCanvaImport = () => {
+      if (!canvaLink.includes('canva.com')) {
+          alert('Please enter a valid Canva design link.');
+          return;
+      }
+      setIsImportingCanva(true);
+      
+      // Simulate fetching and processing video from Canva
+      setTimeout(() => {
+          const fakeFile = new File(["canva_video_content"], "Canva Design.mp4", { type: "video/mp4" });
+          setSelectedFile(fakeFile);
+          setSelectedFileName("Canva Design Project.mp4");
+          
+          // Generate a placeholder "thumbnail" or use a generic one
+          // Check videoType state (set via props on init) to determine orientation
+          const isShort = videoType === 'short';
+          const thumbWidth = isShort ? 360 : 640;
+          const thumbHeight = isShort ? 640 : 360;
+          
+          setThumbnailUrl(`https://picsum.photos/seed/canva-import/${thumbWidth}/${thumbHeight}`);
+          setTitle(isShort ? "My Canva Short" : "My Canva Project");
+          
+          setIsImportingCanva(false);
+          setUploadStep('details');
+          setDetailsSubStep(1);
+      }, 2000);
+  };
+
   const handleUpload = async () => {
     if (!title.trim() || !description.trim() || (!selectedFile && !videoToEdit) || !currentUser || !selectedCommunity || !thumbnailUrl) {
       alert('Please fill in all fields.');
@@ -276,6 +308,63 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             {uploadStep === 'initial' && (<div className="p-6 md:p-10 flex flex-col items-center justify-center h-full"><input type="file" ref={fileInputRef} className="hidden" accept={acceptType} onChange={(e) => handleFileChange(e)} /><button onClick={() => fileInputRef.current?.click()} className="w-full h-full min-h-[300px] bg-[var(--background-primary)] border-2 border-dashed border-[var(--border-primary)] rounded-xl flex flex-col items-center justify-center gap-4 font-semibold hover:border-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)] transition-colors"><UploadCloud className="w-12 h-12 text-blue-500"/><span className="text-xl">Select {typeLabelGeneric} to upload</span></button></div>)}
             {uploadStep === 'recording' && <VideoRecorder onRecordingComplete={handleRecordingComplete} onCancel={() => setUploadStep('initial')} />}
             
+            {uploadStep === 'canva_import' && (
+                <div className="p-8 flex flex-col items-center justify-center h-full animate-in fade-in">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/20">
+                        <Palette className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2 text-center">Design in Canva</h2>
+                    <p className="text-[var(--text-secondary)] text-center max-w-md mb-8">
+                        Create stunning visuals and videos in Canva, then paste your public view link here to import directly to your channel.
+                    </p>
+                    
+                    <div className="w-full max-w-md space-y-4">
+                        <a 
+                            href="https://www.canva.com/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg font-semibold hover:bg-[var(--background-tertiary)] transition-colors"
+                        >
+                            Open Canva <ExternalLink className="w-4 h-4"/>
+                        </a>
+                        
+                        <div className="flex items-center gap-4 py-2">
+                            <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                            <span className="text-xs text-[var(--text-tertiary)] font-bold">THEN</span>
+                            <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-[var(--text-secondary)]">Paste Canva Link</label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+                                    <input 
+                                        type="url" 
+                                        value={canvaLink}
+                                        onChange={(e) => setCanvaLink(e.target.value)}
+                                        placeholder="https://www.canva.com/design/..."
+                                        className="w-full pl-9 pr-3 py-2.5 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={handleCanvaImport}
+                                    disabled={!canvaLink || isImportingCanva}
+                                    className="px-6 py-2.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {isImportingCanva ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Import'}
+                                </button>
+                            </div>
+                        </div>
+                        {isImportingCanva && (
+                            <p className="text-xs text-center text-[hsl(var(--accent-color))] animate-pulse mt-2">
+                                Processing design... This may take a moment.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {uploadStep === 'details' && (
               <>
                 {/* ----- STEP 1: ASSETS ----- */}
@@ -287,7 +376,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           <label className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"><ImageIcon className="w-5 h-5"/> Step 1: {uploadType === 'image' ? 'Image Preview' : 'Create Thumbnail'}</label>
                           <p className="text-sm text-slate-400 -mt-2">{uploadType === 'image' ? 'This image will be displayed as your content.' : 'An eye-catching thumbnail is key to attracting viewers.'}</p>
                           <div className="flex flex-col sm:flex-row gap-4">
-                              <div className="relative w-full sm:w-64 aspect-video bg-[var(--background-primary)] rounded-lg border border-[var(--border-primary)] border-dashed flex items-center justify-center overflow-hidden group flex-shrink-0">
+                              <div className={`relative w-full ${videoType === 'short' ? 'sm:w-32 aspect-[9/16]' : 'sm:w-64 aspect-video'} bg-[var(--background-primary)] rounded-lg border border-[var(--border-primary)] border-dashed flex items-center justify-center overflow-hidden group flex-shrink-0 transition-all duration-300`}>
                                   {thumbnailUrl ? <><img src={thumbnailUrl} alt="Thumbnail Preview" className="w-full h-full object-cover"/><button onClick={() => setThumbnailUrl(null)} className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-500 opacity-0 group-hover:opacity-100"><X className="w-4 h-4"/></button></> : <div className="flex flex-col items-center text-[var(--text-tertiary)]"><ImageIcon className="w-8 h-8 mb-2 opacity-50"/><span className="text-xs">Preview</span></div>)}
                               </div>
                               <div className="flex-1 space-y-3">
@@ -331,7 +420,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   <>
                     <div className="p-6 flex flex-col gap-6 animate-in fade-in">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">THUMBNAIL</label><img src={thumbnailUrl || ''} alt="Thumbnail Preview" className="w-full aspect-video rounded-lg object-cover border border-[var(--border-primary)]"/></div>
+                        <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">THUMBNAIL</label><img src={thumbnailUrl || ''} alt="Thumbnail Preview" className={`w-full ${videoType === 'short' ? 'aspect-[9/16]' : 'aspect-video'} rounded-lg object-cover border border-[var(--border-primary)]`}/></div>
                         <div className="space-y-1"><label className="text-xs font-bold text-[var(--text-secondary)]">FILE</label><div className="w-full aspect-video bg-[var(--background-primary)] rounded-lg flex flex-col items-center justify-center text-center p-2 border border-[var(--border-primary)]"><FileVideo className="w-8 h-8 text-[var(--text-tertiary)] mb-2"/><p className="text-sm font-semibold truncate w-full">{selectedFileName}</p></div></div>
                       </div>
 

@@ -204,7 +204,16 @@ const App: React.FC = () => {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/s/:videoId" element={<ShortLinkRedirect />} />
+                
+                {/* Explore & Topics */}
                 <Route path="/explore" element={<Explore />} />
+                <Route path="/trending" element={<Explore />} />
+                <Route path="/music" element={<Explore />} />
+                <Route path="/gaming" element={<Explore />} />
+                <Route path="/news" element={<Explore />} />
+                <Route path="/sports" element={<Explore />} />
+                <Route path="/learning" element={<Explore />} />
+
                 <Route path="/channel/:channelId" element={<Channel />} />
                 <Route path="/live" element={
                   <ProtectedRoute requirePremium={true}>
@@ -346,6 +355,8 @@ const App: React.FC = () => {
                 <Route path="/thanks" element={<Thanks />} />
                 <Route path="/business" element={<Business />} />
                 <Route path="/access-denied" element={<AccessDenied />} />
+                {/* Catch all redirect */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>
             <CookieConsent />

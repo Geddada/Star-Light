@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchShorts } from '../services/gemini';
 import { Video } from '../types';
@@ -90,15 +91,6 @@ export const Shorts: React.FC = () => {
         {/* Aspect ratio 9/19.5 mimics modern smartphones like iPhone 14/15/16 Pro */}
         <div className="relative h-[92vh] aspect-[9/19.5] max-h-screen bg-black rounded-[3rem] border-[6px] border-[#1a1a1a] shadow-[0_0_60px_rgba(255,255,255,0.05)] overflow-hidden ring-1 ring-white/10 z-10">
             
-            {/* Dynamic Island */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 h-8 w-[120px] bg-black rounded-full z-50 pointer-events-none flex items-center justify-center">
-                <div className="w-full h-full flex justify-between items-center px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Activity Indicators simulation */}
-                    <div className="w-1 h-1 rounded-full bg-orange-500"></div>
-                    <div className="w-1 h-1 rounded-full bg-green-500"></div>
-                </div>
-            </div>
-
             {/* Main Scroll Container */}
             <div 
                 ref={containerRef}

@@ -148,14 +148,16 @@ export const Search: React.FC = () => {
                     <div className="relative w-full md:w-[360px] flex-shrink-0 aspect-video rounded-xl overflow-hidden bg-[var(--background-secondary)]">
                       
                       {/* Logo Top Left */}
-                      <div className="absolute top-2 left-2 z-20 flex items-center gap-1 opacity-90 pointer-events-none drop-shadow-md">
-                        <Logo className="w-4 h-4 text-white" />
-                        <span className="font-bold text-white text-base drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight font-sans">StarLight</span>
+                      <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                        <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-sm backdrop-blur-sm border border-white/10">
+                            <Logo className="w-3.5 h-3.5 text-white" />
+                            <span className="font-bold text-white text-[10px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight font-sans">StarLight</span>
+                        </div>
                       </div>
 
                       {/* Community Top Right */}
                       <div className="absolute top-2 right-2 z-20 pointer-events-none">
-                         <span className="text-white text-[10px] font-bold uppercase tracking-wider drop-shadow-md bg-black/40 px-2 py-0.5 rounded-sm backdrop-blur-sm border border-white/10">
+                         <span className="text-white text-[10px] font-bold tracking-tight drop-shadow-md bg-black/40 px-2 py-1 rounded-sm backdrop-blur-sm border border-white/10 font-sans">
                             {video.communityName}
                          </span>
                       </div>

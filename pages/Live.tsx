@@ -1,17 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Radio, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAdForSlot } from '../services/gemini';
 import { SidebarAd } from '../components/SidebarAd';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 import { Logo } from '../components/Logo';
 
 
 export const Live: React.FC = () => {
   const { currentUser } = useAuth();
-  // FIX: Updated ad state type to include ShortsAdCampaign.
   const [sidebarAd, setSidebarAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
   const [viewers, setViewers] = useState(1240);
 
@@ -63,9 +60,11 @@ export const Live: React.FC = () => {
           <div className="absolute top-4 right-4 bg-amber-500 text-black px-3 py-1 text-sm font-bold rounded-md uppercase tracking-wider z-20 shadow-lg">Premium</div>
           
           {/* Logo Top Left */}
-          <div className="absolute top-4 left-24 z-20 flex items-center gap-2 pointer-events-none opacity-80">
-             <Logo className="w-6 h-6 text-white drop-shadow-lg" />
-             <span className="font-bold text-white text-lg tracking-tighter drop-shadow-lg hidden sm:inline">StarLight</span>
+          <div className="absolute top-4 left-24 z-20 pointer-events-none opacity-80">
+            <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
+              <Logo className="w-6 h-6 text-white drop-shadow-lg" />
+              <span className="font-bold text-white text-lg tracking-tighter drop-shadow-lg hidden sm:inline">StarLight</span>
+            </div>
           </div>
           
           {/* Viewer Count Badge */}

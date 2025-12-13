@@ -34,7 +34,8 @@ const AccountSettings: React.FC<{
     profileDetails: ProfileDetails;
     setProfileDetails: React.Dispatch<React.SetStateAction<ProfileDetails>>;
 }> = ({ currentUser, profileDetails, setProfileDetails }) => {
-    const { deleteAccount } = useAuth();
+    const { deleteAccount, updateUser } = useAuth();
+    const [nameInput, setNameInput] = useState(currentUser.name);
     const [countryCode, setCountryCode] = useState('+91');
     const [mobileInput, setMobileInput] = useState('');
     const [otpInput, setOtpInput] = useState('');
@@ -105,6 +106,13 @@ const AccountSettings: React.FC<{
 
     const handleSaveChanges = () => {
         setSaveStatus('saving');
+        
+        // Update Auth User Name
+        if (nameInput !== currentUser.name) {
+            updateUser({ name: nameInput });
+        }
+
+        // Update Profile Details
         const newDetails: ProfileDetails = {
             ...profileDetails,
             state: stateInput,
@@ -113,6 +121,7 @@ const AccountSettings: React.FC<{
             gender: genderInput || undefined,
         };
         saveProfileDetails(newDetails);
+        
         setTimeout(() => {
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2500);
@@ -210,7 +219,12 @@ const AccountSettings: React.FC<{
                         <label className="text-sm font-semibold text-[var(--text-secondary)]">Full Name</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-                            <input type="text" disabled value={currentUser.name} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-secondary)] cursor-not-allowed" />
+                            <input 
+                                type="text" 
+                                value={nameInput} 
+                                onChange={(e) => setNameInput(e.target.value)}
+                                className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" 
+                            />
                         </div>
                     </div>
                     <div className="flex flex-col gap-1.5">

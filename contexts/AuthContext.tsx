@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => void;
   upgradeToPremium: () => void;
   deleteAccount: () => void;
+  updateUser: (updates: Partial<CurrentUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,6 +89,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // New user, add joinedDate
         userToLogin = { ...user, joinedDate: new Date().toISOString() };
         allUsers.push(userToLogin);
+    }
+
+    // --- Profile Autofill Logic ---
+    // If a user logs in (especially via Google) and has no profile details, initialize them.
+    if (userToLogin.email) {
+        const detailsKey = 'starlight_profile_details';
+        const allDetails = JSON.parse(localStorage.getItem(detailsKey) || '{}');
+        if (!allDetails[userToLogin.email]) {
+            allDetails[userToLogin.email] = {
+                isMobileVerified: false,
+                // Default settings can be added here
+            };
+            localStorage.setItem(detailsKey, JSON.stringify(allDetails));
+        }
     }
     
     // Determine Admin Status
@@ -203,6 +218,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }
   };
+
+  const updateUser = (updates: Partial<CurrentUser>) => {
+    if (currentUser) {
+        const updatedUser = { ...currentUser, ...updates };
+        setCurrentUser(updatedUser);
+        
+        // Update storage
+        if (sessionStorage.getItem('currentUser')) {
+            sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        } else {
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
+
+        // Update global user list
+        const ALL_USERS_KEY = 'starlight_all_users';
+        const allUsersJSON = localStorage.getItem(ALL_USERS_KEY);
+        if (allUsersJSON) {
+            let allUsers: CurrentUser[] = JSON.parse(allUsersJSON);
+            allUsers = allUsers.map(u => u.email === currentUser.email ? updatedUser : u);
+            localStorage.setItem(ALL_USERS_KEY, JSON.stringify(allUsers));
+        }
+    }
+  };
   
   const deleteAccount = () => {
     if (!currentUser) return;
@@ -313,7 +351,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAdmin, isPremium, login, logout, upgradeToPremium, deleteAccount }}>
+    <AuthContext.Provider value={{ currentUser, isAdmin, isPremium, login, logout, upgradeToPremium, deleteAccount, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

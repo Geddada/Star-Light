@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { ThumbsUp, ThumbsDown, Share2, MoreHorizontal, Flag, Loader2, Play, Pause, Maximize, Minimize, Settings } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, MoreHorizontal, Flag, Loader2, Play, Pause, Maximize, Minimize, Settings, Volume2, VolumeX } from 'lucide-react';
 import { Video, Comment, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 import { fetchVideos, fetchComments, fetchAiComments, getAdForSlot } from '../services/gemini';
 import { VideoCard } from '../components/VideoCard';
@@ -12,6 +12,7 @@ import { PREVIEW_VIDEOS } from '../constants';
 import { ReportModal } from '../components/ReportModal';
 import { SaveToPlaylistModal } from '../components/SaveToPlaylistModal';
 import { useAutoplay } from '../contexts/AutoplayContext'; // Import useAutoplay
+import { Logo } from '../components/Logo';
 
 export const Watch: React.FC = () => {
   const { videoId } = useParams<{ videoId: string }>();
@@ -34,6 +35,10 @@ export const Watch: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  
+  // Intro/Outro State
+  const [showIntro, setShowIntro] = useState(true);
+  const [showOutro, setShowOutro] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -80,18 +85,27 @@ export const Watch: React.FC = () => {
       return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Autoplay effect for initial load
+  // Intro and Autoplay effect
   useEffect(() => {
-    if (videoRef.current && autoplayEnabled) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(e => {
-        console.error("Autoplay prevented:", e);
-        setIsPlaying(false);
-      });
-    } else if (videoRef.current && !autoplayEnabled) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-    }
-  }, [autoplayEnabled, videoRef.current, videoId]); // Added videoId dependency to retry play on new video load
+    // Reset states on new video load
+    setShowIntro(true);
+    setShowOutro(false);
+    setIsPlaying(false);
+
+    // Intro Timer (4.5s for the new smoother animation)
+    const introTimer = setTimeout(() => {
+        setShowIntro(false);
+        // Attempt autoplay after intro
+        if (videoRef.current && autoplayEnabled) {
+            videoRef.current.play().then(() => setIsPlaying(true)).catch(e => {
+                console.error("Autoplay prevented:", e);
+                setIsPlaying(false);
+            });
+        }
+    }, 4500);
+
+    return () => clearTimeout(introTimer);
+  }, [videoId, autoplayEnabled]);
 
 
   const togglePlay = () => {
@@ -138,10 +152,16 @@ export const Watch: React.FC = () => {
 
   const handleVideoEnded = () => {
       setIsPlaying(false);
-      if (autoplayEnabled && relatedVideos.length > 0) {
-          const nextVideo = relatedVideos[0];
-          navigate(`/watch/${nextVideo.id}`, { state: { video: nextVideo } });
-      }
+      setShowOutro(true);
+      
+      // Wait 4 seconds for outro before potentially autoplaying next video
+      setTimeout(() => {
+          if (autoplayEnabled && relatedVideos.length > 0) {
+              // Only navigate if user hasn't started playing again or navigated away
+              const nextVideo = relatedVideos[0];
+              navigate(`/watch/${nextVideo.id}`, { state: { video: nextVideo } });
+          }
+      }, 4000);
   };
 
   const formatTime = (time: number) => {
@@ -152,6 +172,8 @@ export const Watch: React.FC = () => {
 
   // Deterministic video source selection based on ID
   const videoSrc = video ? PREVIEW_VIDEOS[video.id.charCodeAt(video.id.length - 1) % PREVIEW_VIDEOS.length] : '';
+
+  const showOverlay = currentTime < 5 || (duration > 0 && duration - currentTime <= 5);
 
   if (loading || !video) {
     return (
@@ -168,34 +190,149 @@ export const Watch: React.FC = () => {
         {/* Video Player */}
         <div 
             ref={playerContainerRef}
-            className="group relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl mb-4"
+            className="group relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl mb-4 border border-[var(--border-primary)]"
         >
+            {/* 
+              CINEMATIC INTRO: SMOOTH RED & BLUE 
+              Uses large blurred elements with CSS animations to create a liquid aurora effect.
+            */}
+            {showIntro && (
+                <div className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards overflow-hidden pointer-events-none" style={{ animationDelay: '4s' }}>
+                    
+                    {/* Deep Space Background */}
+                    <div className="absolute inset-0 bg-[#020617]"></div>
+
+                    {/* Smooth Moving Auroras */}
+                    <div className="absolute inset-0 opacity-60 mix-blend-screen">
+                        {/* Blue Aurora - Top Left */}
+                        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-blue-700/40 rounded-full blur-[120px] animate-[pulse_4s_ease-in-out_infinite]" />
+                        
+                        {/* Red Aurora - Bottom Right */}
+                        <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] bg-red-700/40 rounded-full blur-[120px] animate-[pulse_5s_ease-in-out_infinite_1s]" />
+                        
+                        {/* Purple/Mixed Core */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-indigo-900/30 rounded-full blur-[100px] animate-[pulse_6s_ease-in-out_infinite]" />
+                    </div>
+
+                    {/* Noise Texture for Film Grain Feel */}
+                    <div className="absolute inset-0 opacity-[0.15] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150 mix-blend-overlay"></div>
+
+                    {/* Content Container */}
+                    <div className="relative z-10 flex flex-col items-center scale-110">
+                        {/* Logo Animation */}
+                        <div className="mb-8 relative">
+                            <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-20 animate-pulse"></div>
+                            <Logo className="w-20 h-20 text-white drop-shadow-[0_0_25px_rgba(37,99,235,0.6)] animate-[bounce_3s_infinite]" />
+                        </div>
+                        
+                        {/* Text Reveal */}
+                        <div className="overflow-hidden">
+                            <h1 className="text-5xl md:text-7xl font-black tracking-widest text-center px-4 mb-2 text-white animate-[slideUp_0.8s_ease-out_forwards]">
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-300 via-white to-red-300 drop-shadow-sm">
+                                    STARLIGHT
+                                </span>
+                            </h1>
+                        </div>
+                        
+                        {/* Cinematic Loading Line */}
+                        <div className="relative w-64 h-0.5 bg-gray-800 rounded-full mt-8 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-white to-red-500 w-full h-full origin-left animate-[width_3.5s_ease-in-out_forwards]" style={{ width: '0%' }}></div>
+                        </div>
+                        
+                        <p className="text-blue-200/70 font-mono text-[10px] mt-3 tracking-[0.4em] uppercase animate-pulse">
+                            Establishing Connection...
+                        </p>
+                    </div>
+                    
+                    {/* Add keyframes for custom width animation if needed, or rely on style injection above */}
+                    <style>{`
+                        @keyframes width { from { width: 0%; } to { width: 100%; } }
+                        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                    `}</style>
+                </div>
+            )}
+
+            {/* 
+              CINEMATIC OUTRO: SMOOTH RED & BLUE 
+            */}
+            {showOutro && (
+                <div className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center animate-in fade-in duration-700 overflow-hidden">
+                     {/* Deep Background */}
+                    <div className="absolute inset-0 bg-[#050505]"></div>
+
+                    {/* Smooth Moving Auroras */}
+                    <div className="absolute inset-0 opacity-50 mix-blend-screen">
+                        <div className="absolute top-[20%] -right-[10%] w-[60%] h-[60%] bg-blue-800/30 rounded-full blur-[100px] animate-[pulse_5s_ease-in-out_infinite]" />
+                        <div className="absolute bottom-[10%] -left-[10%] w-[60%] h-[60%] bg-red-800/30 rounded-full blur-[100px] animate-[pulse_6s_ease-in-out_infinite]" />
+                    </div>
+                    
+                    <div className="absolute inset-0 opacity-[0.1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+
+                    <div className="text-center space-y-6 relative z-10 p-10 bg-black/20 backdrop-blur-sm rounded-3xl border border-white/5 shadow-2xl">
+                        <div className="relative">
+                             <h1 className="text-4xl md:text-6xl font-bold tracking-wider text-center text-white mb-2 drop-shadow-lg">
+                                Thanks for<br/>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-400">Watching</span>
+                            </h1>
+                        </div>
+                        
+                        <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-red-500 mx-auto rounded-full"></div>
+                        
+                        <div className="flex justify-center gap-6 mt-8">
+                             <div className="flex flex-col items-center gap-2 text-blue-300 text-xs tracking-widest font-mono">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                                NEXT VIDEO
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <video
                 ref={videoRef}
                 src={videoSrc}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain bg-black"
                 onClick={togglePlay}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleMetadataLoaded}
                 onEnded={handleVideoEnded}
             />
             
+            {/* Branding Overlays */}
+            <div className={`absolute top-4 left-4 z-20 transition-opacity duration-500 pointer-events-none ${showOverlay && !showIntro && !showOutro ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10">
+                    <Logo className="w-6 h-6 text-white drop-shadow-md" />
+                    <span className="text-white font-bold text-sm sm:text-xl tracking-tight drop-shadow-md shadow-black font-sans">StarLight</span>
+                </div>
+            </div>
+
+            {video.communityName && (
+                <div className={`absolute top-4 right-4 z-20 transition-opacity duration-500 pointer-events-none ${showOverlay && !showIntro && !showOutro ? 'opacity-100' : 'opacity-0'}`}>
+                     <span className="text-white text-sm sm:text-xl font-bold tracking-tight drop-shadow-md bg-black/40 px-3 py-1.5 rounded-md backdrop-blur-md border border-white/10 font-sans">
+                        {video.communityName}
+                     </span>
+                </div>
+            )}
+
             {/* Custom Controls */}
+            {!showIntro && !showOutro && (
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {/* Progress Bar */}
                 <div 
-                    className="w-full h-1.5 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-2.5 transition-all relative"
+                    className="w-full h-1.5 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-2.5 transition-all relative group/progress"
                     onClick={handleSeek}
                 >
                     <div 
-                        className="absolute top-0 left-0 h-full bg-red-600 rounded-full"
+                        className="absolute top-0 left-0 h-full bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]"
                         style={{ width: `${(currentTime / duration) * 100}%` }}
-                    />
+                    >
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 shadow-sm transform scale-0 group-hover/progress:scale-100 transition-all"></div>
+                    </div>
                 </div>
                 
                 <div className="flex items-center justify-between text-white">
                     <div className="flex items-center gap-4">
-                        <button onClick={togglePlay} className="hover:text-red-500 transition-colors">
+                        <button onClick={togglePlay} className="hover:text-blue-400 transition-colors">
                             {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
                         </button>
                         <span className="text-sm font-medium">
@@ -213,6 +350,7 @@ export const Watch: React.FC = () => {
                     </div>
                 </div>
             </div>
+            )}
         </div>
 
         {/* Video Info */}
