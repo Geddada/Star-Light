@@ -3,10 +3,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { searchVideos, getAdForSlot } from '../services/gemini';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { Video, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, isAd } from '../types';
 import { Clock, Check, Edit2 } from 'lucide-react';
 import { UploadModal } from '../components/UploadModal';
+import { InFeedAdCard } from '../components/InFeedAdCard'; // Import InFeedAdCard
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -59,7 +59,6 @@ export const Search: React.FC = () => {
   const query = searchParams.get('search_query') || '';
   
   const [videos, setVideos] = useState<Video[]>([]);
-  // FIX: Updated ad state type to include ShortsAdCampaign.
   const [ad, setAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +83,6 @@ export const Search: React.FC = () => {
   }, [query]);
 
   const results = useMemo(() => {
-    // FIX: Updated the combined type to include all possible ad campaign types.
     const combined: (Video | AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = [...videos];
     if (ad && combined.length > 2) {
       combined.splice(2, 0, ad);
@@ -137,36 +135,8 @@ export const Search: React.FC = () => {
       ) : (
         results.map((item) => {
             if (isAd(item)) {
-              return (
-                <div key={item.id} className="flex flex-col md:flex-row gap-4 group p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl my-1">
-                  <a href="#" onClick={e => e.preventDefault()} className="relative w-full md:w-[360px] flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-[var(--background-secondary)] block">
-                    <img 
-                      src={item.thumbnailUrl} 
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                     <div className="absolute top-1.5 left-1.5 bg-amber-400 text-black px-2 py-0.5 text-xs font-bold rounded">
-                        Ad
-                      </div>
-                  </a>
-        
-                  <div className="flex flex-col gap-1 py-1">
-                    <h3 className="text-lg font-semibold line-clamp-2 leading-normal group-hover:text-[hsl(var(--accent-color))] transition-colors">
-                      <a href="#" onClick={e => e.preventDefault()}>{item.title}</a>
-                    </h3>
-                    <div className="text-[var(--text-secondary)] text-sm flex items-center gap-1.5 mt-1">
-                      <span>Sponsored</span>
-                    </div>
-                    
-                    <p className="text-[var(--text-secondary)] text-sm line-clamp-2 md:block hidden my-2">
-                      Visit advertiser to learn more. Drive results with Starlight Ads today.
-                    </p>
-                    <a href="#" onClick={e => e.preventDefault()} className="text-sm font-semibold text-[hsl(var(--accent-color))] hover:underline self-start">
-                      Learn More
-                    </a>
-                  </div>
-                </div>
-              );
+              // Use InFeedAdCard component for ads
+              return <InFeedAdCard key={item.id} campaign={item} />;
             } else {
                 const video = item as Video;
                 return (
@@ -204,7 +174,7 @@ export const Search: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       />
                       <WatchLaterButton video={video} />
-                      <div className="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded text-white">
+                      <div className="absolute bottom-1.5 right-1.5 bg-blue-600/90 px-1.5 py-0.5 text-xs font-medium rounded text-white">
                         {video.duration}
                       </div>
                     </div>

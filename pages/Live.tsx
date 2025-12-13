@@ -6,6 +6,7 @@ import { getAdForSlot } from '../services/gemini';
 import { SidebarAd } from '../components/SidebarAd';
 // FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
+import { Logo } from '../components/Logo';
 
 
 export const Live: React.FC = () => {
@@ -60,6 +61,12 @@ export const Live: React.FC = () => {
               LIVE
           </div>
           <div className="absolute top-4 right-4 bg-amber-500 text-black px-3 py-1 text-sm font-bold rounded-md uppercase tracking-wider z-20 shadow-lg">Premium</div>
+          
+          {/* Logo Top Left */}
+          <div className="absolute top-4 left-24 z-20 flex items-center gap-2 pointer-events-none opacity-80">
+             <Logo className="w-6 h-6 text-white drop-shadow-lg" />
+             <span className="font-bold text-white text-lg tracking-tighter drop-shadow-lg hidden sm:inline">StarLight</span>
+          </div>
           
           {/* Viewer Count Badge */}
           <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center gap-2 z-20 border border-white/10 shadow-lg">

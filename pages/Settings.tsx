@@ -5,18 +5,20 @@ import {
     User, Mail, Phone, CheckCircle2, MapPin, 
     Lock, Send, Languages, KeyRound, ShieldCheck, Video as VideoIcon, 
     RefreshCw, AlertTriangle, ChevronDown, Save, UserX, Trash2, Loader2, Clock, Edit, Shield, LogIn,
-    ChevronLeft, ChevronRight, Monitor, Smartphone, LogOut
+    ChevronLeft, ChevronRight, Monitor, Smartphone, LogOut, PlayCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAutoplay } from '../contexts/AutoplayContext';
 import { COUNTRY_CODES, INDIAN_STATES, ANDHRA_PRADESH_CITIES, USA_STATES, UK_STATES, ALL_NATIVE_LANGUAGES, COUNTRY_LANGUAGES } from '../constants';
 import { ProfileDetails } from '../types';
 import { AdminLoginModal } from '../components/AdminLoginModal';
 
-type SettingsTab = 'account' | 'security' | 'api';
+type SettingsTab = 'account' | 'security' | 'api' | 'playback';
 
 const NAV_ITEMS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
     { id: 'account', label: 'Account', icon: User },
     { id: 'security', label: 'Login & Security', icon: Lock },
+    { id: 'playback', label: 'Playback', icon: PlayCircle },
     { id: 'api', label: 'API Keys', icon: KeyRound },
 ];
 
@@ -439,6 +441,33 @@ const AccountSettings: React.FC<{
     );
 };
 
+const PlaybackSettings: React.FC = () => {
+    const { autoplayEnabled, setAutoplayEnabled } = useAutoplay();
+
+    return (
+        <div className="space-y-8">
+            <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><PlayCircle className="w-5 h-5" /> Video Playback</h3>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="font-semibold text-sm text-[var(--text-primary)]">Autoplay previews</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-1">Play videos automatically when hovering over thumbnails.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={autoplayEnabled}
+                            onChange={(e) => setAutoplayEnabled(e.target.checked)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[hsl(var(--accent-color))]"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const BlockedUsersManager: React.FC = () => {
     const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
     
@@ -682,7 +711,7 @@ export const Settings: React.FC = () => {
         if (['delete-account'].includes(hash)) {
             return 'account';
         }
-        if (['account', 'security', 'api'].includes(hash)) {
+        if (['account', 'security', 'api', 'playback'].includes(hash)) {
             return hash as SettingsTab;
         }
         return 'account';
@@ -763,6 +792,8 @@ export const Settings: React.FC = () => {
                             return <AccountSettings currentUser={currentUser} profileDetails={profileDetails} setProfileDetails={setProfileDetails} />;
                         case 'security':
                             return <SecuritySettings currentUser={currentUser} />;
+                        case 'playback':
+                            return <PlaybackSettings />;
                         case 'api':
                             return <ApiSettings />;
                         default:

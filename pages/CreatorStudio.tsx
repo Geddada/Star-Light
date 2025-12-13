@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Loader2, CheckCircle, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { LiveClock } from '../components/LiveClock';
+import { Logo } from '../components/Logo';
 
 const NEWS_OVERLAY_SETTINGS_KEY = 'starlight_news_overlay_settings';
 
@@ -58,19 +59,6 @@ export const CreatorStudio: React.FC = () => {
 
     return (
         <div className="flex h-full bg-[var(--background-primary)]">
-            <style>{`
-                @keyframes scroll-left {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .animate-scroll-left {
-                    animation: scroll-left 600s linear infinite;
-                }
-                .animate-scroll-left-fast {
-                    animation: scroll-left 400s linear infinite;
-                }
-            `}</style>
-
             {/* Controls Panel */}
             <div className="w-1/3 p-6 border-r border-[var(--border-primary)] overflow-y-auto space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-[var(--border-primary)]">
@@ -114,21 +102,14 @@ export const CreatorStudio: React.FC = () => {
                     {/* Overlay */}
                     <div className="absolute inset-0 pointer-events-none">
                         {/* Time */}
-                        <div className="absolute top-4 left-4 flex items-center gap-4 p-2 bg-black/30 backdrop-blur-md rounded-lg">
+                        <div className="absolute top-4 right-4 flex items-center gap-4 p-2 bg-black/30 backdrop-blur-md rounded-lg">
                             <LiveClock />
                         </div>
 
                         {/* Logo */}
-                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                        <div className="absolute top-4 left-4 flex items-center gap-2">
+                            <Logo className="w-6 h-6 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
                             <span className="font-bold text-white text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight">StarLight</span>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                className="w-6 h-6 text-red-500 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
-                            >
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
                         </div>
 
                         {/* Lower Third */}

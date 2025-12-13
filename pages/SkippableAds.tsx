@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdCampaigns } from '../services/gemini';
@@ -18,7 +20,6 @@ export const SkippableAds: React.FC = () => {
   const [showChooseAdModal, setShowChooseAdModal] = useState(false);
   const [showSkippableModal, setShowSkippableModal] = useState(false);
   const [showUnskippableModal, setShowUnskippableModal] = useState(false);
-  // FIX: Added showShortsAdModal state.
   const [showShortsAdModal, setShowShortsAdModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'campaigns' | 'billing'>('campaigns');
   const navigate = useNavigate();
@@ -29,7 +30,6 @@ export const SkippableAds: React.FC = () => {
       const geminiCampaigns = await fetchAdCampaigns();
       
       const userAdsJson = localStorage.getItem(USER_ADS_KEY);
-      // FIX: Updated userAds type to include ShortsAdCampaign.
       const userAds: (AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = userAdsJson ? JSON.parse(userAdsJson) : [];
       const userSkippableAds = userAds.filter(ad => 'ctr' in ad) as AdCampaign[];
 
@@ -58,7 +58,6 @@ export const SkippableAds: React.FC = () => {
       setShowUnskippableModal(false);
   };
 
-  // FIX: Added handleCreateShortsSuccess function.
   const handleCreateShortsSuccess = (newCampaign: ShortsAdCampaign) => {
     const userAdsJson = localStorage.getItem(USER_ADS_KEY);
     const allUserAds = userAdsJson ? JSON.parse(userAdsJson) : [];

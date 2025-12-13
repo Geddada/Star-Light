@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, Star, LogIn, Home, Gem, Sparkles, X, Fingerprint, Scan, Delete, ShieldCheck, Shield, Phone, ChevronDown } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, LogIn, Home, Gem, Fingerprint, Delete, ShieldCheck, Shield, Phone, ChevronDown, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES } from '../constants';
+import { Logo } from '../components/Logo';
 
 export const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -389,21 +390,48 @@ export const Signup: React.FC = () => {
             <label className="text-sm font-semibold text-[var(--text-secondary)]">Full Name</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="text" required placeholder="Jane Doe" value={signupForm.fullName} onChange={e => setSignupForm({...signupForm, fullName: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+              <input 
+                type="text" 
+                required 
+                name="name"
+                autoComplete="name"
+                placeholder="Jane Doe" 
+                value={signupForm.fullName} 
+                onChange={e => setSignupForm({...signupForm, fullName: e.target.value})} 
+                className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+              />
             </div>
         </div>
         <div className="space-y-2">
             <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="email" required placeholder="jane@example.com" value={signupForm.email} onChange={e => setSignupForm({...signupForm, email: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+              <input 
+                type="email" 
+                required 
+                name="email"
+                autoComplete="email"
+                placeholder="jane@example.com" 
+                value={signupForm.email} 
+                onChange={e => setSignupForm({...signupForm, email: e.target.value})} 
+                className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+              />
             </div>
         </div>
         <div className="space-y-2">
             <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-              <input type="password" required placeholder="•••••••• (Min 8 chars)" value={signupForm.password} onChange={e => setSignupForm({...signupForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+              <input 
+                type="password" 
+                required 
+                name="password"
+                autoComplete="new-password"
+                placeholder="•••••••• (Min 8 chars)" 
+                value={signupForm.password} 
+                onChange={e => setSignupForm({...signupForm, password: e.target.value})} 
+                className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+              />
             </div>
             <p className="text-xs text-[var(--text-tertiary)]">Must be at least 8 characters with at least one number.</p>
         </div>
@@ -526,14 +554,32 @@ export const Signup: React.FC = () => {
                 <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
                 <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-                <input type="email" required placeholder="jane@example.com" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+                <input 
+                  type="email" 
+                  required 
+                  name="email"
+                  autoComplete="username"
+                  placeholder="jane@example.com" 
+                  value={loginForm.email} 
+                  onChange={e => setLoginForm({...loginForm, email: e.target.value})} 
+                  className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                />
                 </div>
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
                 <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-                <input type="password" required placeholder="••••••••" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"/>
+                <input 
+                  type="password" 
+                  required 
+                  name="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••" 
+                  value={loginForm.password} 
+                  onChange={e => setLoginForm({...loginForm, password: e.target.value})} 
+                  className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                />
                 </div>
             </div>
 
@@ -751,7 +797,7 @@ export const Signup: React.FC = () => {
            <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/starlightbg/800/1000')] bg-cover opacity-10 mix-blend-overlay"></div>
            <div className="relative z-10">
              <div className="flex items-center gap-3 mb-8">
-                <Star className="w-8 h-8 text-red-500 fill-red-500" />
+                <Logo className="w-8 h-8 text-white" />
                 <span className="font-bold text-2xl text-white tracking-tighter">StarLight</span>
              </div>
              <h2 className="text-4xl font-bold text-white mb-4 leading-tight">

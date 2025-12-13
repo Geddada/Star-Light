@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Megaphone, X } from 'lucide-react';
@@ -65,18 +64,6 @@ export const AnnouncementBar: React.FC = () => {
           <X className="w-5 h-5" />
         </button>
       </div>
-
-      <style>{`
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-            animation: marquee 1600s linear infinite;
-            width: max-content;
-        }
-        /* Animation now runs continuously without pausing on hover */
-      `}</style>
     </div>
   );
 };

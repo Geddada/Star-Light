@@ -1,11 +1,13 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { generateVideo, generateSmartPlaylist } from '../services/gemini';
 import { Beaker, Film, Image as ImageIcon, Loader2, AlertTriangle, Download, X, ShieldCheck, Play, ListVideo, Sparkles, Save, CheckCircle } from 'lucide-react';
 import { getAdForSlot } from '../services/gemini';
 import { SidebarAd } from '../components/SidebarAd';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Video, Playlist } from '../types';
 import { VideoCard } from '../components/VideoCard';
+import { Logo } from '../components/Logo';
 
 const fileToBase64 = (file: File): Promise<{ data: string, mimeType: string }> => {
     return new Promise((resolve, reject) => {
@@ -37,14 +39,13 @@ export const TestNewFeatures: React.FC = () => {
     const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    
     // Playlist Generator State
     const [playlistPrompt, setPlaylistPrompt] = useState('');
     const [generatedPlaylist, setGeneratedPlaylist] = useState<Video[]>([]);
     const [isPlaylistLoading, setIsPlaylistLoading] = useState(false);
     const [playlistSaved, setPlaylistSaved] = useState(false);
 
-    // FIX: Updated ad state type to include ShortsAdCampaign.
     const [sidebarAd, setSidebarAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
 
 
@@ -138,7 +139,7 @@ export const TestNewFeatures: React.FC = () => {
         setGeneratedVideoUrl(null);
         setError(null);
     };
-
+    
     if (keyCheckLoading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -270,11 +271,11 @@ export const TestNewFeatures: React.FC = () => {
                                     <button onClick={resetGenerator} className="mt-4 px-4 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-colors">Try Again</button>
                                 </div>
                             ) : generatedVideoUrl ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                                    <video src={generatedVideoUrl} controls autoPlay className="w-full h-full rounded-lg bg-black object-cover" />
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-4 relative">
+                                    <video src={generatedVideoUrl} controls autoPlay className="w-full h-full rounded-lg bg-black object-cover"/>
                                     <div className="flex gap-4">
                                         <a href={generatedVideoUrl} download={`${prompt.slice(0, 20)}.mp4`} className="px-4 py-2 bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] rounded-lg flex items-center gap-2 transition-colors border border-[var(--border-primary)]">
-                                            <Download className="w-4 h-4" /> Download
+                                            <Download className="w-4 h-4" /> Download Video
                                         </a>
                                         <button onClick={resetGenerator} className="px-4 py-2 bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] rounded-lg flex items-center gap-2 transition-colors border border-[var(--border-primary)]">
                                             Generate Another

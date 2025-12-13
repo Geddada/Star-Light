@@ -1,14 +1,14 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Video } from '../types';
 import { 
-  Play, Pause, Volume2, VolumeX, Heart, MessageCircle, Share2, 
-  MoreVertical, UserPlus, Music, PlaySquare
+  Play, Volume2, VolumeX, Heart, MessageCircle, Share2, 
+  Music
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ShareModal } from './ShareModal';
 import { PREVIEW_VIDEOS } from '../constants';
+import { Logo } from './Logo';
 
 interface ShortsPlayerProps {
   video: Video;
@@ -21,26 +21,56 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
   const [isMuted, setIsMuted] = useState(false); // Default unmuted for better UX if possible, but browsers block auto-audio
   const [isLiked, setIsLiked] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  
+  // Controls visibility state
+  const [showControls, setShowControls] = useState(true);
+  const controlsTimeoutRef = useRef<number | null>(null);
+
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   // Deterministic video source
   const videoSrc = PREVIEW_VIDEOS[video.id.charCodeAt(video.id.length - 1) % PREVIEW_VIDEOS.length];
 
+  const startHideTimer = () => {
+      if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+      }
+      controlsTimeoutRef.current = window.setTimeout(() => {
+          setShowControls(false);
+      }, 3000);
+  };
+
+  const handleInteraction = () => {
+      setShowControls(true);
+      if (isPlaying) {
+          startHideTimer();
+      } else {
+          if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      }
+  };
+
   useEffect(() => {
     if (isActive) {
+        setShowControls(true);
         // Attempt to play
         const playPromise = videoRef.current?.play();
         if (playPromise !== undefined) {
             playPromise
-                .then(() => setIsPlaying(true))
+                .then(() => {
+                    setIsPlaying(true);
+                    startHideTimer();
+                })
                 .catch(() => {
                     setIsPlaying(false);
                     // Often fails due to browser autoplay policies if not muted
                     if (videoRef.current) {
                         videoRef.current.muted = true;
                         setIsMuted(true);
-                        videoRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error("Auto-play failed", e));
+                        videoRef.current.play().then(() => {
+                            setIsPlaying(true);
+                            startHideTimer();
+                        }).catch(e => console.error("Auto-play failed", e));
                     }
                 });
         }
@@ -48,7 +78,13 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
         videoRef.current?.pause();
         setIsPlaying(false);
         if (videoRef.current) videoRef.current.currentTime = 0;
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        setShowControls(true);
     }
+    
+    return () => {
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
   }, [isActive]);
 
   const togglePlay = () => {
@@ -56,15 +92,20 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
+        setShowControls(true);
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       } else {
         videoRef.current.play();
         setIsPlaying(true);
+        setShowControls(true);
+        startHideTimer();
       }
     }
   };
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
+    handleInteraction();
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
@@ -73,6 +114,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
 
   const handleLike = (e: React.MouseEvent) => {
       e.stopPropagation();
+      handleInteraction();
       if (!currentUser) {
           navigate('/signup');
           return;
@@ -102,14 +144,14 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
             )}
 
             {/* Top Overlay Controls - Transparent buttons */}
-            <div className={`absolute top-14 right-2 sm:right-6 z-30 flex flex-col gap-4 sm:gap-6 transition-opacity duration-300 ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+            <div className={`absolute top-14 right-2 sm:right-6 z-30 hidden sm:flex flex-col gap-4 sm:gap-6 transition-opacity duration-300 ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
                 <button onClick={toggleMute} className="p-1 sm:p-2.5 bg-transparent rounded-full text-white hover:bg-black/10 transition-colors drop-shadow-lg">
                     {isMuted ? <VolumeX className="w-3 h-3 sm:w-8 sm:h-8 drop-shadow-md" /> : <Volume2 className="w-3 h-3 sm:w-8 sm:h-8 drop-shadow-md" />}
                 </button>
             </div>
 
-            {/* Right Side Action Buttons - Extremely compact on mobile */}
-            <div className="absolute bottom-16 sm:bottom-28 right-1 sm:right-4 z-30 flex flex-col items-center gap-1.5 sm:gap-6">
+            {/* Right Side Action Buttons - Auto-hide on mobile when playing */}
+            <div className={`absolute bottom-16 sm:bottom-28 right-1 sm:right-4 z-30 flex flex-col items-center gap-1.5 sm:gap-6 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 sm:opacity-100 pointer-events-none sm:pointer-events-auto'}`}>
                 <button onClick={handleLike} className="flex flex-col items-center gap-0.5 sm:gap-1 group">
                     <div className="p-1 sm:p-3 bg-transparent rounded-full transition-all group-active:scale-90 duration-200">
                         <Heart className={`w-3.5 h-3.5 sm:w-9 sm:h-9 drop-shadow-xl ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
@@ -117,33 +159,23 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
                     <span className="text-white text-[7px] sm:text-xs font-bold drop-shadow-xl">{isLiked ? 'Liked' : 'Like'}</span>
                 </button>
 
-                <button onClick={(e) => { e.stopPropagation(); navigate(`/watch/${video.id}`) }} className="flex flex-col items-center gap-0.5 sm:gap-1 group">
+                <button onClick={(e) => { e.stopPropagation(); handleInteraction(); navigate(`/watch/${video.id}`) }} className="flex flex-col items-center gap-0.5 sm:gap-1 group">
                     <div className="p-1 sm:p-3 bg-transparent rounded-full transition-all group-active:scale-90 duration-200">
                         <MessageCircle className="w-3.5 h-3.5 sm:w-9 sm:h-9 text-white drop-shadow-xl" />
                     </div>
                     <span className="text-white text-[7px] sm:text-xs font-bold drop-shadow-xl">Comment</span>
                 </button>
 
-                <button onClick={(e) => { e.stopPropagation(); setShowShareModal(true); }} className="flex flex-col items-center gap-0.5 sm:gap-1 group">
+                <button onClick={(e) => { e.stopPropagation(); handleInteraction(); setShowShareModal(true); }} className="flex flex-col items-center gap-0.5 sm:gap-1 group">
                     <div className="p-1 sm:p-3 bg-transparent rounded-full transition-all group-active:scale-90 duration-200">
                         <Share2 className="w-3.5 h-3.5 sm:w-9 sm:h-9 text-white drop-shadow-xl" />
                     </div>
                     <span className="text-white text-[7px] sm:text-xs font-bold drop-shadow-xl">Share</span>
                 </button>
-
-                <button className="flex flex-col items-center gap-0.5 sm:gap-1 group">
-                    <div className="p-1 sm:p-3 bg-transparent rounded-full transition-all group-active:scale-90 duration-200">
-                        <MoreVertical className="w-3.5 h-3.5 sm:w-9 sm:h-9 text-white drop-shadow-xl" />
-                    </div>
-                </button>
-                
-                <div className="mt-1 sm:mt-2 w-5 h-5 sm:w-12 sm:h-12 rounded-lg border-2 border-white/80 overflow-hidden bg-black/50 shadow-lg animate-spin-slow">
-                     <img src={video.thumbnailUrl} className="w-full h-full object-cover opacity-90" alt="Sound cover" />
-                </div>
             </div>
 
             {/* Bottom Info Overlay */}
-            <div className="absolute bottom-0 left-0 w-full p-3 pb-12 sm:p-6 sm:pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+            <div className={`absolute bottom-0 left-0 w-full p-3 pb-12 sm:p-6 sm:pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 sm:opacity-100'}`}>
                 <div className="flex items-center gap-2 mb-2 sm:mb-4 pointer-events-auto w-[85%]">
                     <div className="flex items-center gap-2 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate('/profile'); }}>
                         <img src={video.communityAvatar || video.uploaderAvatar} alt={video.uploaderName} className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-white/50" />

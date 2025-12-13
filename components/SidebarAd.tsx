@@ -1,10 +1,8 @@
 
 
 import React from 'react';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 
-// FIX: Updated the 'ad' prop type to include ShortsAdCampaign.
 export const SidebarAd: React.FC<{ ad: AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null }> = ({ ad }) => {
   if (!ad) {
     return (

@@ -5,6 +5,9 @@ import { Video } from '../types';
 import { Edit2, Play, Star, Volume2, VolumeX, Trash2, Megaphone, Clock, Check, Sparkles, Loader2, Copy } from 'lucide-react';
 import { PREVIEW_VIDEOS } from '../constants';
 import { generateTitleVariations } from '../services/gemini';
+import { Logo } from './Logo';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
+import { useAutoplay } from '../contexts/AutoplayContext'; // Import useAutoplay
 
 interface VideoCardProps {
   video?: Video;
@@ -37,6 +40,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
   const videoRef = useRef<HTMLVideoElement>(null);
   const titleDropdownRef = useRef<HTMLDivElement>(null);
 
+  const { currentUser } = useAuth(); // Get current user
+  const { autoplayEnabled } = useAutoplay(); // Get autoplay setting
+
   useEffect(() => {
     if (video) {
         const watchLaterJson = localStorage.getItem('watch_later_videos');
@@ -50,7 +56,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
   }, [video]);
 
   useEffect(() => {
-      if (video && isHovered && !compact) {
+      if (video && isHovered && !compact && autoplayEnabled) {
           // Deterministic selection based on ID string char code sum
           const index = video.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % PREVIEW_VIDEOS.length;
           setVideoSrc(PREVIEW_VIDEOS[index]);
@@ -58,7 +64,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
       } else {
           setIsPlaying(false);
       }
-  }, [isHovered, video, compact]);
+  }, [isHovered, video, compact, autoplayEnabled]);
   
   useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -95,7 +101,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
       e.stopPropagation();
       navigator.clipboard.writeText(title);
       setCopiedTitleIndex(index);
-      setTimeout(() => setCopiedTitleIndex(null), 2000);
+      setTimeout(() => setCopiedTitleIndex(2000), 2000); // 2 seconds
+  };
+  
+  const handleChannelClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (video?.uploaderName) {
+          navigate(`/channel/${encodeURIComponent(video.uploaderName)}`);
+      }
   };
 
   if (isLoading) {
@@ -130,6 +143,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
   const handleToggleWatchLater = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!video) return;
+    if (!currentUser) {
+        navigate('/signup');
+        return;
+    }
 
     const watchLaterJson = localStorage.getItem('watch_later_videos');
     let watchLaterVideos: Video[] = watchLaterJson ? JSON.parse(watchLaterJson) : [];
@@ -159,7 +176,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
           
           {/* Overlay Buttons - Desktop: Absolute Top Right | Mobile: Hidden here, shown below */}
           <div className="absolute top-2 right-2 z-30 hidden sm:flex items-center gap-1 sm:gap-2">
-            {!compact && (
+            {!compact && currentUser && (
                 <div className="relative">
                     <button
                         onClick={handleAiClick}
@@ -232,20 +249,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
             )}
-             {!compact && (
-                 <div className="flex items-center gap-1">
-                  <span className="font-bold text-white text-xs sm:text-base drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight hidden sm:block">StarLight</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </div>
-             )}
           </div>
           
           {/* Watch Later Button */}
@@ -281,8 +284,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
               />
           )}
           
-          {/* Duration Badge */}
-          <div className={`absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-black/80 backdrop-blur-sm px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded text-white z-20 transition-opacity ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
+          {/* Duration Badge - Highlighted Blue */}
+          <div className={`absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded text-white z-20 transition-opacity ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
             {video.duration}
           </div>
 
@@ -312,7 +315,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
         {/* Info Section */}
         <div className="flex flex-col flex-1 min-w-0 gap-1">
           {/* Mobile Only: Action Buttons Row */}
-          {(onEdit || onPromote || onDelete || !compact) && (
+          {(onEdit || onPromote || onDelete || (!compact && currentUser)) && (
             <div className="flex sm:hidden items-center justify-between gap-3 pb-1 -mt-1">
                 <div className="flex items-center gap-3">
                     {onEdit && (
@@ -331,7 +334,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
                         </button>
                     )}
                 </div>
-                {!compact && (
+                {!compact && currentUser && (
                     <button onClick={handleToggleWatchLater} className={`p-2 bg-[var(--background-tertiary)] rounded-full border border-[var(--border-primary)] transition-colors ${isInWatchLater ? 'text-[hsl(var(--accent-color))]' : 'text-[var(--text-secondary)]'}`}>
                        {isInWatchLater ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                     </button>
@@ -341,7 +344,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
 
           <div className="flex gap-3 items-start min-w-0">
             {!compact && (
-                <div className="flex-shrink-0 mt-0.5 relative hidden sm:block">
+                <div className="flex-shrink-0 mt-0.5 relative hidden sm:block" onClick={handleChannelClick}>
                     {video.uploaderAvatar ? (
                         <img 
                         src={video.uploaderAvatar} 
@@ -362,7 +365,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
                 </h3>
                 
                 <div className="text-sm mt-1">
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex items-center gap-1.5 truncate" onClick={handleChannelClick}>
                     <span className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors truncate font-medium text-xs sm:text-sm">{video.uploaderName}</span>
                     <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />
                 </div>

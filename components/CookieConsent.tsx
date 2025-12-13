@@ -1,20 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Cookie } from 'lucide-react';
 
 export const CookieConsent: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    // Only show on signup page
+    if (location.pathname !== '/signup') {
+        setIsVisible(false);
+        return;
+    }
+
     const consent = localStorage.getItem('starlight_cookie_consent');
     if (!consent) {
       // Show after a short delay to not block initial view immediately
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [location.pathname]);
 
   const handleAccept = () => {
     localStorage.setItem('starlight_cookie_consent', 'accepted');
@@ -37,7 +44,7 @@ export const CookieConsent: React.FC = () => {
         <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
                 <Cookie className="w-5 h-5 text-[hsl(var(--accent-color))] sm:hidden" />
-                <h3 className="font-bold text-lg text-[var(--text-primary)]">We value your privacy</h3>
+                <h3 className="font-bold text-lg text-[var(--text-primary)]">We value your policy</h3>
             </div>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 We use cookies to enhance your browsing experience, personalize content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies. 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchShorts } from '../services/gemini';
 import { Video } from '../types';
@@ -7,6 +6,7 @@ import { ShortsPlayer } from '../components/ShortsPlayer';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UploadModal } from '../components/UploadModal';
+import { Logo } from '../components/Logo';
 
 export const Shorts: React.FC = () => {
   const [shorts, setShorts] = useState<Video[]>([]);
@@ -85,7 +85,7 @@ export const Shorts: React.FC = () => {
             <Camera className="w-6 h-6" />
             </button>
         )}
-
+        
         {/* Modern Phone Frame Container */}
         {/* Aspect ratio 9/19.5 mimics modern smartphones like iPhone 14/15/16 Pro */}
         <div className="relative h-[92vh] aspect-[9/19.5] max-h-screen bg-black rounded-[3rem] border-[6px] border-[#1a1a1a] shadow-[0_0_60px_rgba(255,255,255,0.05)] overflow-hidden ring-1 ring-white/10 z-10">

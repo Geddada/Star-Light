@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateVideo, generateThumbnail } from '../services/gemini';
 import { Film, Image as ImageIcon, Loader2, AlertTriangle, Download, X, ShieldCheck, Play, ArrowLeft, Clapperboard, Save, Sparkles, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AdCampaign } from '../types';
+import { Logo } from '../components/Logo';
 
 const USER_ADS_KEY = 'starlight_user_ads';
 
@@ -207,7 +209,14 @@ export const CinematicAdCreator: React.FC = () => {
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <label className="text-sm font-semibold text-[var(--text-secondary)]">Generated Video</label>
-                        <div className="aspect-video bg-black rounded-lg"><video src={generatedVideoUrl!} controls autoPlay className="w-full h-full rounded-lg"/></div>
+                        <div className="aspect-video bg-black rounded-lg relative">
+                            <video src={generatedVideoUrl!} controls autoPlay className="w-full h-full rounded-lg"/>
+                            {/* Logo Overlay */}
+                            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 pointer-events-none opacity-80">
+                                <Logo className="w-6 h-6 text-white drop-shadow-md" />
+                                <span className="font-bold text-white text-sm tracking-tighter drop-shadow-md">StarLight</span>
+                            </div>
+                        </div>
                         <a href={generatedVideoUrl!} download={`${campaignTitle.slice(0, 30)}.mp4`} className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg font-semibold text-sm">
                             <Download className="w-4 h-4" /> Download Video
                         </a>

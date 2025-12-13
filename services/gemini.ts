@@ -1,8 +1,6 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
-// FIX: Added 'Activity' to the import list to resolve missing type error.
-// FIX: Added 'ShortsAdCampaign' to the import list to resolve missing type error.
 import { Video, Comment, AdCampaign, PressRelease, AnalyticsData, UnskippableAdCampaign, CATEGORIES, AdConcept, Activity, AdCreativeSuggestion, VideoMetadata, ShortsAdCampaign } from "../types";
-// FIX: Added SUBSCRIPTION_KEY to the import list to resolve missing type error.
 import { SUBSCRIPTION_KEY } from "../constants";
 
 const model = "gemini-2.5-flash";
@@ -36,7 +34,6 @@ const cleanJson = (text: string) => {
 // LocalStorage Keys
 const AD_CAMPAIGNS_KEY = 'starlight_ad_campaigns';
 const UNSKIPPABLE_AD_CAMPAIGNS_KEY = 'starlight_unskippable_ad_campaigns';
-// FIX: Added missing SHORTS_AD_CAMPAIGNS_KEY.
 const SHORTS_AD_CAMPAIGNS_KEY = 'starlight_shorts_ad_campaigns';
 const USER_ADS_KEY = 'starlight_user_ads';
 const AD_SLOT_CONFIG_KEY = 'starlight_ad_slot_config';
@@ -94,7 +91,6 @@ const STATIC_UNSKIPPABLE_AD_CAMPAIGNS: Omit<UnskippableAdCampaign, 'thumbnailUrl
     { id: 'unskip-08', title: '15s Mid-roll - "Chronos" Video Game Launch', status: 'Active', impressions: '10.2M', spend: '$18,500', duration: '15s' },
 ];
 
-// FIX: Added static data for Shorts Ad Campaigns.
 const STATIC_SHORTS_AD_CAMPAIGNS: Omit<ShortsAdCampaign, 'thumbnailUrl'>[] = [
     { id: 'shorts-ad-01', title: 'Nova Sneakers - Vertical Drop', status: 'Active', impressions: '15.2M', spend: '$11,000' },
     { id: 'shorts-ad-02', title: 'Quick Bite - SnackCo Crisps', status: 'Active', impressions: '22.1M', spend: '$18,000' },
@@ -297,7 +293,7 @@ export const fetchComments = async (videoTitle: string): Promise<Comment[]> => {
                     author: { type: Type.STRING },
                     text: { type: Type.STRING },
                     likes: { type: Type.STRING },
-                    time: { type: Type.STRING } // Added time field
+                    time: { type: Type.STRING }
                 },
                 required: ["id", "author", "text", "likes", "time"]
             }
@@ -423,7 +419,6 @@ export const fetchRandomSkippableAd = async (): Promise<AdCampaign | null> => {
   }
 };
 
-// FIX: Update function signature and logic to include ShortsAdCampaign
 export const fetchAllAds = async (): Promise<(AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[]> => {
     try {
         // Ensure data is pre-populated if it's not there
@@ -448,7 +443,6 @@ export const fetchAllAds = async (): Promise<(AdCampaign | UnskippableAdCampaign
     }
 };
 
-// FIX: Update function signature to include ShortsAdCampaign
 export const fetchRandomInFeedAd = async (): Promise<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null> => {
   try {
     const allAds = await fetchAllAds();
@@ -469,7 +463,6 @@ export const fetchRandomInFeedAd = async (): Promise<AdCampaign | UnskippableAdC
   }
 };
 
-// FIX: Update function signature to include ShortsAdCampaign
 export const getAdForSlot = async (slot: string): Promise<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null> => {
     try {
         const configJson = localStorage.getItem(AD_SLOT_CONFIG_KEY);
@@ -592,7 +585,6 @@ export const fetchUnskippableAdCampaigns = async (): Promise<UnskippableAdCampai
   return Promise.resolve(campaignsWithData);
 };
 
-// FIX: Added missing fetchShortsAdCampaigns function.
 export const fetchShortsAdCampaigns = async (): Promise<ShortsAdCampaign[]> => {
   const campaignsWithData = STATIC_SHORTS_AD_CAMPAIGNS.map(c => ({
     ...c,
@@ -692,7 +684,6 @@ export const generateUnskippableAdCampaign = async (
   }
 };
 
-// FIX: Added missing generateShortsAdCampaign function.
 export const generateShortsAdCampaign = async (
   productName: string, 
   goal: string,

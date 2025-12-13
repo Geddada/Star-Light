@@ -1,6 +1,7 @@
 
+
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
+import { useSearchParams } from 'react-router-dom';
 import { Video, CATEGORIES, AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, isAd } from '../types';
 import { fetchVideos, fetchShorts, getAdForSlot } from '../services/gemini';
 import { VideoCard } from '../components/VideoCard';
@@ -11,16 +12,19 @@ import { SidebarAd } from '../components/SidebarAd';
 import { InFeedAdCard } from '../components/InFeedAdCard';
 
 export const Home: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<Video[]>([]);
   const [shorts, setShorts] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [shortsLoading, setShortsLoading] = useState(true);
+  
+  // Initialize state based on URL parameters or defaults
   const [selectedCategory, setSelectedCategory] = useState('technology');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+
   const [editingVideo, setEditingVideo] = useState<Video | undefined>(undefined);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  // FIX: Updated ad state types to include ShortsAdCampaign.
   const [homePageAd, setHomePageAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
   const [inFeedAd, setInFeedAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
 
@@ -35,6 +39,26 @@ export const Home: React.FC = () => {
   const [isSubCategoryScrolledRight, setIsSubCategoryScrolledRight] = useState(false);
 
   const activeCategory = CATEGORIES.find(c => c.id === selectedCategory);
+
+  // Sync state from URL parameters
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    const subParam = searchParams.get('subcategory');
+
+    let targetCat = catParam || 'technology';
+    let targetSub = subParam || null;
+
+    // If subcategory is present, ensure the correct parent category is selected
+    if (subParam) {
+        const parentCategory = CATEGORIES.find(c => c.subCategories?.some(s => s.id === subParam));
+        if (parentCategory) {
+            targetCat = parentCategory.id;
+        }
+    }
+
+    if (targetCat !== selectedCategory) setSelectedCategory(targetCat);
+    if (targetSub !== selectedSubCategory) setSelectedSubCategory(targetSub);
+  }, [searchParams]);
 
   const loadUploadedVideos = useCallback(() => {
     const existingUploadedVideosJSON = localStorage.getItem('starlight_uploaded_videos');
@@ -96,7 +120,6 @@ export const Home: React.FC = () => {
   }, [loadUploadedVideos]);
 
   const allContent = useMemo(() => {
-    // FIX: Updated the combined type to include all possible ad campaign types.
     const combined: (Video | AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = [...uploadedVideos, ...aiVideos];
     if (inFeedAd && combined.length > 4) {
         combined.splice(4, 0, inFeedAd);
@@ -109,6 +132,34 @@ export const Home: React.FC = () => {
     setSelectedCategory(categoryId);
     setSelectedSubCategory(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Update URL
+    const newParams = new URLSearchParams();
+    if (categoryId !== 'all' && categoryId !== 'technology') {
+        newParams.set('category', categoryId);
+    } else if (categoryId === 'technology') {
+        // Keep URL clean for default category if desired, or set explicit param
+        // For now, let's explicit set it if user clicks, or clear if default logic prefers
+        newParams.set('category', categoryId);
+    }
+    setSearchParams(newParams);
+  };
+  
+  const handleSubCategoryClick = (subId: string | null) => {
+      setSelectedSubCategory(subId);
+      
+      const newParams = new URLSearchParams(searchParams);
+      // Ensure category is preserved or updated
+      if (selectedCategory && selectedCategory !== 'all') {
+          newParams.set('category', selectedCategory);
+      }
+      
+      if (subId) {
+          newParams.set('subcategory', subId);
+      } else {
+          newParams.delete('subcategory');
+      }
+      setSearchParams(newParams);
   };
   
   const handleEdit = (video: Video) => {
@@ -240,7 +291,7 @@ export const Home: React.FC = () => {
         <div className="relative">
           <div
             ref={scrollContainerRef}
-            className="w-full flex items-center px-4 py-1 md:py-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+            className="w-full flex items-center px-4 md:px-6 py-1 md:py-2 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {CATEGORIES.map((cat) => (
               <button
@@ -288,10 +339,10 @@ export const Home: React.FC = () => {
           <div className="relative border-t border-[var(--border-primary)]/30 pt-1 md:pt-2 pb-1 md:pb-0">
             <div
               ref={subCategoryScrollContainerRef}
-              className="w-full flex items-center px-4 pb-1 md:pb-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+              className="w-full flex items-center px-4 md:px-6 pb-1 md:pb-3 gap-2 overflow-x-auto no-scrollbar scroll-smooth"
             >
               <button
-                onClick={() => setSelectedSubCategory(null)}
+                onClick={() => handleSubCategoryClick(null)}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
                   !selectedSubCategory
                     ? `bg-[var(--text-primary)] text-[var(--background-primary)]`
@@ -303,7 +354,7 @@ export const Home: React.FC = () => {
               {activeCategory.subCategories.map((subCat) => (
                 <button
                   key={subCat.id}
-                  onClick={() => setSelectedSubCategory(subCat.id)}
+                  onClick={() => handleSubCategoryClick(subCat.id)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
                     selectedSubCategory === subCat.id
                       ? `bg-[var(--text-primary)] text-[var(--background-primary)]`
@@ -345,7 +396,7 @@ export const Home: React.FC = () => {
       <div className="flex flex-col xl:flex-row pb-4 md:pb-0">
         <div className="flex-1 min-w-0">
           {/* Shorts Shelf Section */}
-          <div className="p-4 sm:p-6 border-b xl:border-b-0 border-[var(--border-primary)]">
+          <div className="p-4 md:p-6 border-b xl:border-b-0 border-[var(--border-primary)]">
             <div className="flex items-center gap-3 mb-4">
                 <Film className="w-6 h-6 text-[hsl(var(--accent-color))]" />
                 <h2 className="text-xl font-bold">Shorts</h2>
@@ -364,7 +415,7 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Main Content Grid */}
-          <div className="p-4 sm:p-6 xl:border-t border-[var(--border-primary)]">
+          <div className="p-4 md:p-6 xl:border-t border-[var(--border-primary)]">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-3 gap-x-4 gap-y-8">
               {loading
                 ? Array.from({ length: 12 }).map((_, i) => (

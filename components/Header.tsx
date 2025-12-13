@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon, Tv2, PlusCircle, X } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon, Tv2, PlusCircle, X, Star, Menu, Clapperboard, MonitorPlay, Film } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
 import { SendToMobileModal } from './SendToMobileModal';
 import { TvConnectModal } from './TvConnectModal';
+import { Logo } from './Logo';
 
 
 interface CurrentUser {
@@ -17,6 +18,7 @@ interface CurrentUser {
 }
 
 interface HeaderProps {
+  onMenuClick?: () => void;
 }
 
 const MOCK_NOTIFICATIONS = [
@@ -83,7 +85,7 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 
-export const Header: React.FC<HeaderProps> = () => {
+export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -103,6 +105,7 @@ export const Header: React.FC<HeaderProps> = () => {
   const [showSendToMobileModal, setShowSendToMobileModal] = useState(false);
 
   const [isSaved, setIsSaved] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const { currentUser, logout, isPremium, isAdmin } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -124,6 +127,11 @@ export const Header: React.FC<HeaderProps> = () => {
   const createButtonRef = useRef<HTMLDivElement>(null);
   const adsDropdownRef = useRef<HTMLDivElement>(null);
   const adsButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -261,22 +269,6 @@ export const Header: React.FC<HeaderProps> = () => {
       {showSendToMobileModal && <SendToMobileModal onClose={() => setShowSendToMobileModal(false)} />}
       {showTvModal && <TvConnectModal onClose={() => setShowTvModal(false)} />}
       
-      <style>{`
-        @keyframes on-air-blink {
-          0%, 49% {
-            background-color: #ef4444; /* red-500 */
-            box-shadow: 0 0 8px #ef4444, 0 0 15px #ef4444;
-          }
-          50%, 100% {
-            background-color: #7f1d1d; /* red-900 */
-            box-shadow: none;
-          }
-        }
-        .animate-on-air {
-          animation: on-air-blink 1.s infinite;
-        }
-      `}</style>
-
       {/* Mobile Header */}
       <header className="flex md:hidden items-center justify-between px-4 h-14 bg-[var(--background-primary)] border-b border-[var(--border-primary)] sticky top-0 z-50">
         
@@ -314,19 +306,9 @@ export const Header: React.FC<HeaderProps> = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-2" onClick={() => navigate('/')}>
-             <div className="relative">
-              <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 rounded-full"></div>
-              <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-6 h-6 text-red-500 relative z-10"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-            </div>
-            <span className="font-bold text-lg tracking-tighter text-[var(--text-primary)]">StarLight</span>
+        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate('/')}>
+            <Logo className="w-7 h-7 text-[var(--text-primary)]" />
+            <span className="font-bold text-lg tracking-tighter text-blue-900 font-sans">StarLight</span>
         </div>
         
         <div className="flex items-center gap-1">
@@ -384,36 +366,24 @@ export const Header: React.FC<HeaderProps> = () => {
       </header>
 
       {/* Desktop Header */}
-      <header className="h-16 hidden md:flex items-center justify-between px-4 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
+      <header className="h-16 hidden md:flex items-center justify-between px-6 gap-4 sticky top-0 z-50 glass border-b border-[var(--border-primary)]/50">
         
         {/* Left Section */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <div 
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => navigate('/')}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 group-hover:opacity-80 transition-opacity rounded-full"></div>
-              <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-7 h-7 text-red-500 relative z-10"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-            </div>
-            <span className="font-bold text-xl text-[var(--text-primary)] tracking-tighter hidden sm:block">StarLight</span>
-          </div>
           <button 
-            onClick={() => navigate('/')}
-            className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-full transition-colors ${location.pathname === '/' ? 'bg-[var(--background-tertiary)]' : 'hover:bg-[var(--background-tertiary)]'}`}
-            aria-label="Home page"
-            aria-current={location.pathname === '/' ? 'page' : undefined}
+            onClick={onMenuClick}
+            className="p-2 hover:bg-[var(--background-tertiary)] rounded-full transition-colors hidden md:block"
           >
-            <Home className="w-5 h-5" />
-            <span className="text-sm font-semibold">Home</span>
+            <Menu className="w-5 h-5 text-[var(--text-primary)]" />
           </button>
+          
+          <div 
+            className="flex items-center gap-1 cursor-pointer group"
+            onClick={() => navigate('/')}
+          >
+            <Logo className="w-8 h-8 text-[var(--text-primary)] group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xl text-blue-900 tracking-tighter hidden sm:block font-sans">StarLight</span>
+          </div>
       </div>
 
       {/* Center: Search */}
@@ -424,6 +394,17 @@ export const Header: React.FC<HeaderProps> = () => {
 
       {/* Right Section */}
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        
+        {/* Clock Display - Highlighted */}
+        <div className="hidden lg:flex flex-col items-end mr-2 px-3 py-1 bg-blue-600 rounded-md shadow-sm select-none">
+            <span className="text-sm font-bold text-white leading-tight">
+              {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+            </span>
+            <span className="text-[10px] font-semibold text-blue-100 uppercase tracking-wide leading-tight mt-0.5">
+              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+        </div>
+
         {/* Ads Manager Dropdown - Only for Premium or Admin */}
         {(isPremium || isAdmin) && (
           <div className="relative" ref={adsButtonRef}>
@@ -453,7 +434,13 @@ export const Header: React.FC<HeaderProps> = () => {
                   <div className="h-px bg-[var(--border-primary)] my-1"></div>
                   <div className="px-3 py-2 text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Tools</div>
                   <button onClick={() => { navigate('/ads/create'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Wand2 className="w-4 h-4 text-orange-500" /> Creation Studio
+                      <Clapperboard className="w-4 h-4 text-orange-500" /> Creation Hub
+                  </button>
+                  <button onClick={() => { navigate('/ai-ad-assistant'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Wand2 className="w-4 h-4 text-green-500" /> AI Ad Assistant
+                  </button>
+                  <button onClick={() => { navigate('/cinematic-ad-creator'); setShowAdsDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <Film className="w-4 h-4 text-pink-500" /> Cinematic Ad Creator
                   </button>
               </div>
             )}
@@ -492,8 +479,11 @@ export const Header: React.FC<HeaderProps> = () => {
                       <Palette className="w-4 h-4 text-[#7D2AE8]" /> Canva Design Tool
                   </a>
                   <a href="https://www.google.co.in/inputtools/try/" target="_blank" rel="noopener noreferrer" onClick={() => setShowCreateDropdown(false)} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
-                      <Keyboard className="w-4 h-4 text-blue-500" /> Typing Tools
-                  </a>
+                      <Keyboard className="w-4 h-4" /> Typing Tools
+                  </button>
+                  <button onClick={() => { navigate('/studio'); setShowCreateDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors">
+                      <MonitorPlay className="w-4 h-4 text-yellow-500" /> News Studio
+                  </button>
               </div>
             )}
           </div>

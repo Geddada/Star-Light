@@ -171,6 +171,7 @@ export interface ProfileDetails {
   city?: string;
   nativeLanguages?: string[];
   gender?: 'male' | 'female' | 'prefer_not_to_say';
+  autoplay?: boolean;
 }
 
 export interface AdConcept {
@@ -192,7 +193,6 @@ export interface VideoMetadata {
   description: string;
 }
 
-// FIX: Added missing Activity interface for FactionActivities page.
 export interface Activity {
   type: 'upload' | 'comment' | 'like' | 'subscribe' | 'milestone' | string;
   description: string;

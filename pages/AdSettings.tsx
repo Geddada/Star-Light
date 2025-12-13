@@ -1,9 +1,6 @@
 
 
-
-
 import React, { useState, useEffect, useCallback } from 'react';
-// FIX: Added ShortsAdCampaign to the import list to resolve type errors.
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 import { Megaphone, PlayCircle, RadioTower, MapPin, PlusCircle, Trash2, Loader2, Save, CheckCircle, Eye, Clock } from 'lucide-react';
 import { CreateAdModal } from '../components/CreateAdModal';
@@ -31,7 +28,6 @@ const AD_SLOTS = [
 
 export const AdSettings: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>('placements');
-    // FIX: Updated ad state type to include ShortsAdCampaign.
     const [allAds, setAllAds] = useState<(AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[]>([]);
     const [placements, setPlacements] = useState<Record<string, string>>({});
     
@@ -57,7 +53,6 @@ export const AdSettings: React.FC = () => {
     }, [loadData]);
 
     const skippableAds = allAds.filter(ad => 'ctr' in ad) as AdCampaign[];
-    // FIX: Corrected the filter to specifically identify UnskippableAdCampaigns by checking for the 'duration' property, excluding ShortsAdCampaigns.
     const unskippableAds = allAds.filter(ad => 'impressions' in ad && 'duration' in ad) as UnskippableAdCampaign[];
 
     const handleDeleteAd = (id: string, type: 'skippable' | 'unskippable') => {
@@ -126,16 +121,15 @@ export const AdSettings: React.FC = () => {
                                                 <p className="font-bold text-base line-clamp-2">{ad.title}</p>
                                                 <p className="text-xs text-[var(--text-tertiary)] font-mono block lg:hidden">{ad.id}</p>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-[var(--text-secondary)] font-mono hidden lg:table-cell">{ad.id}</td>
-                                    <td className="px-4 py-3 text-[var(--text-secondary)] hidden md:table-cell">
-                                        { 'ctr' in ad ? (
-                                            <div><p className="font-semibold text-[var(--text-primary)]">{ad.views} <span className="text-xs">Views</span></p><p className="font-semibold text-[var(--text-primary)] mt-1">{ad.ctr} <span className="text-xs">CTR</span></p></div>
-                                        ) : (
-                                            <div><p className="font-semibold text-[var(--text-primary)]">{ad.impressions} <span className="text-xs">Impressions</span></p><p className="font-semibold text-[var(--text-primary)] mt-1">{ad.duration} <span className="text-xs">Duration</span></p></div>
-                                        )}
-                                    </td>
+                                        </td>
+                                        <td className="px-4 py-3 text-[var(--text-secondary)] font-mono hidden lg:table-cell">{ad.id}</td>
+                                        <td className="px-4 py-3 text-[var(--text-secondary)] hidden md:table-cell">
+                                            { 'ctr' in ad ? (
+                                                <div><p className="font-semibold text-[var(--text-primary)]">{ad.views} <span className="text-xs">Views</span></p><p className="font-semibold text-[var(--text-primary)] mt-1">{ad.ctr} <span className="text-xs">CTR</span></p></div>
+                                            ) : (
+                                                <div><p className="font-semibold text-[var(--text-primary)]">{ad.impressions} <span className="text-xs">Impressions</span></p><p className="font-semibold text-[var(--text-primary)] mt-1">{ad.duration} <span className="text-xs">Duration</span></p></div>
+                                            )}
+                                        </td>
                                     <td className="px-4 py-3"><StatusBadge status={ad.status} /></td>
                                     <td className="px-4 py-3 text-right">
                                         <button onClick={() => handleDeleteAd(ad.id, type)} className="p-2 hover:bg-red-500/10 text-red-500 rounded-md"><Trash2 className="w-4 h-4" /></button>

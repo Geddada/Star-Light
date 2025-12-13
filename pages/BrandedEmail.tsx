@@ -1,5 +1,7 @@
+
 import React from 'react';
-import { Star, Play, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Play, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Logo } from '../components/Logo';
 
 const MOCK_FEATURED_VIDEOS = [
   {
@@ -33,7 +35,7 @@ export const BrandedEmail: React.FC = () => {
             <div className="flex items-center gap-3 text-sm">
                 <span className="text-gray-500 dark:text-slate-400 font-medium">From:</span>
                 <span className="font-semibold text-gray-800 dark:text-slate-200 flex items-center gap-2">
-                    <Star className="w-4 h-4 text-red-500 fill-current"/>
+                    <Logo className="w-4 h-4 text-blue-600"/>
                     StarLight Team &lt;team@starlight.app&gt;
                 </span>
             </div>
@@ -54,7 +56,7 @@ export const BrandedEmail: React.FC = () => {
                 {/* Header */}
                 <header className="bg-gradient-to-br from-blue-700 to-indigo-900 text-white text-center p-12">
                     <div className="flex justify-center items-center gap-3 mb-4">
-                        <Star className="w-12 h-12 text-red-500 fill-current"/>
+                        <Logo className="w-12 h-12 text-white"/>
                         <span className="text-4xl font-bold tracking-tighter">StarLight</span>
                     </div>
                     <h2 className="text-3xl font-bold mb-2">Welcome to the Future of Content!</h2>
