@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Megaphone, PlayCircle, RadioTower, Smartphone, Wand2, Film, CheckCircle, ArrowRight, Video, Clapperboard, MousePointerClick } from 'lucide-react';
+import { Megaphone, PlayCircle, RadioTower, Smartphone, Wand2, CheckCircle, ArrowRight, MousePointerClick } from 'lucide-react';
 import { CreateAdModal } from '../components/CreateAdModal';
 import { CreateShortsAdModal } from '../components/CreateShortsAdModal';
 import { CreateUnskippableAdModal } from '../components/CreateUnskippableAdModal';

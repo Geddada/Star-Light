@@ -71,6 +71,11 @@ import { Feedback } from './pages/Feedback';
 import { Explore } from './pages/Explore';
 import { Channel } from './pages/Channel';
 import { FactionActivities } from './pages/FactionActivities';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { UserContent } from './pages/UserContent';
+import { NotFound } from './pages/NotFound';
+import { PremiumAnalytics } from './pages/PremiumAnalytics';
+import { Studio } from './pages/Studio';
 
 
 declare global {
@@ -103,18 +108,39 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   
   const isWatchPage = location.pathname.startsWith('/watch');
   const isEditPage = location.pathname.startsWith('/edit');
   const isBlurPage = location.pathname.startsWith('/blur');
   const isShortsPage = location.pathname === '/shorts';
-  const isCreatorStudio = location.pathname === '/studio';
+  const isStudioPage = location.pathname.startsWith('/studio') || location.pathname === '/news-overlay';
   // Add /lead-admin to pages without main layout
-  const noLayoutPages = ['/thanks', '/signup', '/lead-admin'];
+  const noLayoutPages = ['/thanks', '/signup'];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      if (e.shiftKey && e.key === '?') {
+        e.preventDefault();
+        setShowShortcuts(prev => !prev);
+      } else if (e.key === '/') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('focusSearch'));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   
-  if (noLayoutPages.includes(location.pathname) || isEditPage || isBlurPage || isCreatorStudio) {
-      const bgClass = isCreatorStudio ? 'bg-[var(--background-secondary)]' : 'bg-[var(--background-primary)]';
+  if (noLayoutPages.includes(location.pathname) || isEditPage || isBlurPage || isStudioPage) {
+      const bgClass = isStudioPage ? 'bg-[var(--background-secondary)]' : 'bg-[var(--background-primary)]';
       return (
          <div className={`flex flex-col h-screen max-h-screen ${bgClass} text-[var(--text-primary)] font-sans selection:bg-[hsl(var(--accent-color))] selection:text-white`}>
              <main className="flex-1 overflow-y-auto flex flex-col">
@@ -122,6 +148,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   {children}
                 </div>
              </main>
+             {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
          </div>
       );
   }
@@ -136,6 +163,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {children}
         </main>
         <MobileBottomNav />
+        {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
       </div>
     );
   }
@@ -165,6 +193,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
       <MobileBottomNav />
       {currentUser && <Chatbot />}
+      {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
     </div>
   );
 };
@@ -175,17 +204,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (showSplash) {
-      // Start fade out after 2.5s
+      // Start fade out after 4s (allowing sun animation to complete)
       const fadeTimer = setTimeout(() => {
         setSplashOpacity('opacity-100');
         // Actually start fade out slightly before unmount
-        setTimeout(() => setSplashOpacity('opacity-0'), 2500);
+        setTimeout(() => setSplashOpacity('opacity-0'), 4000);
       }, 100); 
 
-      // Unmount after 3s (2.5s wait + 0.5s transition)
+      // Unmount after 4.5s
       const unmountTimer = setTimeout(() => {
         setShowSplash(false);
-      }, 3000);
+      }, 4500);
 
       return () => {
         clearTimeout(fadeTimer);
@@ -237,7 +266,17 @@ const App: React.FC = () => {
                 } />
                 <Route path="/studio" element={
                   <ProtectedRoute>
+                    <Studio />
+                  </ProtectedRoute>
+                } />
+                <Route path="/news-overlay" element={
+                  <ProtectedRoute>
                     <CreatorStudio />
+                  </ProtectedRoute>
+                } />
+                <Route path="/content" element={
+                  <ProtectedRoute>
+                    <UserContent />
                   </ProtectedRoute>
                 } />
                 <Route path="/shorts" element={<Shorts />} />
@@ -250,6 +289,11 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/premium-analytics" element={
+                  <ProtectedRoute requirePremium={true}>
+                    <PremiumAnalytics />
+                  </ProtectedRoute>
+                } />
                 <Route path="/watch/:videoId" element={<Watch />} />
                 <Route path="/results" element={<Search />} />
                 <Route path="/profile" element={<Profile />} />
@@ -355,8 +399,8 @@ const App: React.FC = () => {
                 <Route path="/thanks" element={<Thanks />} />
                 <Route path="/business" element={<Business />} />
                 <Route path="/access-denied" element={<AccessDenied />} />
-                {/* Catch all redirect */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Catch all redirect - now points to 404 */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
             <CookieConsent />

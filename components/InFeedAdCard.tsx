@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign } from '../types';
 import { Megaphone } from 'lucide-react';
 import { Logo } from './Logo';
@@ -30,7 +31,7 @@ export const InFeedAdCard: React.FC<InFeedAdCardProps> = ({ campaign }) => {
         <div className="absolute top-2 right-2 z-10">
             <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-sm backdrop-blur-sm border border-white/10">
                 <Logo className="w-5 h-5 text-white drop-shadow-md" />
-                <span className="font-bold text-white text-sm tracking-tighter drop-shadow-md hidden sm:block">StarLight</span>
+                <span className="font-extrabold text-white text-sm tracking-tighter drop-shadow-md hidden sm:block font-sans uppercase">Star Light</span>
             </div>
         </div>
       </div>

@@ -174,16 +174,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, isLoading, onEdit, 
         {/* Thumbnail Container */}
         <div className={`relative flex-shrink-0 ${compact ? 'w-36 sm:w-44 aspect-video' : 'w-full aspect-video'} rounded-xl overflow-hidden bg-[var(--background-secondary)] shadow-md transition-all duration-500 ${!compact && 'group-hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] group-hover:ring-1 group-hover:ring-[hsl(var(--accent-color))]/50'}`}>
           
-          {/* Logo Top Left */}
-          {!compact && (
-            <div className="absolute top-2 left-2 z-40 pointer-events-none">
-              <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-sm backdrop-blur-sm border border-white/10">
-                <Logo className="w-3.5 h-3.5 text-white" />
-                <span className="text-white font-bold text-[10px] tracking-tight drop-shadow-sm font-sans">StarLight</span>
-              </div>
-            </div>
-          )}
-
           {/* Community Top Right */}
           {!compact && video.communityName && (
             <div className="absolute top-2 right-2 z-40 pointer-events-none">

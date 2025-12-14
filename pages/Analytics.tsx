@@ -1,8 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchChannelAnalytics } from '../services/gemini';
-import { AnalyticsData, Video } from '../types';
+import { AnalyticsData, Video, ProfileDetails } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { 
   BarChart2, 
@@ -15,7 +16,11 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   Calendar,
-  PieChart
+  PieChart,
+  IndianRupee,
+  Megaphone,
+  FileDown,
+  Loader2
 } from 'lucide-react';
 import { UploadModal } from '../components/UploadModal';
 
@@ -99,11 +104,27 @@ export const Analytics: React.FC = () => {
   const [showRevenue, setShowRevenue] = useState(true);
   const [editingVideo, setEditingVideo] = useState<Video | undefined>(undefined);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const fetchAnalyticsData = () => {
     if (currentUser) {
       setLoading(true);
-      fetchChannelAnalytics(currentUser.name).then(analytics => {
+      
+      let selectedCurrency = 'USD';
+      if (currentUser.email) {
+          const detailsJson = localStorage.getItem('starlight_profile_details');
+          if (detailsJson) {
+              const details = JSON.parse(detailsJson);
+              const userCountry = details[currentUser.email]?.country;
+              if (userCountry === 'India') {
+                  selectedCurrency = 'INR';
+              }
+          }
+      }
+      setCurrency(selectedCurrency as 'USD' | 'INR');
+
+      fetchChannelAnalytics(currentUser.name, selectedCurrency).then(analytics => {
         setData(analytics);
         setLoading(false);
       });
@@ -128,6 +149,39 @@ export const Analytics: React.FC = () => {
   const handleCloseModal = () => {
     setShowUploadModal(false);
     setEditingVideo(undefined);
+  };
+
+  const handleDownloadPdf = () => {
+    setIsGeneratingPdf(true);
+    // Simulate PDF generation delay
+    setTimeout(() => {
+        const date = new Date().toISOString().split('T')[0];
+        const element = document.createElement("a");
+        // Creating a dummy file for demonstration
+        const file = new Blob([
+            `STARLIGHT ANALYTICS REPORT\nGenerated on: ${new Date().toLocaleString()}\n\n` +
+            `Channel: ${currentUser?.name}\n` +
+            `Period: Last ${timeRange}\n\n` +
+            `--- SUMMARY ---\n` +
+            `Total Views: ${data?.totalViews}\n` +
+            `Watch Time: ${data?.watchTimeHours} hours\n` +
+            `Subscribers Gained: ${data?.subscribersGained}\n` +
+            `Estimated Revenue: ${data?.estimatedRevenue}\n\n` +
+            `--- AD PERFORMANCE ---\n` +
+            `Ads Played: ${data?.totalViews ? (parseFloat(data.totalViews.replace(/[^0-9.]/g, '')) * (data.totalViews.includes('M') ? 1000000 : 1000) * 0.45).toLocaleString() : 'N/A'}\n` +
+            `Fill Rate: 92%\n` +
+            `CPM: ${currency === 'INR' ? '₹240' : '$4.25'}\n\n` +
+            `--- TOP CONTENT ---\n` +
+            data?.topContent.map(v => `- ${v.title} (${v.views})`).join('\n')
+        ], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = `starlight_report_${date}.txt`; // Using .txt as we can't generate real binary .pdf without libs, but labeling as Report
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        setIsGeneratingPdf(false);
+        alert("Report downloaded successfully!");
+    }, 2000);
   };
 
   if (!currentUser) {
@@ -163,6 +217,10 @@ export const Analytics: React.FC = () => {
   // Prepare chart data arrays
   const viewData = data.dailyViews.map(d => d.views);
   const revenueData = data.dailyViews.map(d => d.revenue);
+  const currencySymbol = currency === 'INR' ? '₹' : '$';
+
+  // Calculate ad stats for display
+  const adsPlayedApprox = (parseFloat(data.totalViews.replace(/[^0-9.]/g, '')) * 0.45).toFixed(1) + (data.totalViews.includes('M') ? 'M' : 'K');
 
   return (
     <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] overflow-y-auto">
@@ -224,9 +282,40 @@ export const Analytics: React.FC = () => {
                 title="Est. Revenue" 
                 value={data.estimatedRevenue} 
                 subtext="vs previous 28 days" 
-                icon={DollarSign} 
+                icon={currency === 'INR' ? IndianRupee : DollarSign} 
                 data={revenueData}
              />
+          </div>
+
+          {/* Ad Performance Section */}
+          <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)] mb-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 animate-in fade-in">
+              <div className="flex-1">
+                  <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
+                      <Megaphone className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Ad Performance
+                  </h3>
+                  <div className="flex flex-wrap gap-x-12 gap-y-4">
+                      <div>
+                          <p className="text-sm text-[var(--text-secondary)] mb-1">Ads Played</p>
+                          <p className="text-3xl font-bold">{adsPlayedApprox}</p>
+                      </div>
+                      <div>
+                          <p className="text-sm text-[var(--text-secondary)] mb-1">Fill Rate</p>
+                          <p className="text-3xl font-bold">92%</p>
+                      </div>
+                       <div>
+                          <p className="text-sm text-[var(--text-secondary)] mb-1">CPM</p>
+                          <p className="text-3xl font-bold">{currencySymbol}4.25</p>
+                      </div>
+                  </div>
+              </div>
+              <button 
+                  onClick={handleDownloadPdf}
+                  disabled={isGeneratingPdf}
+                  className="px-6 py-3 bg-[var(--background-primary)] border border-[var(--border-primary)] hover:bg-[var(--background-tertiary)] rounded-xl font-bold text-sm flex items-center gap-2 transition-colors whitespace-nowrap shadow-sm"
+              >
+                  {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                  {isGeneratingPdf ? 'Generating PDF...' : 'Download PDF Report'}
+              </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -267,7 +356,7 @@ export const Analytics: React.FC = () => {
                                <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs py-1 px-2 rounded pointer-events-none whitespace-nowrap z-10 left-1/2 -translate-x-1/2">
                                   {showViews && <span>{day.views.toLocaleString()} views</span>}
                                   {showViews && showRevenue && <span className="mx-1">•</span>}
-                                  {showRevenue && <span>${day.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>}
+                                  {showRevenue && <span>{currencySymbol}{day.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>}
                                </div>
                             )}
                             

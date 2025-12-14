@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Megaphone, X } from 'lucide-react';
@@ -45,7 +46,7 @@ export const AnnouncementBar: React.FC = () => {
             {/* Repeating the text enough times to ensure seamless scrolling on large screens */}
             {[...Array(20)].map((_, i) => (
                <div key={i} className="flex items-center mx-32">
-                  <span className="text-white font-sans font-extrabold tracking-tight text-xl drop-shadow-md">
+                  <span className="text-white font-sans font-light italic text-xl drop-shadow-md">
                     {announcement}
                   </span>
                   <span className="ml-32 text-white font-bold text-2xl">•</span>

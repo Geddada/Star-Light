@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { X, Sparkles, Target, ShoppingBag, Loader2, Upload, FileVideo, DollarSign, LayoutTemplate } from 'lucide-react';
 import { ShortsAdCampaign, CATEGORIES } from '../types';
@@ -160,11 +161,11 @@ export const CreateShortsAdModal: React.FC<CreateShortsAdModalProps> = ({ onClos
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-[var(--text-secondary)] flex items-center gap-2"><DollarSign className="w-4 h-4" /> Total Budget</label>
-                        <input type="text" value={manualBudget} onChange={e => setManualBudget(e.target.value)} placeholder="e.g., $200" className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg" disabled={loading}/>
+                        <input type="text" value={manualBudget} onChange={e => setManualBudget(e.target.value)} placeholder={country === 'India' ? "e.g. ₹5000" : "e.g. $200"} className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg" disabled={loading}/>
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-[var(--text-secondary)] flex items-center gap-2"><FileVideo className="w-4 h-4" /> Ad Creative (Vertical)</label>
-                        <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-[var(--border-primary)] rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer">
+                        <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-[var(--border-primary)] rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)] transition-colors">
                             {selectedFile ? (
                                 <div className="text-center">
                                     <FileVideo className="w-10 h-10 text-[hsl(var(--accent-color))] mx-auto mb-2" />

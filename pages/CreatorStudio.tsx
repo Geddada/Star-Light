@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2, CheckCircle, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Save, Loader2, CheckCircle } from 'lucide-react';
 import { LiveClock } from '../components/LiveClock';
 import { Logo } from '../components/Logo';
 
@@ -27,7 +28,11 @@ export const CreatorStudio: React.FC = () => {
     useEffect(() => {
         const savedSettings = localStorage.getItem(NEWS_OVERLAY_SETTINGS_KEY);
         if (savedSettings) {
-            setSettings(JSON.parse(savedSettings));
+            try {
+                setSettings(JSON.parse(savedSettings));
+            } catch (e) {
+                console.error("Failed to parse news overlay settings", e);
+            }
         }
     }, []);
 
@@ -54,8 +59,9 @@ export const CreatorStudio: React.FC = () => {
         setSettings(prev => ({ ...prev, [field]: value }));
     };
 
-    const repeatedBreakingText = `${settings.breakingText}                    +++                    `.repeat(10);
-    const repeatedTickerText = `${settings.tickerText} ••• `.repeat(10);
+    // Use Array.from to build the string to avoid any potential template literal issues with large strings
+    const repeatedBreakingText = Array.from({ length: 10 }).map(() => settings.breakingText + "   +++   ").join("");
+    const repeatedTickerText = Array.from({ length: 10 }).map(() => settings.tickerText + "   ***   ").join("");
 
     return (
         <div className="flex h-full bg-[var(--background-primary)]">
@@ -110,7 +116,7 @@ export const CreatorStudio: React.FC = () => {
                         <div className="absolute top-4 left-4">
                             <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
                                 <Logo className="w-6 h-6 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
-                                <span className="font-bold text-white text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight">StarLight</span>
+                                <span className="font-extrabold text-white text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tighter font-sans uppercase">STAR LIGHT</span>
                             </div>
                         </div>
 

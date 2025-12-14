@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon, Tv2, PlusCircle, X, Star, Menu, Clapperboard, MonitorPlay, Film } from 'lucide-react';
+import { Search, Mic, Bell, User, LogOut, Settings, Sparkles, ShieldAlert, Gem, Radio, Sun, Moon, ArrowLeft, Home, Upload, Save, Check, Download, RefreshCw, Camera, Smartphone, Loader2, Video, Megaphone, PlayCircle, RadioTower, Wand2, Palette, Keyboard, Image as ImageIcon, Tv2, PlusCircle, X, Star, Menu, Clapperboard, MonitorPlay, Film, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { UploadModal } from './UploadModal';
@@ -114,6 +114,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const avatarButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   
   // Desktop Notification Refs
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -132,6 +134,19 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const handleFocusSearch = () => {
+        if (isMobileSearch && mobileSearchInputRef.current) {
+            mobileSearchInputRef.current.focus();
+        } else if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    };
+
+    window.addEventListener('focusSearch', handleFocusSearch);
+    return () => window.removeEventListener('focusSearch', handleFocusSearch);
+  }, [isMobileSearch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -244,6 +259,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     <Search className="w-4 h-4" />
                   </button>
                   <input 
+                    ref={searchInputRef}
                     type="text" 
                     placeholder="Search anything..." 
                     className="w-full bg-transparent outline-none text-[var(--text-primary)] h-10 text-sm placeholder-[var(--text-tertiary)] px-2"
@@ -286,6 +302,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     <Search className="w-4 h-4" />
                   </button>
                   <input
+                    ref={mobileSearchInputRef}
                     type="text"
                     placeholder="Search..."
                     className="w-full bg-transparent outline-none text-[var(--text-primary)] h-10 text-sm placeholder-[var(--text-tertiary)] px-2"
@@ -311,7 +328,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             onClick={() => navigate('/')}
         >
             <Logo className="w-6 h-6 text-white" />
-            <span className="font-bold text-lg tracking-tighter text-white font-sans">StarLight</span>
+            <span className="font-extrabold text-lg tracking-tighter text-white font-sans uppercase">Star Light</span>
         </div>
         
         <div className="flex items-center gap-1">
@@ -385,7 +402,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             onClick={() => navigate('/')}
           >
             <Logo className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xl text-white tracking-tighter hidden sm:block font-sans">StarLight</span>
+            <span className="font-extrabold text-xl text-white tracking-tighter hidden sm:block font-sans uppercase">Star Light</span>
           </div>
       </div>
 
@@ -620,6 +637,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                          <ShieldAlert className="w-4 h-4" /> Admin Access
                        </div>
                      )}
+                     <button onClick={() => { navigate('/studio'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><LayoutDashboard className="w-4 h-4"/> Starlight Studio</button>
                      <button onClick={() => { navigate('/profile'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><User className="w-4 h-4"/> Your Profile</button>
                      <button onClick={() => { setShowSendToMobileModal(true); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Smartphone className="w-4 h-4"/> Send to Mobile</button>
                      <button onClick={() => { navigate('/settings'); setShowDropdown(false); }} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[var(--background-tertiary)] text-sm transition-colors"><Settings className="w-4 h-4"/> Settings</button>

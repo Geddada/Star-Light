@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ShieldOff, ShieldAlert, Search, Ban, Gem, CheckCircle, XCircle, MapPin, Filter } from 'lucide-react';
+import { ShieldOff, ShieldAlert, Search, Ban, Gem, CheckCircle, XCircle, MapPin, Filter, Mail, CheckSquare, Square, MoreHorizontal, Send } from 'lucide-react';
 import { User as UserType, ProfileDetails } from '../types';
 import { COUNTRIES, INDIAN_STATES, USA_STATES, UK_STATES, ANDHRA_PRADESH_CITIES } from '../constants';
+import { AdminNotificationModal } from '../components/AdminNotificationModal';
 
 // Mock users for the admin panel, as we don't have a central user database
 const MOCK_USERS: UserType[] = [
@@ -43,6 +44,11 @@ export const UserManagement: React.FC = () => {
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedState, setSelectedState] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
+
+    // Selection & Notification State
+    const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [notificationRecipients, setNotificationRecipients] = useState<UserType[]>([]);
 
     useEffect(() => {
         // Load blocked users
@@ -142,6 +148,37 @@ export const UserManagement: React.FC = () => {
             return matchesSearch && matchesCountry && matchesState && matchesCity;
         });
     }, [allUsers, searchTerm, selectedCountry, selectedState, selectedCity, profileDetails]);
+
+    // Selection Handlers
+    const handleSelectAll = () => {
+        if (selectedEmails.size === filteredUsers.length) {
+            setSelectedEmails(new Set());
+        } else {
+            setSelectedEmails(new Set(filteredUsers.map(u => u.email || '').filter(Boolean)));
+        }
+    };
+
+    const handleSelectUser = (email: string) => {
+        const newSelected = new Set(selectedEmails);
+        if (newSelected.has(email)) {
+            newSelected.delete(email);
+        } else {
+            newSelected.add(email);
+        }
+        setSelectedEmails(newSelected);
+    };
+
+    const handleBulkNotify = () => {
+        if (selectedEmails.size === 0) return;
+        const recipients = allUsers.filter(u => u.email && selectedEmails.has(u.email));
+        setNotificationRecipients(recipients);
+        setIsNotificationModalOpen(true);
+    };
+
+    const handleSingleNotify = (user: UserType) => {
+        setNotificationRecipients([user]);
+        setIsNotificationModalOpen(true);
+    };
     
     const stateOptions = selectedCountry === 'India' ? INDIAN_STATES : selectedCountry === 'United States of America' ? USA_STATES : selectedCountry === 'United Kingdom' ? UK_STATES : [];
     
@@ -157,9 +194,24 @@ export const UserManagement: React.FC = () => {
 
             {/* All Users Section */}
             <div className="bg-[var(--background-secondary)] p-6 rounded-2xl border border-[var(--border-primary)]">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Filter Users
-                </h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <Filter className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Filter Users
+                    </h2>
+                    
+                    {/* Bulk Actions Toolbar */}
+                    {selectedEmails.size > 0 && (
+                        <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4">
+                            <span className="text-sm font-semibold text-[var(--text-secondary)]">{selectedEmails.size} selected</span>
+                            <button 
+                                onClick={handleBulkNotify}
+                                className="flex items-center gap-2 px-4 py-2 bg-[hsl(var(--accent-color))] text-white rounded-lg text-sm font-bold shadow-md hover:brightness-90 transition-all"
+                            >
+                                <Mail className="w-4 h-4" /> Send Email
+                            </button>
+                        </div>
+                    )}
+                </div>
                 
                 <div className="flex flex-col gap-4 mb-6 p-4 bg-[var(--background-primary)] rounded-xl border border-[var(--border-primary)]">
                     <div className="relative">
@@ -212,6 +264,11 @@ export const UserManagement: React.FC = () => {
                     <table className="w-full text-left text-sm">
                         <thead className="sticky top-0 bg-[var(--background-tertiary)] z-10 shadow-sm">
                             <tr className="border-b border-[var(--border-primary)]">
+                                <th className="p-4 w-10">
+                                    <button onClick={handleSelectAll} className="flex items-center justify-center text-[var(--text-secondary)] hover:text-[hsl(var(--accent-color))]">
+                                        {filteredUsers.length > 0 && selectedEmails.size === filteredUsers.length ? <CheckSquare className="w-5 h-5 text-[hsl(var(--accent-color))]" /> : <Square className="w-5 h-5" />}
+                                    </button>
+                                </th>
                                 <th className="p-4 font-bold text-[var(--text-secondary)]">User</th>
                                 <th className="p-4 font-bold text-[var(--text-secondary)] hidden md:table-cell">Location</th>
                                 <th className="p-4 font-bold text-[var(--text-secondary)] text-center">Premium Status</th>
@@ -220,13 +277,20 @@ export const UserManagement: React.FC = () => {
                         </thead>
                         <tbody className="bg-[var(--background-secondary)]">
                             {filteredUsers.length === 0 ? (
-                                <tr><td colSpan={4} className="text-center p-8 text-[var(--text-secondary)]">No users found matching filters.</td></tr>
+                                <tr><td colSpan={5} className="text-center p-8 text-[var(--text-secondary)]">No users found matching filters.</td></tr>
                             ) : (
                                 filteredUsers.map(user => {
                                     const details = profileDetails[user.email || ''];
                                     const locationStr = [details?.city, details?.state, details?.country].filter(Boolean).join(', ');
+                                    const isSelected = selectedEmails.has(user.email || '');
+
                                     return (
-                                        <tr key={user.email} className="border-b border-[var(--border-primary)] last:border-b-0 hover:bg-[var(--background-tertiary)]/50 transition-colors">
+                                        <tr key={user.email} className={`border-b border-[var(--border-primary)] last:border-b-0 transition-colors ${isSelected ? 'bg-[hsl(var(--accent-color))]/5' : 'hover:bg-[var(--background-tertiary)]/50'}`}>
+                                            <td className="p-4 text-center">
+                                                <button onClick={() => user.email && handleSelectUser(user.email)} className="flex items-center justify-center text-[var(--text-secondary)] hover:text-[hsl(var(--accent-color))]">
+                                                    {isSelected ? <CheckSquare className="w-5 h-5 text-[hsl(var(--accent-color))]" /> : <Square className="w-5 h-5" />}
+                                                </button>
+                                            </td>
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full bg-gray-200" />
@@ -258,27 +322,31 @@ export const UserManagement: React.FC = () => {
                                                 </button>
                                             </td>
                                             <td className="p-4">
-                                                {isUserBlocked(user.email!) ? (
-                                                    <div className="flex justify-end">
+                                                <div className="flex justify-end gap-2 flex-wrap items-center">
+                                                    <button onClick={() => handleSingleNotify(user)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors" title="Send Email">
+                                                        <Mail className="w-4 h-4" />
+                                                    </button>
+                                                    <div className="w-px h-6 bg-[var(--border-primary)] mx-1 hidden sm:block"></div>
+                                                    
+                                                    {isUserBlocked(user.email!) ? (
                                                         <button onClick={() => handleUnblock(user.email!)} className="px-3 py-1.5 text-xs font-semibold text-green-600 bg-green-500/10 hover:bg-green-500/20 rounded-md flex items-center gap-1.5 transition-colors border border-green-500/20">
                                                             <ShieldOff className="w-3 h-3" /> Unblock
                                                         </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex justify-end gap-2 flex-wrap">
-                                                        <button onClick={() => handleTogglePremium(user)} className={`px-3 py-1.5 text-xs font-semibold rounded-md border flex items-center gap-1.5 transition-colors ${user.isPremium ? 'text-gray-500 border-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800' : 'text-amber-600 border-amber-500/30 hover:bg-amber-50'}`}>
-                                                            {user.isPremium ? <XCircle className="w-3 h-3"/> : <CheckCircle className="w-3 h-3"/>}
-                                                            {user.isPremium ? 'Revoke' : 'Grant'}
-                                                        </button>
-                                                        <div className="w-px h-6 bg-[var(--border-primary)] mx-1 hidden sm:block"></div>
-                                                        <button onClick={() => handleBlock(user, 'temporary')} className="px-3 py-1.5 text-xs font-semibold text-yellow-600 bg-yellow-500/10 hover:bg-yellow-500/20 rounded-md border border-yellow-500/20 transition-colors">
-                                                            Block (15d)
-                                                        </button>
-                                                        <button onClick={() => handleBlock(user, 'permanent')} className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-500/10 hover:bg-red-500/20 rounded-md border border-red-500/20 transition-colors">
-                                                            Ban
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                    ) : (
+                                                        <>
+                                                            <button onClick={() => handleTogglePremium(user)} className={`px-3 py-1.5 text-xs font-semibold rounded-md border flex items-center gap-1.5 transition-colors ${user.isPremium ? 'text-gray-500 border-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800' : 'text-amber-600 border-amber-500/30 hover:bg-amber-50'}`}>
+                                                                {user.isPremium ? <XCircle className="w-3 h-3"/> : <CheckCircle className="w-3 h-3"/>}
+                                                                {user.isPremium ? 'Revoke' : 'Grant'}
+                                                            </button>
+                                                            <button onClick={() => handleBlock(user, 'temporary')} className="px-3 py-1.5 text-xs font-semibold text-yellow-600 bg-yellow-500/10 hover:bg-yellow-500/20 rounded-md border border-yellow-500/20 transition-colors">
+                                                                Block (15d)
+                                                            </button>
+                                                            <button onClick={() => handleBlock(user, 'permanent')} className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-500/10 hover:bg-red-500/20 rounded-md border border-red-500/20 transition-colors">
+                                                                Ban
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -328,9 +396,14 @@ export const UserManagement: React.FC = () => {
                                             {user.blockType === 'temporary' && user.expiresAt ? new Date(user.expiresAt).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="p-3 text-right">
-                                            <button onClick={() => handleUnblock(user.email!)} className="px-3 py-1.5 text-xs font-semibold text-green-600 bg-green-500/10 hover:bg-green-500/20 rounded-md flex items-center gap-1.5 ml-auto border border-green-500/20 transition-colors">
-                                                <ShieldOff className="w-3 h-3" /> Unblock
-                                            </button>
+                                            <div className="flex justify-end gap-2">
+                                                <button onClick={() => handleSingleNotify(user)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors" title="Send Email">
+                                                    <Mail className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => handleUnblock(user.email!)} className="px-3 py-1.5 text-xs font-semibold text-green-600 bg-green-500/10 hover:bg-green-500/20 rounded-md flex items-center gap-1.5 border border-green-500/20 transition-colors">
+                                                    <ShieldOff className="w-3 h-3" /> Unblock
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -339,6 +412,17 @@ export const UserManagement: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Notification Modal */}
+            {isNotificationModalOpen && (
+                <AdminNotificationModal 
+                    onClose={() => setIsNotificationModalOpen(false)}
+                    recipients={notificationRecipients}
+                    onSuccess={() => {
+                        setSelectedEmails(new Set()); // Clear selection after sending
+                    }}
+                />
+            )}
         </div>
     );
 };

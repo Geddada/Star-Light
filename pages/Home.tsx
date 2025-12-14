@@ -11,9 +11,11 @@ import { SidebarAd } from '../components/SidebarAd';
 import { InFeedAdCard } from '../components/InFeedAdCard';
 import { TrendingWidget } from '../components/TrendingWidget';
 import { PollWidget } from '../components/PollWidget';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Home: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isPremium } = useAuth();
   const [aiVideos, setAiVideos] = useState<Video[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<Video[]>([]);
   const [shorts, setShorts] = useState<Video[]>([]);
@@ -72,6 +74,11 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     const loadAd = async () => {
+      if (isPremium) {
+        setHomePageAd(null);
+        setInFeedAd(null);
+        return;
+      }
       try {
         const [sidebarAd, inFeedAdResult] = await Promise.all([
             getAdForSlot('HOME_SIDEBAR'),
@@ -111,7 +118,7 @@ export const Home: React.FC = () => {
       loadAd();
     };
     loadAllContent();
-  }, [selectedCategory, selectedSubCategory, loadUploadedVideos, activeCategory]);
+  }, [selectedCategory, selectedSubCategory, loadUploadedVideos, activeCategory, isPremium]);
 
   useEffect(() => {
     window.addEventListener('videosUpdated', loadUploadedVideos);

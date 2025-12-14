@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Radio, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,17 +9,18 @@ import { Logo } from '../components/Logo';
 
 
 export const Live: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isPremium } = useAuth();
   const [sidebarAd, setSidebarAd] = useState<AdCampaign | UnskippableAdCampaign | ShortsAdCampaign | null>(null);
   const [viewers, setViewers] = useState(1240);
 
   useEffect(() => {
       const loadAd = async () => {
+          if (isPremium) return;
           const ad = await getAdForSlot('LIVE_PAGE_SIDEBAR');
           setSidebarAd(ad);
       };
       loadAd();
-  }, []);
+  }, [isPremium]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,7 +65,7 @@ export const Live: React.FC = () => {
           <div className="absolute top-4 left-24 z-20 pointer-events-none opacity-80">
             <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
               <Logo className="w-6 h-6 text-white drop-shadow-lg" />
-              <span className="font-bold text-white text-lg tracking-tighter drop-shadow-lg hidden sm:inline">StarLight</span>
+              <span className="font-extrabold text-white text-lg tracking-tighter drop-shadow-lg hidden sm:inline font-sans uppercase">Star Light</span>
             </div>
           </div>
           

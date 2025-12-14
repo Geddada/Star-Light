@@ -661,7 +661,7 @@ const ApiSettings: React.FC = () => {
         const checkKey = async () => {
             if (window.aistudio?.hasSelectedApiKey) {
                 const hasKey = await window.aistudio.hasSelectedApiKey();
-                setIsVeoKeySelected(hasKey);
+                setIsVeoKeySelected(!!hasKey);
             }
             setKeyCheckLoading(false);
         };
@@ -672,6 +672,7 @@ const ApiSettings: React.FC = () => {
         if (window.aistudio?.openSelectKey) {
             setKeyCheckLoading(true);
             await window.aistudio.openSelectKey();
+            // Per Veo guidelines, assume success after prompt
             setIsVeoKeySelected(true);
             setKeyCheckLoading(false);
         }

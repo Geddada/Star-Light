@@ -32,7 +32,7 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-[var(--background-primary)] border-t border-[var(--border-primary)] flex justify-around items-center z-50 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-[var(--background-primary)] border-t border-[var(--border-primary)] flex justify-around items-center z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         {navItems.map((item) => (
           <button
             key={item.label}

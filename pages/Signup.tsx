@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, LogIn, Home, Gem, Fingerprint, Delete, ShieldCheck, Shield, Phone, ChevronDown, X } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2, LogIn, Home, Gem, Fingerprint, Delete, ShieldCheck, Shield, Phone, ChevronDown, X, Send, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { COUNTRY_CODES } from '../constants';
-import { Logo } from '../components/Logo';
+import { createPortal } from 'react-dom';
 
 export const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -463,7 +463,7 @@ export const Signup: React.FC = () => {
         </button>
       </form>
       <div className="mt-8 text-center border-t border-[var(--border-primary)] pt-6">
-          <p className="text-[var(--text-secondary)]"> Already have an account? <button onClick={() => setIsLoginView(true)} className="text-[hsl(var(--accent-color))] font-bold hover:underline">Log In</button></p>
+          <p className="text-[var(--text-secondary)]"> {isLoginView ? 'Don\'t have an account?' : 'Already have an account?'} <button onClick={() => setIsLoginView(true)} className="text-[hsl(var(--accent-color))] font-bold hover:underline">{isLoginView ? 'Sign Up' : 'Log In'}</button></p>
       </div>
     </>
   );
@@ -531,44 +531,32 @@ export const Signup: React.FC = () => {
       </div>
 
       {/* Login Method Tabs */}
-      <div className="flex bg-[var(--background-primary)] p-1 rounded-xl mb-6 border border-[var(--border-primary)]">
-        <button 
-            type="button"
-            onClick={() => { setLoginMethod('email'); setMobileError(''); }}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginMethod === 'email' ? 'bg-[hsl(var(--accent-color))] text-white shadow-sm' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
-        >
-            Email
-        </button>
-        <button 
-            type="button"
-            onClick={() => { setLoginMethod('mobile'); setMobileError(''); }}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginMethod === 'mobile' ? 'bg-[hsl(var(--accent-color))] text-white shadow-sm' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
-        >
-            Mobile Number
-        </button>
+      <div className="flex bg-[var(--background-primary)] p-1 rounded-xl border border-[var(--border-primary)] mb-5">
+        <button type="button" onClick={() => setLoginMethod('email')} className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${loginMethod === 'email' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Email</button>
+        <button type="button" onClick={() => setLoginMethod('mobile')} className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${loginMethod === 'mobile' ? 'bg-[hsl(var(--accent-color))] text-white' : 'hover:bg-[var(--background-tertiary)]'}`}>Mobile</button>
       </div>
-      
+
       {loginMethod === 'email' ? (
-        <form onSubmit={handleLoginSubmit} className="space-y-5 animate-in fade-in">
-            <div className="space-y-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
-                <div className="relative">
+        <form onSubmit={handleLoginSubmit} className="space-y-5">
+          <div className="space-y-2">
+              <label className="text-sm font-semibold text-[var(--text-secondary)]">Email</label>
+              <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
                 <input 
                   type="email" 
                   required 
                   name="email"
-                  autoComplete="username"
+                  autoComplete="email"
                   placeholder="jane@example.com" 
                   value={loginForm.email} 
                   onChange={e => setLoginForm({...loginForm, email: e.target.value})} 
                   className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
                 />
-                </div>
-            </div>
-            <div className="space-y-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
-                <div className="relative">
+              </div>
+          </div>
+          <div className="space-y-2">
+              <label className="text-sm font-semibold text-[var(--text-secondary)]">Password</label>
+              <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
                 <input 
                   type="password" 
@@ -580,257 +568,185 @@ export const Signup: React.FC = () => {
                   onChange={e => setLoginForm({...loginForm, password: e.target.value})} 
                   className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
                 />
-                </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2">
-            <label htmlFor="rememberMe" className="flex items-center gap-2 cursor-pointer">
-                <input id="rememberMe" type="checkbox" checked={loginForm.rememberMe} onChange={e => setLoginForm({...loginForm, rememberMe: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>
-                <span className="text-sm text-[var(--text-secondary)]">Remember me</span>
-            </label>
-            <button type="button" onClick={handleForgotPassword} className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot password?</button>
-            </div>
-
-            <button type="submit" disabled={loadingProvider !== null} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
-            {loadingProvider === 'email' ? (<>Logging In <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Log In <LogIn className="w-5 h-5" /></>)}
-            </button>
+              </div>
+          </div>
+          <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center">
+                <input id="remember-me" type="checkbox" checked={loginForm.rememberMe} onChange={e => setLoginForm({...loginForm, rememberMe: e.target.checked})} className="w-4 h-4 text-[hsl(var(--accent-color))] bg-[var(--background-primary)] border-[var(--border-primary)] rounded focus:ring-[hsl(var(--accent-color))]"/>
+                <label htmlFor="remember-me" className="ml-2 text-sm text-[var(--text-secondary)]">Remember me</label>
+              </div>
+              <button type="button" onClick={handleForgotPassword} className="text-sm text-[hsl(var(--accent-color))] hover:underline font-medium">Forgot Password?</button>
+          </div>
+          <button type="submit" disabled={loadingProvider !== null} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
+            {loadingProvider === 'email' ? (<>Logging in <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Log In <LogIn className="w-5 h-5" /></>)}
+          </button>
         </form>
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); isOtpSent ? handleMobileLogin() : handleSendMobileOtp(); }} className="space-y-5 animate-in fade-in">
-            {!isOtpSent ? (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[var(--text-secondary)]">Mobile Number</label>
-                        <div className="flex gap-2">
-                            <div className="relative w-24 flex-shrink-0">
-                                <select 
-                                    value={countryCode} 
-                                    onChange={(e) => setCountryCode(e.target.value)}
-                                    className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] appearance-none"
-                                >
-                                    {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
-                            </div>
-                            <div className="relative flex-1">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
-                                <input 
-                                    type="tel" 
-                                    value={mobileNumber} 
-                                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))} 
-                                    placeholder="Mobile Number" 
-                                    className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {mobileError && <p className="text-red-500 text-xs flex items-center gap-1"><ShieldCheck className="w-3 h-3"/> {mobileError}</p>}
-
-                    <button 
-                        type="submit" 
-                        disabled={loadingProvider !== null || !mobileNumber} 
-                        className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait"
-                    >
-                        {loadingProvider === 'mobile' ? (<>Sending OTP... <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Send OTP <ArrowRight className="w-5 h-5" /></>)}
-                    </button>
+        <div className="space-y-5">
+            <div className="relative flex w-full border border-[var(--border-primary)] rounded-xl focus-within:ring-2 focus-within:ring-[hsl(var(--accent-color))] bg-[var(--background-primary)] overflow-hidden">
+                <div className="relative">
+                    <select value={countryCode} onChange={e => setCountryCode(e.target.value)} disabled={isOtpSent || loadingProvider !== null} className="py-3 pl-3 pr-8 bg-transparent border-r border-[var(--border-primary)] text-[var(--text-secondary)] font-medium text-sm focus:outline-none appearance-none disabled:bg-[var(--background-tertiary)] disabled:text-[var(--text-tertiary)]">
+                        {COUNTRY_CODES.map(c => <option key={c.iso} value={c.code}>{c.name} ({c.code})</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                 </div>
+                <div className="relative flex-grow">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)] pointer-events-none" />
+                    <input type="tel" value={mobileNumber} onChange={e => {setMobileNumber(e.target.value); setMobileError('');}} placeholder="Mobile number" disabled={isOtpSent || loadingProvider !== null} className="w-full p-3 pl-10 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none disabled:bg-[var(--background-tertiary)] disabled:text-[var(--text-tertiary)]" />
+                </div>
+            </div>
+            {mobileError && <p className="text-red-500 text-sm">{mobileError}</p>}
+            
+            {!isOtpSent ? (
+                <button type="button" onClick={handleSendMobileOtp} disabled={loadingProvider !== null || !mobileNumber || mobileNumber.length < 5} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait">
+                    {loadingProvider === 'mobile' ? (<>Sending OTP <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Send OTP <Send className="w-5 h-5" /></>)}
+                </button>
             ) : (
-                <div className="space-y-4 animate-in slide-in-from-right">
-                    <div className="text-center mb-4">
-                        <p className="text-sm text-[var(--text-secondary)]">Enter the 6-digit code sent to</p>
-                        <p className="font-bold text-[var(--text-primary)]">{countryCode} {mobileNumber} <button type="button" onClick={() => { setIsOtpSent(false); setOtp(''); }} className="text-[hsl(var(--accent-color))] text-xs ml-2 hover:underline">Change</button></p>
+                <div className="space-y-4 animate-in fade-in">
+                    <p className="text-sm text-green-500 flex items-center gap-2"><CheckCircle2 className="w-5 h-5"/> OTP sent to {countryCode} {mobileNumber}.</p>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
+                        <input type="text" value={otp} onChange={e => {setOtp(e.target.value); setMobileError('');}} placeholder="Enter 6-digit OTP (Hint: 123456)" maxLength={6} className="w-full p-3 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" />
                     </div>
-
-                    <div className="space-y-2">
-                        <input 
-                            type="text" 
-                            maxLength={6}
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            placeholder="123456" 
-                            className="w-full p-4 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] text-center text-2xl tracking-widest font-mono"
-                            autoFocus
-                        />
-                        <div className="text-center text-xs text-[var(--text-tertiary)] mt-2">Hint: Use 123456</div>
-                    </div>
-
-                    {mobileError && <p className="text-red-500 text-xs flex items-center gap-1 justify-center"><ShieldCheck className="w-3 h-3"/> {mobileError}</p>}
-
-                    <button 
-                        type="submit" 
-                        disabled={loadingProvider !== null || otp.length !== 6} 
-                        className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-wait"
-                    >
-                        {loadingProvider === 'mobile' ? (<>Verifying... <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Verify & Login <ArrowRight className="w-5 h-5" /></>)}
+                    {mobileError && <p className="text-red-500 text-sm">{mobileError}</p>}
+                    <button type="button" onClick={handleMobileLogin} disabled={loadingProvider !== null || otp.length !== 6} className="w-full py-3.5 bg-[hsl(var(--accent-color))] text-white font-bold rounded-xl hover:brightness-90 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait">
+                        {loadingProvider === 'mobile' ? (<>Logging in <Loader2 className="w-5 h-5 animate-spin" /></>) : (<>Log In <LogIn className="w-5 h-5" /></>)}
                     </button>
-                    
-                    <div className="text-center mt-4">
-                        <button 
-                            type="button" 
+                    <div className="flex justify-between items-center text-xs mt-1">
+                        <p className="text-[var(--text-tertiary)]">
+                            Didn't receive OTP?
+                        </p>
+                        <button
+                            type="button"
                             onClick={handleSendMobileOtp}
-                            disabled={resendTimer > 0}
-                            className={`text-xs font-semibold ${resendTimer > 0 ? 'text-[var(--text-tertiary)] cursor-not-allowed' : 'text-[hsl(var(--accent-color))] hover:underline'}`}
+                            disabled={resendTimer > 0 || loadingProvider !== null}
+                            className={`font-semibold flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-md ${
+                                resendTimer > 0 
+                                    ? 'text-[var(--text-tertiary)] cursor-not-allowed bg-[var(--background-tertiary)]' 
+                                    : 'text-[hsl(var(--accent-color))] hover:bg-[var(--background-tertiary)]'
+                            }`}
                         >
-                            {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+                            {loadingProvider === 'mobile' ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                <RefreshCw className={`w-3 h-3 ${resendTimer > 0 ? '' : ''}`} />
+                            )}
+                            {loadingProvider === 'mobile' ? "Sending..." : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
                         </button>
                     </div>
                 </div>
             )}
-        </form>
+        </div>
       )}
 
       <div className="mt-8 text-center border-t border-[var(--border-primary)] pt-6">
-          <p className="text-[var(--text-secondary)]"> Don't have an account? <button onClick={() => setIsLoginView(false)} className="text-[hsl(var(--accent-color))] font-bold hover:underline">Sign Up</button></p>
+          <p className="text-[var(--text-secondary)]"> {isLoginView ? 'Don\'t have an account?' : 'Already have an account?'} <button onClick={() => setIsLoginView(!isLoginView)} className="text-[hsl(var(--accent-color))] font-bold hover:underline">{isLoginView ? 'Sign Up' : 'Log In'}</button></p>
       </div>
     </>
   );
 
-  // Dedicated Lead Admin Login View - displayed only on specific route
-  if (isLeadAdminRoute) {
-      return (
-          <div className="w-full min-h-full flex flex-col items-center justify-center p-6 bg-[var(--background-primary)]">
-              <div className="w-full max-w-md p-8 bg-[var(--background-secondary)] rounded-3xl shadow-2xl border border-red-500/30">
-                  <div className="text-center mb-8">
-                      <Shield className="w-16 h-16 text-red-600 mx-auto mb-4" />
-                      <h1 className="text-2xl font-bold text-red-600">Lead Admin Access</h1>
-                      <p className="text-[var(--text-secondary)] mt-2">Restricted Entry</p>
-                  </div>
-                  <button 
-                    onClick={handleLeadAdminLogin}
-                    disabled={isLoadingLead}
-                    className="w-full py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3"
-                  >
-                    {isLoadingLead ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                    {isLoadingLead ? 'Verifying...' : 'Enter Dashboard'}
-                  </button>
-                  <button 
-                    onClick={() => navigate('/')} 
-                    className="mt-6 text-sm text-[var(--text-tertiary)] hover:underline block mx-auto"
-                  >
-                    Return Home
-                  </button>
-              </div>
-          </div>
-      );
-  }
-
   return (
-    <div className="w-full min-h-full flex flex-col items-center justify-center p-6 bg-[var(--background-primary)] overflow-y-auto relative">
-      
-      {/* Biometric Modal Overlay */}
-      {showBiometricModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-[var(--background-secondary)] w-full max-w-sm rounded-3xl p-8 border border-[var(--border-primary)] shadow-2xl relative overflow-hidden flex flex-col items-center">
-                <button onClick={() => { setShowBiometricModal(false); if (timeoutRef.current) clearTimeout(timeoutRef.current); }} className="absolute top-4 right-4 p-2 hover:bg-[var(--background-tertiary)] rounded-full transition-colors"><X className="w-5 h-5"/></button>
-                
-                {biometricStatus === 'scanning' && (
-                    <div className="flex flex-col items-center text-center animate-in fade-in zoom-in-95 w-full">
-                        <div className="w-24 h-24 rounded-full bg-[hsl(var(--accent-color))]/10 flex items-center justify-center mb-6 relative">
-                            <Fingerprint className="w-12 h-12 text-[hsl(var(--accent-color))] animate-pulse" />
-                            <div className="absolute inset-0 rounded-full border-4 border-[hsl(var(--accent-color))] border-t-transparent animate-spin"></div>
-                        </div>
-                        <h3 className="text-2xl font-bold mb-2">Verify it's you</h3>
-                        <p className="text-[var(--text-secondary)] mb-8 text-sm">Touch the fingerprint sensor or look at the camera.</p>
-                        <button 
-                            onClick={() => { setBiometricStatus('passcode'); if (timeoutRef.current) clearTimeout(timeoutRef.current); }} 
-                            className="text-[hsl(var(--accent-color))] font-semibold hover:underline bg-[var(--background-tertiary)] px-4 py-2 rounded-lg text-sm w-full"
-                        >
-                            Use Device Passcode
-                        </button>
-                    </div>
-                )}
-
-                {biometricStatus === 'passcode' && (
-                    <div className="flex flex-col items-center text-center animate-in slide-in-from-right w-full">
-                        <div className="w-16 h-16 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-6">
-                            <Lock className="w-8 h-8 text-[var(--text-secondary)]" />
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">Enter Passcode</h3>
-                        <p className="text-[var(--text-secondary)] mb-6 text-sm">Enter your 6-digit device passcode.</p>
-                        
-                        <div className="flex gap-3 mb-8 justify-center">
-                            {[0, 1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className={`w-3 h-3 rounded-full transition-all duration-200 ${passcodeInput.length > i ? 'bg-[hsl(var(--accent-color))] scale-110' : 'bg-[var(--border-primary)]'}`}></div>
-                            ))}
-                        </div>
-                        
-                        {/* Virtual Numpad */}
-                        <div className="grid grid-cols-3 gap-4 w-full max-w-[260px] mx-auto">
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                                <button key={num} type="button" onClick={() => handleDigitPress(num)} className="h-16 w-16 rounded-full bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] text-xl font-bold transition-all active:scale-95 flex items-center justify-center">
-                                    {num}
-                                </button>
-                            ))}
-                            <div className="h-16 w-16 flex items-center justify-center"></div>
-                            <button type="button" onClick={() => handleDigitPress(0)} className="h-16 w-16 rounded-full bg-[var(--background-primary)] hover:bg-[var(--background-tertiary)] border border-[var(--border-primary)] text-xl font-bold transition-all active:scale-95 flex items-center justify-center">0</button>
-                            <button type="button" onClick={handleBackspace} className="h-16 w-16 rounded-full flex items-center justify-center hover:bg-[var(--background-tertiary)] transition-colors active:scale-95 text-[var(--text-secondary)]"><Delete className="w-6 h-6"/></button>
-                        </div>
-                    </div>
-                )}
-
-                {biometricStatus === 'success' && (
-                    <div className="flex flex-col items-center text-center animate-in zoom-in w-full py-10">
-                        <div className="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center mb-6">
-                            <CheckCircle2 className="w-12 h-12 text-green-500 animate-in zoom-in duration-500" />
-                        </div>
-                        <h3 className="text-2xl font-bold mb-2">Verified!</h3>
-                        <p className="text-[var(--text-secondary)]">Signing you in...</p>
-                    </div>
-                )}
-            </div>
-        </div>
-      )}
-
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-full text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--background-tertiary)] transition-colors"
-        aria-label="Back to Home"
-      >
-        <Home className="w-4 h-4" />
-        <span>Back to Home</span>
-      </button>
-      <div className="w-full max-w-5xl flex rounded-3xl overflow-hidden shadow-2xl border border-[var(--border-primary)] bg-[var(--background-secondary)] animate-in fade-in zoom-in-95 duration-500">
-        
-        {/* Left Side - Visual */}
-        <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[hsl(var(--accent-color))] to-[#020617] p-12 flex-col justify-between relative overflow-hidden">
-           <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/starlightbg/800/1000')] bg-cover opacity-10 mix-blend-overlay"></div>
-           <div className="relative z-10">
-             <div className="flex items-center gap-3 mb-8">
-                <Logo className="w-8 h-8 text-white" />
-                <span className="font-bold text-2xl text-white tracking-tighter">StarLight</span>
-             </div>
-             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-               {isLoginView ? 'Welcome back to the future.' : 'Join the future of content creation.'}
-             </h2>
-             <p className="text-white/80 text-lg">
-               {isLoginView ? 'Log in to continue your journey with Gemini AI.' : 'Create, watch, and discover with the power of Gemini AI.'}
-             </p>
-           </div>
-           
-           <div className="relative z-10 space-y-4">
-              <div className="flex items-center gap-3 text-white/90">
-                 <CheckCircle2 className="w-5 h-5 text-green-400" />
-                 <span>Unlimited AI Video Ideas</span>
-              </div>
-              <div className="flex items-center gap-3 text-white/90">
-                 <CheckCircle2 className="w-5 h-5 text-green-400" />
-                 <span>Advanced Analytics</span>
-              </div>
-              <div className="flex items-center gap-3 text-white/90">
-                 <CheckCircle2 className="w-5 h-5 text-green-400" />
-                 <span>Monetization Tools</span>
-              </div>
+    <div className="flex min-h-screen">
+      {/* Left Side - Image/Info (Desktop) */}
+      <div className="hidden lg:flex w-1/2 bg-[var(--background-secondary)] relative overflow-hidden flex-col justify-between p-12 border-r border-[var(--border-primary)]">
+        <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/starlight-auth/1920/1080')] bg-cover bg-center opacity-10"></div>
+        <div className="relative z-10">
+           <div className="flex items-center gap-3">
+              <span className="text-2xl font-extrabold tracking-tighter text-[hsl(var(--accent-color))] uppercase font-sans">Star Light</span>
            </div>
         </div>
-
-        {/* Right Side - Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-           <div className="max-w-md mx-auto w-full">
-             {isLoginView ? desktopLoginView : desktopSignupView}
-           </div>
+        <div className="relative z-10 space-y-6">
+           <h1 className="text-5xl font-bold leading-tight text-[var(--text-primary)]">Create, Watch, and Discover without limits.</h1>
+           <p className="text-xl text-[var(--text-secondary)]">Join the world's most advanced AI-powered video platform today.</p>
+        </div>
+        <div className="relative z-10 text-sm text-[var(--text-tertiary)]">
+           © 2025 Starlight Inc.
         </div>
       </div>
+
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative bg-[var(--background-primary)] overflow-y-auto">
+        <button 
+          onClick={() => navigate('/')} 
+          className="absolute top-6 right-6 p-2 rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-[var(--text-secondary)]"
+          aria-label="Go home"
+        >
+          <Home className="w-6 h-6" />
+        </button>
+
+        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           {isLoginView ? desktopLoginView : desktopSignupView}
+
+           {showLeadAccess && (
+              <div className="mt-8 bg-red-500/5 p-6 rounded-2xl border border-red-500/20 text-center animate-in fade-in">
+                  <h3 className="text-xl font-bold text-red-500 mb-3 flex items-center justify-center gap-2"><ShieldAlert className="w-6 h-6"/> Lead Admin Access</h3>
+                  <p className="text-red-300/80 text-sm mb-4">This is a restricted login for the primary platform administrator.</p>
+                  <button 
+                      onClick={handleLeadAdminLogin} 
+                      disabled={isLoadingLead}
+                      className="px-6 py-3 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 transition-all flex items-center justify-center gap-2 mx-auto disabled:opacity-70 disabled:cursor-wait"
+                  >
+                      {isLoadingLead ? <Loader2 className="w-5 h-5 animate-spin"/> : <Shield className="w-5 h-5"/>}
+                      {isLoadingLead ? 'Accessing...' : 'Access Lead Account'}
+                  </button>
+              </div>
+           )}
+        </div>
+      </div>
+
+       {showBiometricModal && createPortal(
+        <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in" onClick={() => setShowBiometricModal(false)}>
+          <div className="bg-[var(--background-secondary)] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-[var(--border-primary)]" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 border-b border-[var(--border-primary)]">
+              <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-[hsl(var(--accent-color))]" /> Passkey Login
+              </h2>
+              <button onClick={() => setShowBiometricModal(false)} className="p-2 hover:bg-[var(--background-tertiary)] rounded-full transition-colors">
+                <X className="w-5 h-5 text-[var(--text-secondary)]" />
+              </button>
+            </div>
+            <div className="p-6 text-center">
+              {biometricStatus === 'scanning' && (
+                <div className="animate-in fade-in">
+                  <Fingerprint className="w-20 h-20 text-[hsl(var(--accent-color))] mx-auto mb-4 animate-pulse" />
+                  <p className="text-xl font-bold mb-2">Scanning Biometrics...</p>
+                  <p className="text-[var(--text-secondary)] text-sm">Please touch your fingerprint sensor or look at your device.</p>
+                </div>
+              )}
+              {biometricStatus === 'success' && (
+                <div className="animate-in fade-in">
+                  <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-4 animate-in zoom-in" />
+                  <p className="text-xl font-bold mb-2">Login Successful!</p>
+                  <p className="text-[var(--text-secondary)] text-sm">Redirecting...</p>
+                </div>
+              )}
+              {biometricStatus === 'passcode' && (
+                <div className="animate-in fade-in">
+                  <Lock className="w-20 h-20 text-[hsl(var(--accent-color))] mx-auto mb-4" />
+                  <p className="text-xl font-bold mb-2">Enter Passcode</p>
+                  <p className="text-[var(--text-secondary)] text-sm mb-4">Biometric login failed. Please enter your 6-digit passcode.</p>
+                  <div className="flex justify-center gap-2 mb-6">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                          <div key={i} className={`w-8 h-10 border-b-2 ${passcodeInput.length > i ? 'border-[hsl(var(--accent-color))]' : 'border-[var(--border-primary)]'} flex items-center justify-center font-mono text-2xl`}>
+                              {passcodeInput[i] || ''}
+                          </div>
+                      ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(digit => (
+                        <button key={digit} type="button" onClick={() => handleDigitPress(digit)} className="p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-lg font-bold hover:bg-[var(--background-tertiary)]">{digit}</button>
+                    ))}
+                    <button type="button" onClick={handleBackspace} className="p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-lg font-bold hover:bg-[var(--background-tertiary)]"><Delete className="w-6 h-6 mx-auto text-red-500"/></button>
+                    <button type="button" onClick={() => handleDigitPress(0)} className="p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-lg font-bold hover:bg-[var(--background-tertiary)]">0</button>
+                    <button type="button" className="p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg text-lg font-bold hover:bg-[var(--background-tertiary)] opacity-0 cursor-default" disabled></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Zap, PlayCircle, ShieldCheck, Gem, CheckCircle2, Gift, Loader2, Globe, ChevronDown } from 'lucide-react';
+import { Zap, PlayCircle, ShieldCheck, Gem, CheckCircle2, Gift, Loader2, Globe, ChevronDown, CreditCard, RefreshCw, CalendarCheck } from 'lucide-react';
 import { ProfileDetails } from '../types';
 
 const PhonePeIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -10,6 +10,14 @@ const PhonePeIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM11.192 15.228C11.399 15.688 11.756 16.035 12.284 16.035C12.923 16.035 13.31 15.657 13.31 15.228C13.31 14.829 13.016 14.535 12.377 14.341L11.708 14.136C10.875 13.881 10.458 13.431 10.458 12.783C10.458 12.018 11.161 11.451 12.224 11.451C13.141 11.451 13.791 11.85 14.067 12.447L14.77 11.13C14.283 10.593 13.488 10.26 12.512 10.26C11.954 10.26 11.417 10.377 10.976 10.593C10.154 11.022 9.64601 11.829 9.64601 12.798C9.64601 13.986 10.397 14.751 11.531 15.111L12.213 15.326C13.025 15.57 13.488 15.969 13.488 16.596C13.488 17.316 12.871 17.853 11.965 17.853C10.88 17.853 10.129 17.327 9.87401 16.71L9.17101 18.027C9.72901 18.519 10.667 18.9 11.729 18.9C12.338 18.9 12.926 18.771 13.434 18.528C14.329 18.1095 14.887 17.316 14.887 16.299C14.887 15.003 14.019 14.2275 12.841 13.881L12.159 13.665C11.368 13.422 10.88 13.098 10.88 12.486C10.88 11.97 11.297 11.583 11.894 11.583C12.382 11.583 12.787 11.7555 13.063 12.1155L13.755 10.809C13.208 10.239 12.386 9.84 11.47 9.84C10.746 9.84 10.054 10.0335 9.51601 10.422C8.61101 11.049 8.08301 11.958 8.08301 13.047C8.08301 14.313 8.94701 15.15 10.173 15.588L10.855 15.804C11.041 15.8625 11.129 15.909 11.192 15.9945V15.228Z" fill="currentColor"/>
         <path d="M16.5913 14.0625L17.7523 11.9445L16.2223 11.13L15.0613 13.248L16.5913 14.0625Z" fill="currentColor"/>
         <path d="M15.421 8.16C15.034 7.905 14.542 7.749 14.005 7.749C12.97 7.749 12.118 8.199 11.668 8.871L12.964 9.603C13.093 9.429 13.318 9.2145 13.696 9.2145C14.083 9.2145 14.338 9.429 14.467 9.603C14.5855 9.777 14.596 9.99 14.536 10.2045L13.2505 15.021L14.887 15.021L16.561 8.841C16.327 8.424 15.9595 8.16 15.421 8.16Z" fill="currentColor"/>
+    </svg>
+);
+
+const RuPayIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M20 4H4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V6C22 4.89543 21.1046 4 20 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M7 15H10.5C12.5 15 13.5 14 13.5 12C13.5 10 12.5 9 10.5 9H7V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12.5 12.5L16.5 17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 );
 
@@ -26,6 +34,8 @@ export const Premium: React.FC = () => {
   const navigate = useNavigate();
   const [selectedRegionCode, setSelectedRegionCode] = useState('US');
   const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
+  const [paymentProvider, setPaymentProvider] = useState<'phonepe' | 'rupay' | null>(null);
+  const [isDetecting, setIsDetecting] = useState(false);
 
   const currentRegion = REGIONS.find(r => r.code === selectedRegionCode) || REGIONS[0];
 
@@ -60,17 +70,28 @@ export const Premium: React.FC = () => {
     }
   };
   
-  const handlePhonePeUpgrade = () => {
+  const handlePayment = (provider: 'phonepe' | 'rupay') => {
     if (!currentUser) {
       navigate('/signup');
       return;
     }
+    setPaymentProvider(provider);
     setShowPaymentOverlay(true);
-    // Simulate API call to PhonePe
+    // Simulate API call
     setTimeout(() => {
         upgradeToPremium();
         setShowPaymentOverlay(false);
+        setPaymentProvider(null);
     }, 3000);
+  };
+
+  const handleAutoDetect = () => {
+      setIsDetecting(true);
+      // Simulate detection logic - defaulting to India for demo purposes to show the features
+      setTimeout(() => {
+          setSelectedRegionCode('IN');
+          setIsDetecting(false);
+      }, 1200);
   };
 
   const benefits = [
@@ -82,16 +103,18 @@ export const Premium: React.FC = () => {
 
   return (
     <div className="w-full h-full bg-[var(--background-primary)] text-[var(--text-primary)] overflow-y-auto relative">
-      {/* PhonePe Full Screen Overlay */}
+      {/* Payment Full Screen Overlay */}
       {showPaymentOverlay && (
         <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center animate-in fade-in duration-300">
-            <div className="w-24 h-24 bg-[#6739B7] rounded-3xl flex items-center justify-center mb-8 shadow-2xl animate-bounce">
-                <PhonePeIcon className="w-14 h-14 text-white" />
+            <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-8 shadow-2xl animate-bounce ${paymentProvider === 'phonepe' ? 'bg-[#6739B7]' : 'bg-orange-500'}`}>
+                {paymentProvider === 'phonepe' ? <PhonePeIcon className="w-14 h-14 text-white" /> : <RuPayIcon className="w-16 h-16 text-white" />}
             </div>
-            <h2 className="text-3xl font-bold text-[#6739B7] mb-2 tracking-tight">PhonePe</h2>
+            <h2 className={`text-3xl font-bold mb-2 tracking-tight ${paymentProvider === 'phonepe' ? 'text-[#6739B7]' : 'text-orange-500'}`}>
+                {paymentProvider === 'phonepe' ? 'PhonePe' : 'RuPay'}
+            </h2>
             <p className="text-gray-500 font-medium mb-8">Processing Secure Payment...</p>
             <div className="w-64 bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#6739B7] h-full animate-[loading_1.5s_ease-in-out_infinite] w-1/3 rounded-full"></div>
+                <div className={`h-full animate-[loading_1.5s_ease-in-out_infinite] w-1/3 rounded-full ${paymentProvider === 'phonepe' ? 'bg-[#6739B7]' : 'bg-orange-500'}`}></div>
             </div>
             <p className="text-xs text-gray-400 mt-8">Do not close this window</p>
             <style>{`
@@ -119,12 +142,12 @@ export const Premium: React.FC = () => {
         </p>
 
         {/* Region Selector */}
-        <div className="flex justify-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+        <div className="flex justify-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200 gap-2">
             <div className="relative inline-block">
                 <select 
                     value={selectedRegionCode}
                     onChange={(e) => setSelectedRegionCode(e.target.value)}
-                    className="appearance-none bg-[var(--background-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] py-2 pl-4 pr-10 rounded-full text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] cursor-pointer hover:bg-[var(--background-tertiary)] transition-colors"
+                    className="appearance-none bg-[var(--background-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] py-2 pl-4 pr-10 rounded-full text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))] cursor-pointer hover:bg-[var(--background-tertiary)] transition-colors h-10"
                 >
                     {REGIONS.map(region => (
                         <option key={region.code} value={region.code}>{region.name} ({region.currency})</option>
@@ -134,6 +157,16 @@ export const Premium: React.FC = () => {
                     <Globe className="w-4 h-4" />
                 </div>
             </div>
+            
+            <button 
+                onClick={handleAutoDetect} 
+                disabled={isDetecting}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--background-tertiary)] hover:bg-[var(--border-primary)] text-[var(--text-primary)] rounded-full text-sm font-semibold transition-colors h-10"
+                title="Detect your location"
+            >
+                {isDetecting ? <Loader2 className="w-3 h-3 animate-spin"/> : <RefreshCw className="w-3 h-3"/>}
+                <span className="hidden sm:inline">Auto-Select</span>
+            </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
@@ -154,6 +187,67 @@ export const Premium: React.FC = () => {
                 <p className="text-[var(--text-secondary)] mt-2 max-w-md">
                     Thank you for your support! You have access to all the benefits listed above, including ad-free viewing and Starlight Labs.
                 </p>
+                
+                <div className="mt-8 bg-[var(--background-primary)] p-6 rounded-2xl border border-[var(--border-primary)] w-full max-w-md text-left shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-sm text-[var(--text-tertiary)] font-medium">Current Plan</p>
+                            <h3 className="font-bold text-lg text-[var(--text-primary)]">Starlight Premium</h3>
+                        </div>
+                        <span className="bg-green-500/10 text-green-600 text-xs px-2.5 py-1 rounded-full font-bold border border-green-500/20 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Active
+                        </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+                        <CalendarCheck className="w-4 h-4 text-[var(--text-tertiary)]" />
+                        <span>Next billing date: <strong>{new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</strong></span>
+                    </div>
+                    
+                    <div className="h-px bg-[var(--border-primary)] mb-6"></div>
+                    
+                    <h4 className="font-bold text-sm mb-4">Renew Membership</h4>
+                    
+                    <div className="space-y-3">
+                        {selectedRegionCode === 'IN' ? (
+                            <>
+                                <button 
+                                    onClick={() => handlePayment('phonepe')}
+                                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#6739B7] text-white font-bold rounded-xl hover:bg-[#5F259F] transition-all shadow-md group"
+                                >
+                                    <div className="bg-white p-0.5 rounded-full">
+                                        <PhonePeIcon className="w-4 h-4 text-[#6739B7]" />
+                                    </div>
+                                    <span>Renew with PhonePe</span>
+                                </button>
+                                
+                                <button 
+                                    onClick={() => handlePayment('rupay')}
+                                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all shadow-md group"
+                                >
+                                    <div className="bg-white p-0.5 rounded-sm">
+                                        <RuPayIcon className="w-5 h-4 text-orange-500" />
+                                    </div>
+                                    <span>Renew with RuPay</span>
+                                </button>
+                                 <button 
+                                    onClick={handleUpgrade}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[var(--background-secondary)] border border-[var(--border-primary)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--background-tertiary)] transition-colors text-sm"
+                                >
+                                    <CreditCard className="w-4 h-4"/> Renew with Card
+                                </button>
+                            </>
+                        ) : (
+                            <button 
+                                onClick={handleUpgrade}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-md"
+                            >
+                                <CreditCard className="w-5 h-5"/>
+                                <span>Renew Subscription</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
           </div>
         ) : (
@@ -168,33 +262,50 @@ export const Premium: React.FC = () => {
                    <span className="text-lg text-[var(--text-secondary)] font-normal ml-1">/month</span>
                </div>
                
-               <button 
-                  onClick={handleUpgrade}
-                  className="mt-4 px-10 py-4 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20 text-lg w-full max-w-sm"
-                >
-                  {currentUser ? 'Upgrade with Card' : 'Sign In to Upgrade'}
-                </button>
-
-                {selectedRegionCode === 'IN' && (
-                    <>
-                        <div className="flex items-center gap-4 my-6 w-full max-w-sm">
-                            <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
-                            <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">OR</span>
-                            <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
-                        </div>
-
+               {selectedRegionCode === 'IN' ? (
+                   <div className="w-full max-w-sm space-y-3 mt-4">
                         <button 
-                            onClick={handlePhonePeUpgrade}
-                            className="w-full max-w-sm flex items-center justify-center gap-3 px-10 py-4 bg-[#6739B7] text-white font-bold rounded-full hover:bg-[#5F259F] transition-all shadow-lg shadow-purple-500/20 text-lg group"
+                            onClick={() => handlePayment('phonepe')}
+                            className="w-full flex items-center justify-center gap-3 px-10 py-3.5 bg-[#6739B7] text-white font-bold rounded-full hover:bg-[#5F259F] transition-all shadow-lg shadow-purple-500/20 text-lg group"
                         >
                             <div className="bg-white p-1 rounded-full">
                                 <PhonePeIcon className="w-5 h-5 text-[#6739B7]" />
                             </div>
                             Pay with PhonePe
                         </button>
-                        <p className="text-xs text-[var(--text-tertiary)] mt-3">Fast & Secure UPI Payment</p>
-                    </>
-                )}
+                        
+                        <button 
+                            onClick={() => handlePayment('rupay')}
+                            className="w-full flex items-center justify-center gap-3 px-10 py-3.5 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 text-lg group"
+                        >
+                            <div className="bg-white p-1 rounded-sm">
+                                <RuPayIcon className="w-6 h-5 text-orange-500" />
+                            </div>
+                            Pay with RuPay
+                        </button>
+
+                         <div className="flex items-center gap-4 my-2 w-full">
+                            <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
+                            <span className="text-xs text-[var(--text-secondary)] font-bold uppercase">OR</span>
+                            <div className="h-px flex-1 bg-[var(--border-primary)]"></div>
+                        </div>
+
+                         <button 
+                            onClick={handleUpgrade}
+                            className="w-full flex items-center justify-center gap-2 px-10 py-3 bg-[var(--background-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] font-bold rounded-full hover:bg-[var(--background-tertiary)] transition-colors text-base"
+                        >
+                            <CreditCard className="w-5 h-5"/> Credit / Debit Card
+                        </button>
+                   </div>
+               ) : (
+                    <button 
+                        onClick={handleUpgrade}
+                        className="mt-4 px-10 py-4 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20 text-lg w-full max-w-sm flex items-center justify-center gap-2"
+                    >
+                        <CreditCard className="w-5 h-5"/>
+                        {currentUser ? 'Upgrade with Card' : 'Sign In to Upgrade'}
+                    </button>
+               )}
             </div>
           </div>
         )}

@@ -90,6 +90,31 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
     };
   }, [isActive]);
 
+  // Keyboard controls specific to active Short
+  useEffect(() => {
+    if (!isActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+
+        if (e.key.toLowerCase() === ' ' || e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            togglePlay();
+        } else if (e.key.toLowerCase() === 'm') {
+            e.preventDefault();
+            if (videoRef.current) {
+                videoRef.current.muted = !isMuted;
+                setIsMuted(!isMuted);
+                handleInteraction();
+            }
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isActive, isPlaying, isMuted]);
+
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -160,7 +185,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({ video, isActive }) =
             <div className={`absolute top-4 left-4 z-20 transition-opacity duration-500 pointer-events-none ${showOverlay ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="flex items-center gap-2 bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
                     <Logo className="w-5 h-5 text-white drop-shadow-md" />
-                    <span className="text-white font-bold text-sm tracking-tight drop-shadow-md shadow-black font-sans">StarLight</span>
+                    <span className="text-white font-extrabold text-sm tracking-tighter drop-shadow-md shadow-black font-sans uppercase">Star Light</span>
                 </div>
             </div>
 

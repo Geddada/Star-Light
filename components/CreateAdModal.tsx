@@ -1,5 +1,6 @@
+
 import React, { useState, useRef } from 'react';
-import { X, Sparkles, Target, ShoppingBag, Users, Upload, FileVideo, DollarSign, LayoutTemplate } from 'lucide-react';
+import { X, Sparkles, Target, ShoppingBag, Users, Upload, FileVideo, DollarSign, LayoutTemplate, Loader2 } from 'lucide-react';
 import { AdCampaign, CATEGORIES } from '../types';
 import { generateAdCampaign } from '../services/gemini';
 import { COUNTRIES, USA_STATES, INDIAN_STATES, UK_STATES, ANDHRA_PRADESH_CONSTITUENCIES } from '../constants';
@@ -202,7 +203,7 @@ export const CreateAdModal: React.FC<CreateAdModalProps> = ({ onClose, onSuccess
                         disabled={loading || !productName || !goal}
                         className="w-full py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2 shadow-md"
                     >
-                        {loading ? <><Sparkles className="w-5 h-5 animate-spin" /> Generating...</> : <><Sparkles className="w-5 h-5" /> Generate Campaign</>}
+                        {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Generating...</> : <><Sparkles className="w-5 h-5" /> Generate Campaign</>}
                     </button>
                 </div>
             ) : (
@@ -228,7 +229,7 @@ export const CreateAdModal: React.FC<CreateAdModalProps> = ({ onClose, onSuccess
                             type="text" 
                             value={manualBudget}
                             onChange={e => setManualBudget(e.target.value)}
-                            placeholder="e.g. $500"
+                            placeholder={country === 'India' ? "e.g. ₹5000" : "e.g. $500"}
                             className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:ring-2 focus:ring-[hsl(var(--accent-color))] outline-none transition-all"
                             disabled={loading}
                         />
@@ -297,7 +298,7 @@ export const CreateAdModal: React.FC<CreateAdModalProps> = ({ onClose, onSuccess
                         disabled={loading || !manualTitle || !manualBudget || !selectedFile}
                         className="w-full py-3 bg-[hsl(var(--accent-color))] text-white font-bold rounded-lg hover:brightness-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2 shadow-md"
                     >
-                        {loading ? <><Upload className="w-5 h-5 animate-spin" /> Uploading...</> : <><Upload className="w-5 h-5" /> Upload Campaign</>}
+                        {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</> : <><Upload className="w-5 h-5" /> Upload Campaign</>}
                     </button>
                 </div>
             )}

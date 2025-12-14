@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Admin, AdminRole, ADMIN_ROLES } from '../types';
-import { Loader2, PlusCircle, UserPlus, Users, Trash2, Edit, Save, X, Shield, MapPin, AlertCircle } from 'lucide-react';
+import { Loader2, PlusCircle, UserPlus, Users, Trash2, Edit, Save, X, Shield, MapPin, AlertCircle, Search, Filter } from 'lucide-react';
 import { COUNTRIES, USA_STATES, INDIAN_STATES, UK_STATES, ANDHRA_PRADESH_CITIES, ANDHRA_PRADESH_CONSTITUENCIES } from '../constants';
 
 const ADMINS_STORAGE_KEY = 'starlight_admins';
@@ -20,6 +20,12 @@ export const ManageAdmins: React.FC = () => {
     const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
     const [formState, setFormState] = useState<Partial<Admin>>({});
     const [error, setError] = useState('');
+
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState('');
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedCity, setSelectedCity] = useState('');
 
     const loadAdmins = useCallback(() => {
         setLoading(true);
@@ -115,8 +121,21 @@ export const ManageAdmins: React.FC = () => {
         localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(updatedAdmins));
         handleCloseForm();
     };
+
+    const filteredAdmins = useMemo(() => {
+        return admins.filter(admin => {
+            const matchesSearch = admin.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                  admin.email.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCountry = !selectedCountry || admin.country === selectedCountry;
+            const matchesState = !selectedState || admin.state === selectedState;
+            const matchesCity = !selectedCity || (admin.city && admin.city.toLowerCase().includes(selectedCity.toLowerCase()));
+            
+            return matchesSearch && matchesCountry && matchesState && matchesCity;
+        });
+    }, [admins, searchTerm, selectedCountry, selectedState, selectedCity]);
     
     const stateOptions = formState.country === 'India' ? INDIAN_STATES : formState.country === 'United States of America' ? USA_STATES : formState.country === 'United Kingdom' ? UK_STATES : [];
+    const filterStateOptions = selectedCountry === 'India' ? INDIAN_STATES : selectedCountry === 'United States of America' ? USA_STATES : selectedCountry === 'United Kingdom' ? UK_STATES : [];
 
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -133,6 +152,45 @@ export const ManageAdmins: React.FC = () => {
                     <span>Add New Admin</span>
                 </button>
             </div>
+
+            <div className="bg-[var(--background-secondary)] p-4 rounded-xl border border-[var(--border-primary)] mb-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)]" />
+                        <input 
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full p-2.5 pl-10 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                        />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-[2]">
+                         <select value={selectedCountry} onChange={e => { setSelectedCountry(e.target.value); setSelectedState(''); setSelectedCity(''); }} className="w-full p-2.5 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]">
+                            <option value="">All Countries</option>
+                            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <select value={selectedState} onChange={e => { setSelectedState(e.target.value); setSelectedCity(''); }} className="w-full p-2.5 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]" disabled={filterStateOptions.length === 0}>
+                            <option value="">All States</option>
+                            {filterStateOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                         {selectedState === 'Andhra Pradesh' ? (
+                            <select value={selectedCity} onChange={e => setSelectedCity(e.target.value)} className="w-full p-2.5 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]">
+                                <option value="">All Cities</option>
+                                {ANDHRA_PRADESH_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        ) : (
+                            <input 
+                                type="text" 
+                                placeholder="Filter City" 
+                                value={selectedCity} 
+                                onChange={e => setSelectedCity(e.target.value)} 
+                                className="w-full p-2.5 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-color))]"
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
             
             {loading ? <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin"/></div> : (
                 <div className="bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] overflow-hidden">
@@ -147,33 +205,37 @@ export const ManageAdmins: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {admins.map(admin => (
-                                    <tr key={admin.id} className="border-b border-[var(--border-primary)] last:border-b-0 hover:bg-[var(--background-tertiary)]/30">
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-3">
-                                                <img src={admin.avatar} alt={admin.name} className="w-10 h-10 rounded-full" />
-                                                <div>
-                                                    <p className="font-bold text-base">{admin.name}</p>
-                                                    <p className="text-xs text-[var(--text-tertiary)]">{admin.email}</p>
+                                {filteredAdmins.length === 0 ? (
+                                    <tr><td colSpan={4} className="text-center p-8 text-[var(--text-secondary)]">No admins found matching filters.</td></tr>
+                                ) : (
+                                    filteredAdmins.map(admin => (
+                                        <tr key={admin.id} className="border-b border-[var(--border-primary)] last:border-b-0 hover:bg-[var(--background-tertiary)]/30">
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-3">
+                                                    <img src={admin.avatar} alt={admin.name} className="w-10 h-10 rounded-full" />
+                                                    <div>
+                                                        <p className="font-bold text-base">{admin.name}</p>
+                                                        <p className="text-xs text-[var(--text-tertiary)]">{admin.email}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-[var(--text-secondary)] hidden md:table-cell">
-                                            {[admin.city, admin.constituency, admin.district, admin.state, admin.country].filter(Boolean).join(', ')}
-                                        </td>
-                                        <td className="px-4 py-3 hidden sm:table-cell">
-                                            <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full ${admin.role === 'Lead Admin' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                                                <Shield className="w-3.5 h-3.5" /> {admin.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-end gap-2">
-                                                <button onClick={() => handleOpenForm(admin)} title="Edit Admin" className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-md"><Edit className="w-4 h-4" /></button>
-                                                {admin.role !== 'Lead Admin' && <button onClick={() => handleDelete(admin.id)} title="Delete Admin" className="p-2 text-red-500 hover:bg-red-500/10 rounded-md"><Trash2 className="w-4 h-4" /></button>}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-4 py-3 text-[var(--text-secondary)] hidden md:table-cell">
+                                                {[admin.city, admin.constituency, admin.district, admin.state, admin.country].filter(Boolean).join(', ')}
+                                            </td>
+                                            <td className="px-4 py-3 hidden sm:table-cell">
+                                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full ${admin.role === 'Lead Admin' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                                                    <Shield className="w-3.5 h-3.5" /> {admin.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex justify-end gap-2">
+                                                    <button onClick={() => handleOpenForm(admin)} title="Edit Admin" className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-md"><Edit className="w-4 h-4" /></button>
+                                                    {admin.role !== 'Lead Admin' && <button onClick={() => handleDelete(admin.id)} title="Delete Admin" className="p-2 text-red-500 hover:bg-red-500/10 rounded-md"><Trash2 className="w-4 h-4" /></button>}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>

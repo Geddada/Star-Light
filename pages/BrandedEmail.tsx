@@ -57,7 +57,7 @@ export const BrandedEmail: React.FC = () => {
                 <header className="bg-gradient-to-br from-blue-700 to-indigo-900 text-white text-center p-12">
                     <div className="flex justify-center items-center gap-3 mb-4">
                         <Logo className="w-12 h-12 text-white"/>
-                        <span className="text-4xl font-bold tracking-tighter">StarLight</span>
+                        <span className="text-4xl font-extrabold tracking-tighter font-sans uppercase">Star Light</span>
                     </div>
                     <h2 className="text-3xl font-bold mb-2">Welcome to the Future of Content!</h2>
                     <p className="text-lg text-indigo-200">We're thrilled to have you join our community of creators and viewers.</p>

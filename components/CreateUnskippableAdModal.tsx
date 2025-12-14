@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { X, Sparkles, Target, ShoppingBag, Clock, Loader2, Upload, FileVideo, DollarSign, LayoutTemplate } from 'lucide-react';
 import { UnskippableAdCampaign, CATEGORIES } from '../types';
@@ -240,7 +241,7 @@ export const CreateUnskippableAdModal: React.FC<CreateUnskippableAdModalProps> =
                             type="text" 
                             value={manualBudget}
                             onChange={e => setManualBudget(e.target.value)}
-                            placeholder="e.g. $1000"
+                            placeholder={country === 'India' ? "e.g. ₹2000" : "e.g. $1000"}
                             className="w-full p-3 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg focus:ring-2 focus:ring-[hsl(var(--accent-color))] outline-none transition-all"
                             disabled={loading}
                         />

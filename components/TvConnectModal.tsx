@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Tv2, CheckCircle, RefreshCw, HelpCircle, Loader2 } from 'lucide-react';
 
@@ -100,7 +101,7 @@ export const TvConnectModal: React.FC<TvConnectModalProps> = ({ onClose }) => {
         <header className="flex justify-between items-center p-4 border-b border-[var(--border-primary)]">
           <div className="flex items-center gap-3">
             <Tv2 className="w-6 h-6 text-[hsl(var(--accent-color))]" />
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">Watch on TV</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Play on TV</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-[var(--background-tertiary)] rounded-full transition-colors">
             <X className="w-5 h-5 text-[var(--text-secondary)]" />

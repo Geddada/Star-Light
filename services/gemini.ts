@@ -506,6 +506,8 @@ export const generateAdCampaign = async (
         constituency && `Constituency: "${constituency}"`,
     ].filter(Boolean).join(', ');
 
+    const currencySymbol = country === 'India' ? '₹' : '$';
+
     const prompt = `Generate a single realistic ad campaign metadata object for a product named "${productName}" targeting users interested in the video category: "${goal}".
     ${locationPrompt ? `The target location is: ${locationPrompt}.` : ''}
     The response must be a single, valid JSON object with these fields:
@@ -514,7 +516,7 @@ export const generateAdCampaign = async (
     - status: 'Active'
     - views: a string (e.g. '1.5K')
     - ctr: a percentage string (e.g. '2.4%')
-    - spend: a currency string (e.g. '$150')
+    - spend: a currency string using ${currencySymbol} (e.g. '${currencySymbol}150')
     Do not include thumbnails. Do not include any text before or after the JSON, and do not use markdown formatting.` + getLanguageSuffix();
 
     const response = await ai.models.generateContent({
@@ -554,13 +556,14 @@ export const generateAdCampaign = async (
 
   } catch (error) {
     console.error("Ad Gen Error", error);
+    const currencySymbol = country === 'India' ? '₹' : '$';
     return {
       id: `gen-${Date.now()}`,
       title: `${productName} Campaign`,
       status: 'Active',
       views: '0',
       ctr: '0.00%',
-      spend: '$0',
+      spend: `${currencySymbol}0`,
       thumbnailUrl: `https://picsum.photos/seed/${Date.now()}/320/180`,
       country,
       state,
@@ -618,6 +621,8 @@ export const generateUnskippableAdCampaign = async (
         constituency && `Constituency: "${constituency}"`,
     ].filter(Boolean).join(', ');
 
+    const currencySymbol = country === 'India' ? '₹' : '$';
+
     const prompt = `Generate a single realistic unskippable ad campaign metadata object for a product named "${productName}" targeting users interested in the video category: "${goal}".
     The ad format is a "${adType}".
     ${locationPrompt ? `The target location is: ${locationPrompt}.` : ''}
@@ -626,7 +631,7 @@ export const generateUnskippableAdCampaign = async (
     - title: a catchy campaign title
     - status: 'Active'
     - impressions: a string (e.g. '25.1K')
-    - spend: a currency string (e.g. '$250')
+    - spend: a currency string using ${currencySymbol} (e.g. '${currencySymbol}250')
     - duration: '${adType.startsWith('6s') ? '6s' : '15s'}'
     Do not include thumbnails. Do not include any text before or after the JSON, and do not use markdown formatting.` + getLanguageSuffix();
 
@@ -667,12 +672,13 @@ export const generateUnskippableAdCampaign = async (
 
   } catch (error) {
     console.error("Unskippable Ad Gen Error", error);
+    const currencySymbol = country === 'India' ? '₹' : '$';
     return {
       id: `gen-unskip-${Date.now()}`,
       title: `${productName} Campaign (${adType})`,
       status: 'Active',
       impressions: '0',
-      spend: '$0',
+      spend: `${currencySymbol}0`,
       duration: adType.startsWith('6s') ? '6s' : '15s',
       thumbnailUrl: `https://picsum.photos/seed/unskip-err-${Date.now()}/320/180`,
       country,
@@ -703,6 +709,8 @@ export const generateShortsAdCampaign = async (
         constituency && `Constituency: "${constituency}"`,
     ].filter(Boolean).join(', ');
 
+    const currencySymbol = country === 'India' ? '₹' : '$';
+
     const prompt = `Generate a single realistic Shorts ad campaign metadata object for a product named "${productName}" targeting users interested in the video category: "${goal}".
     This is for a vertical video format in a Shorts feed.
     ${locationPrompt ? `The target location is: ${locationPrompt}.` : ''}
@@ -711,7 +719,7 @@ export const generateShortsAdCampaign = async (
     - title: a catchy campaign title
     - status: 'Active'
     - impressions: a string (e.g. '1.2M')
-    - spend: a currency string (e.g. '$500')
+    - spend: a currency string using ${currencySymbol} (e.g. '${currencySymbol}500')
     Do not include duration. Do not include thumbnails. Do not include any text before or after the JSON, and do not use markdown formatting.` + getLanguageSuffix();
 
     const response = await ai.models.generateContent({
@@ -750,12 +758,13 @@ export const generateShortsAdCampaign = async (
 
   } catch (error) {
     console.error("Shorts Ad Gen Error", error);
+    const currencySymbol = country === 'India' ? '₹' : '$';
     return {
       id: `gen-shorts-${Date.now()}`,
       title: `${productName} Shorts Campaign`,
       status: 'Active',
       impressions: '0',
-      spend: '$0',
+      spend: `${currencySymbol}0`,
       thumbnailUrl: `https://picsum.photos/seed/shorts-err-${Date.now()}/1080/1920`,
       country,
       state,
@@ -921,15 +930,16 @@ export const fetchPressReleases = async (): Promise<PressRelease[]> => {
     }
 };
 
-export const fetchChannelAnalytics = async (channelName: string): Promise<AnalyticsData> => {
+export const fetchChannelAnalytics = async (channelName: string, currency: string = 'USD'): Promise<AnalyticsData> => {
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const currencySymbol = currency === 'INR' ? '₹' : '$';
         const prompt = `Generate a realistic YouTube channel analytics data object for a channel named "${channelName}".
         The response must be a single, valid JSON object.
         - totalViews should be a string like "1.2M".
         - watchTimeHours should be a string like "45.1K".
         - subscribersGained should be a string like "+12.5K".
-        - estimatedRevenue should be a string like "$8,432.50".
+        - estimatedRevenue should be a string like "${currencySymbol}8,432.50".
         - dailyViews should be an array of 14 objects, each with a "date" (e.g., "1st", "2nd") and a "views" number, and a "revenue" number.
         - topContent should be an array of 3 video metadata objects (id, title, views, duration, uploaderName, communityName, uploadTime, description).
         - audienceInsight should be a short, insightful, single-sentence string generated by an AI analyzing the data, suggesting what the creator should focus on next.

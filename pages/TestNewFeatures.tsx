@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import { generateVideo, generateSmartPlaylist } from '../services/gemini';
 import { Beaker, Film, Image as ImageIcon, Loader2, AlertTriangle, Download, X, ShieldCheck, Play, ListVideo, Sparkles, Save, CheckCircle } from 'lucide-react';
@@ -8,6 +7,7 @@ import { SidebarAd } from '../components/SidebarAd';
 import { AdCampaign, UnskippableAdCampaign, ShortsAdCampaign, Video, Playlist } from '../types';
 import { VideoCard } from '../components/VideoCard';
 import { Logo } from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
 
 const fileToBase64 = (file: File): Promise<{ data: string, mimeType: string }> => {
     return new Promise((resolve, reject) => {
@@ -24,6 +24,7 @@ const fileToBase64 = (file: File): Promise<{ data: string, mimeType: string }> =
 };
 
 export const TestNewFeatures: React.FC = () => {
+    const { isPremium } = useAuth();
     const [isKeySelected, setIsKeySelected] = useState(false);
     const [keyCheckLoading, setKeyCheckLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'veo' | 'playlist'>('veo');
@@ -54,7 +55,7 @@ export const TestNewFeatures: React.FC = () => {
             if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
                 const hasKey = await window.aistudio.hasSelectedApiKey();
                 setIsKeySelected(hasKey);
-                 if (hasKey) { 
+                 if (hasKey && !isPremium) { 
                     const ad = await getAdForSlot('VEO_GENERATOR_SIDEBAR');
                     setSidebarAd(ad);
                 }
@@ -62,7 +63,7 @@ export const TestNewFeatures: React.FC = () => {
             setKeyCheckLoading(false);
         };
         checkKeyAndLoadAd();
-    }, []);
+    }, [isPremium]);
 
     useEffect(() => {
         if (!startImageFile) {

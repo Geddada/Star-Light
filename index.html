@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="light">
   <head>
@@ -5,7 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StarLight</title>
     <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+              logo: ['Outfit', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <style>
       /* Custom scrollbar for a more native feel */
       ::-webkit-scrollbar {
@@ -61,7 +78,7 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--background-primary);
         color: var(--text-primary);
       }
@@ -180,7 +197,7 @@
       }
 
       .cinematic-text {
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Outfit', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         text-transform: uppercase;
         letter-spacing: 0.2em;
         color: white;
@@ -252,6 +269,47 @@
         0% { height: 20%; }
         50% { height: 100%; }
         100% { height: 20%; }
+      }
+
+      /* Print Specific Styles for Reports */
+      @media print {
+        body {
+          background-color: white;
+          color: black;
+          overflow: visible !important;
+        }
+        /* Hide everything by default */
+        body > * {
+          display: none !important;
+        }
+        /* Show only the print container */
+        #premium-analytics-report, #premium-analytics-report * {
+          display: block !important;
+          visibility: visible !important;
+        }
+        #premium-analytics-report {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          background: white;
+          color: black;
+          padding: 0;
+          margin: 0;
+        }
+        /* Force layout for print */
+        .print-grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 20px !important;
+        }
+        .print-break-inside {
+          break-inside: avoid;
+        }
+        /* Hide non-printable elements inside the report */
+        .no-print {
+          display: none !important;
+        }
       }
     </style>
   <script type="importmap">

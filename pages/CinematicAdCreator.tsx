@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateVideo, generateThumbnail } from '../services/gemini';
@@ -193,7 +194,7 @@ export const CinematicAdCreator: React.FC = () => {
                        </div>
                   </div>
               </div>
-              <button onClick={handleGenerateVideo} disabled={isLoading || !prompt} className="w-full flex items-center justify-center gap-2 py-3 bg-[hsl(var(--accent-color))] text-white rounded-lg font-bold disabled:opacity-50">
+              <button onClick={handleGenerateVideo} disabled={isLoading || !prompt} className="w-full flex items-center justify-center gap-2 py-3 bg-[hsl(var(--accent-color))] text-white font-bold disabled:opacity-50">
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
                   {isLoading ? "Generating..." : "Generate Video"}
               </button>
@@ -214,7 +215,7 @@ export const CinematicAdCreator: React.FC = () => {
                             <div className="absolute top-4 left-4 z-10 pointer-events-none opacity-80">
                                 <div className="flex items-center gap-2 bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
                                     <Logo className="w-6 h-6 text-white drop-shadow-md" />
-                                    <span className="font-bold text-white text-sm tracking-tighter drop-shadow-md">StarLight</span>
+                                    <span className="font-extrabold text-white text-sm tracking-tighter drop-shadow-md font-sans uppercase">Star Light</span>
                                 </div>
                             </div>
                         </div>

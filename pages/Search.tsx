@@ -7,6 +7,7 @@ import { Clock, Check, Edit2 } from 'lucide-react';
 import { UploadModal } from '../components/UploadModal';
 import { InFeedAdCard } from '../components/InFeedAdCard'; // Import InFeedAdCard
 import { Logo } from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -55,6 +56,7 @@ const WatchLaterButton: React.FC<{ video: Video }> = ({ video }) => {
 export const Search: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isPremium } = useAuth();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get('search_query') || '';
   
@@ -72,7 +74,7 @@ export const Search: React.FC = () => {
       setLoading(true);
       const [videoData, adData] = await Promise.all([
         searchVideos(query),
-        getAdForSlot('SEARCH_SPONSORED_RESULT')
+        !isPremium ? getAdForSlot('SEARCH_SPONSORED_RESULT') : Promise.resolve(null)
       ]);
       setVideos(videoData);
       setAd(adData);
@@ -80,7 +82,7 @@ export const Search: React.FC = () => {
     };
 
     loadContent();
-  }, [query]);
+  }, [query, isPremium]);
 
   const results = useMemo(() => {
     const combined: (Video | AdCampaign | UnskippableAdCampaign | ShortsAdCampaign)[] = [...videos];
@@ -151,7 +153,7 @@ export const Search: React.FC = () => {
                       <div className="absolute top-2 left-2 z-20 pointer-events-none">
                         <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-sm backdrop-blur-sm border border-white/10">
                             <Logo className="w-3.5 h-3.5 text-white" />
-                            <span className="font-bold text-white text-[10px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tight font-sans">StarLight</span>
+                            <span className="font-extrabold text-white text-[10px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-tighter font-sans uppercase">STAR LIGHT</span>
                         </div>
                       </div>
 
